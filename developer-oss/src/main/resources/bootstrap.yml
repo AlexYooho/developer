@@ -1,0 +1,25 @@
+nacos:
+  username: nacos
+  passowrd: nacos
+  group: DEVELOPER
+  server-addr: 42.193.251.7:8848
+  namespace: 7f2951bc-a576-422a-83bf-89b1cc9c9337
+  file-extension: yaml
+spring:
+  application:
+    name: developer-oss
+  cloud:
+    nacos:
+      config:
+        server-addr: ${nacos.server-addr}
+        namespace: ${nacos.namespace}
+        group: ${nacos.group}
+        username: ${nacos.username}
+        password: ${nacos.passowrd}
+        prefix: ${spring.application.name}
+        file-extension: ${nacos.file-extension}
+      discovery:
+        server-addr: ${nacos.server-addr}
+        username: ${nacos.username}
+        password: ${nacos.passowrd}
+        namespace: ${nacos.namespace}
