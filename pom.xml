@@ -47,6 +47,7 @@
         <log4j.vsrsion>1.2.17</log4j.vsrsion>
         <junit.version>4.12</junit.version>
         <druid-spring-boot-starter.version>1.2.16</druid-spring-boot-starter.version>
+        <spring-cloud-starter-oauth2.version>2.2.5.RELEASE</spring-cloud-starter-oauth2.version>
     </properties>
 
     <dependencyManagement>
@@ -207,6 +208,12 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid-spring-boot-starter.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-oauth2</artifactId>
+                <version>${spring-cloud-starter-oauth2.version}</version>
             </dependency>
 
         </dependencies>

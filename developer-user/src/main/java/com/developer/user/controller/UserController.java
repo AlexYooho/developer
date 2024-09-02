@@ -1,8 +1,8 @@
 package com.developer.user.controller;
 
 import com.developer.user.dto.UserRegisterDTO;
+import com.developer.framework.model.DeveloperResult;
 import com.developer.user.service.UserService;
-import model.DeveloperResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

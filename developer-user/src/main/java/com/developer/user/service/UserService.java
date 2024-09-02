@@ -1,7 +1,7 @@
 package com.developer.user.service;
 
 import com.developer.user.dto.UserRegisterDTO;
-import model.DeveloperResult;
+import com.developer.framework.model.DeveloperResult;
 
 public interface UserService {
 

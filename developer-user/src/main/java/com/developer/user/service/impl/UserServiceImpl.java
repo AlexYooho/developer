@@ -4,7 +4,7 @@ import com.developer.user.dto.UserRegisterDTO;
 import com.developer.user.pojo.UserPO;
 import com.developer.user.repository.UserRepository;
 import com.developer.user.service.UserService;
-import model.DeveloperResult;
+import com.developer.framework.model.DeveloperResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
