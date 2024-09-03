@@ -13,4 +13,6 @@ public interface UserService {
      */
     DeveloperResult register(UserRegisterDTO dto);
 
+    DeveloperResult getSelfUserInfo();
+
 }

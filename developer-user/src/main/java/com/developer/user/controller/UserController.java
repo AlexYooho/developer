@@ -4,6 +4,7 @@ import com.developer.user.dto.UserRegisterDTO;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,27 +27,29 @@ public class UserController {
 
     /**
      * 修改密码
-     * @param userId
      * @return
      */
-    @PutMapping("{userId}/modify/password")
-    public DeveloperResult modifyPassword(@PathVariable Long userId){
+    @PutMapping("/modify/password")
+    public DeveloperResult modifyPassword(){
         return DeveloperResult.success();
     }
 
     /**
      * 重置密码
-     * @param userId
      * @return
      */
-    @PutMapping("{userId}/reset/password")
-    public DeveloperResult resetPassword(@PathVariable Long userId){
+    @PutMapping("/reset/password")
+    public DeveloperResult resetPassword(){
         return DeveloperResult.success();
     }
 
-    @GetMapping("index")
-    public String Index(){
-        Object details = SecurityContextHolder.getContext().getAuthentication().getDetails();
-        return "hello world gateway,"+details.toString();
+    /**
+     * 获取当前用户信息
+     * @return
+     */
+    @GetMapping("selfInfo")
+    public DeveloperResult getSelfUserInfo(){
+        return userService.getSelfUserInfo();
     }
+
 }

@@ -19,7 +19,10 @@ import org.springframework.security.oauth2.provider.token.AuthorizationServerTok
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtClaimsSetVerifier;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+
+import java.security.KeyPair;
 
 @Configuration
 @EnableAuthorizationServer
@@ -65,6 +68,7 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
         jwtAccessTokenConverter.setSigningKey(SIGN_KEY);
         jwtAccessTokenConverter.setVerifier(new MacSigner(SIGN_KEY));
         jwtAccessTokenConverter.setAccessTokenConverter(accessTokenConvertor);
+
         return jwtAccessTokenConverter;
     }
 
