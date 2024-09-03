@@ -1,7 +1,6 @@
 package com.developer.sso.config;
 
 import com.developer.sso.service.UserServiceImpl;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.jwt.crypto.sign.MacSigner;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -18,30 +18,54 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
-@AllArgsConstructor
 @Configuration
 @EnableAuthorizationServer
 public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
-    // 认证管理器
+
+    /**
+     * 认证管理器
+     */
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    //密码加密方式
+    /**
+     * 密码加密方式
+     * @return
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 自定义身份认证
+    /**
+     * 自定义身份认证
+     */
     @Autowired
     private UserServiceImpl userDetailsService;
 
-    @Bean
+    /**
+     * token存储方式
+     * @return
+     */
     public TokenStore tokenStore(){
-        // token存储
-        return new InMemoryTokenStore();
+        return new JwtTokenStore(jwtAccessTokenConverter());
+    }
+
+
+    private String SIGN_KEY="developer";
+
+    @Autowired
+    private AccessTokenConvertor accessTokenConvertor;
+
+    public JwtAccessTokenConverter jwtAccessTokenConverter(){
+        JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
+        jwtAccessTokenConverter.setSigningKey(SIGN_KEY);
+        jwtAccessTokenConverter.setVerifier(new MacSigner(SIGN_KEY));
+        jwtAccessTokenConverter.setAccessTokenConverter(accessTokenConvertor);
+        return jwtAccessTokenConverter;
     }
 
     @Override
@@ -51,7 +75,7 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
         clients.inMemory()
                 .withClient("client_dev")
                 .secret("dev")
-                .resourceIds("developer_friend","developer_group","developer_im","developer_message","developer_oss","developer_user")
+                .resourceIds("developer_friend","developer_group","developer_im","developer_message","developer_oss","developer_sso","developer_user")
                 .authorizedGrantTypes("password","refresh_token")
                 .scopes("all");
     }
@@ -70,11 +94,10 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
         super.configure(security);
-        //  配置Endpoint,允许请求
-        security.tokenKeyAccess("permitAll()") // 开启/oauth/token_key 验证端口-无权限
-                .checkTokenAccess("permitAll()") // 开启/oauth/check_token 验证端口-需权限
-                .allowFormAuthenticationForClients()// 允许表单认证
-                .passwordEncoder(NoOpPasswordEncoder.getInstance());   // 配置BCrypt加密
+        security.tokenKeyAccess("permitAll()")
+                .checkTokenAccess("permitAll()")
+                .allowFormAuthenticationForClients()
+                .passwordEncoder(NoOpPasswordEncoder.getInstance());
     }
 
     /**
@@ -87,6 +110,7 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
         defaultTokenServices.setTokenStore(tokenStore());
         defaultTokenServices.setAccessTokenValiditySeconds(120);
         defaultTokenServices.setRefreshTokenValiditySeconds(180);
+        defaultTokenServices.setTokenEnhancer(jwtAccessTokenConverter());
         return defaultTokenServices;
     }
 }

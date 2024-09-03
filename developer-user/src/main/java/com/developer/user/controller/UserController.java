@@ -4,6 +4,7 @@ import com.developer.user.dto.UserRegisterDTO;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -45,6 +46,7 @@ public class UserController {
 
     @GetMapping("index")
     public String Index(){
-        return "hello world gateway";
+        Object details = SecurityContextHolder.getContext().getAuthentication().getDetails();
+        return "hello world gateway,"+details.toString();
     }
 }
