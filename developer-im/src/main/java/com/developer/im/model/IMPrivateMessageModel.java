@@ -6,12 +6,8 @@ import lombok.Data;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * 消息模型
- * @param <T>
- */
 @Data
-public class IMMessageModel<T> {
+public class IMPrivateMessageModel<T> {
 
     /**
      * 发送人
@@ -19,9 +15,9 @@ public class IMMessageModel<T> {
     private IMUserInfoModel sender;
 
     /**
-     * 接收者id集合
+     * 接收者id
      */
-    private List<Long> recvIds = Collections.EMPTY_LIST;
+    private Long receiverId;
 
     /**
      * 接收者终端类型,默认全部

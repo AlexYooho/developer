@@ -17,10 +17,10 @@ public class ProcessorFactory {
             case PRIVATE_MESSAGE:
             case SYSTEM_MESSAGE:
             case SUBSCRIBE_MESSAGE:
-                //handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(PrivateMessageProcessor.class);
+                handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(PrivateMessageProcessor.class);
                 break;
             case GROUP_MESSAGE:
-                //handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(GroupMessageProcessor.class);
+                handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(GroupMessageProcessor.class);
                 break;
             default:
                 break;

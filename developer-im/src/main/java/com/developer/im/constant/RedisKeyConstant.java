@@ -12,4 +12,19 @@ public class RedisKeyConstant {
      */
     public final static String  IM_USER_SERVER_ID = "im:user:server_id";
 
+    /**
+     * 群聊消息发送结果队列
+     */
+    public final static String IM_RESULT_GROUP_QUEUE = "im:result:group";
+
+    /**
+     * 私聊消息发送结果队列
+     */
+    public final static String IM_RESULT_PRIVATE_QUEUE = "im:result:private";
+
+    /**
+     * 未读私聊消息队列
+     */
+    public final static String IM_MESSAGE_PRIVATE_QUEUE = "im:message:private";
+
 }
