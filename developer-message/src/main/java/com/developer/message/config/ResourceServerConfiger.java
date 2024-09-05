@@ -1,6 +1,6 @@
-package com.developer.friend.config;
+package com.developer.message.config;
 
-import com.developer.friend.converter.AccessTokenConvertor;
+import com.developer.message.converter.AccessTokenConvertor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,7 +27,7 @@ public class ResourceServerConfiger extends ResourceServerConfigurerAdapter {
      */
     @Override
     public void configure(ResourceServerSecurityConfigurer resources)  {
-        resources.resourceId("developer_friend").tokenStore(tokenStore()).stateless(true);
+        resources.resourceId("developer_message").tokenStore(tokenStore()).stateless(true);
     }
 
     @Override

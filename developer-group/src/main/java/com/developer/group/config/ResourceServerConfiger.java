@@ -27,7 +27,7 @@ public class ResourceServerConfiger extends ResourceServerConfigurerAdapter {
      */
     @Override
     public void configure(ResourceServerSecurityConfigurer resources)  {
-        resources.resourceId("developer_user").tokenStore(tokenStore()).stateless(true);
+        resources.resourceId("developer_group").tokenStore(tokenStore()).stateless(true);
     }
 
     @Override
