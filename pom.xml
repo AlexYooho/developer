@@ -48,6 +48,7 @@
         <junit.version>4.12</junit.version>
         <druid-spring-boot-starter.version>1.2.16</druid-spring-boot-starter.version>
         <spring-cloud-starter-oauth2.version>2.2.5.RELEASE</spring-cloud-starter-oauth2.version>
+        <spring-boot-starter-amqp.version>3.3.2</spring-boot-starter-amqp.version>
     </properties>
 
     <dependencyManagement>
@@ -180,6 +181,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-amqp</artifactId>
+               <version>${spring-boot-starter-amqp.version}</version>
             </dependency>
 
             <!-- lombok-->
