@@ -94,10 +94,23 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
+        <!-- framework -->
         <dependency>
             <groupId>com.developer</groupId>
             <artifactId>developer-framework</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <!-- hutool -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+        </dependency>
+
+        <!-- rabbitmq -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
     </dependencies>
 

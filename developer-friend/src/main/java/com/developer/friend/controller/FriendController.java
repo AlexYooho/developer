@@ -22,7 +22,7 @@ public class FriendController {
      */
     @GetMapping("/list")
     public DeveloperResult friends(){
-        return DeveloperResult.success(friendService.findFriendList());
+        return friendService.findFriendList();
     }
 
     /**
