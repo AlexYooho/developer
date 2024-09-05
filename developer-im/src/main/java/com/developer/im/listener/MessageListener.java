@@ -23,8 +23,8 @@ import java.util.Arrays;
 @RabbitListener(queues = {DeveloperMQConstant.MESSAGE_QUEUE})
 public class MessageListener {
 
-    @Autowired
-    private MessageTypeFactory messageTypeFactory;
+//    @Autowired
+//    private MessageTypeFactory messageTypeFactory;
 
     @RabbitHandler
     public void messageSubscribe(MQMessageDTO dto, Channel channel, Message message) throws IOException {
@@ -32,13 +32,13 @@ public class MessageListener {
             LocalDateTime begin = LocalDateTime.now();
             MessageDTO messageDTO = (MessageDTO) dto.getData();
 
-            AbstractMessageTypeService processor = messageTypeFactory.getMessageProcessor(messageDTO.getMessageMainTypeEnum());
-            if(processor==null){
-                log.info("【IM消息服务】消息内容:{},没有对应的消息处理器",dto);
-                return;
-            }
-
-            processor.handler(messageDTO);
+//            AbstractMessageTypeService processor = messageTypeFactory.getMessageProcessor(messageDTO.getMessageMainTypeEnum());
+//            if(processor==null){
+//                log.info("【IM消息服务】消息内容:{},没有对应的消息处理器",dto);
+//                return;
+//            }
+//
+//            processor.handler(messageDTO);
 
             channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
             log.info("【IM消息服务】消息内容：{},处理时间:{}",dto, Duration.between(begin,LocalDateTime.now()).getSeconds());

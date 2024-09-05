@@ -119,6 +119,7 @@ public class FriendServiceImpl implements FriendService {
             // 发送添加请求
             message = "我们已经是好友啦";
             // 新增消息记录
+            // TODO
             //PrivateMessage privateMessage = new PrivateMessage();
             //privateMessage.setMessageStatus(0);
             //privateMessage.setMessageContent("我们已经是好友啦");
