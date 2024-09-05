@@ -54,7 +54,7 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public DeveloperResult isFriend(Long userId1, Long userId2) {
-        return null;
+        return DeveloperResult.success();
     }
 
     @Override
