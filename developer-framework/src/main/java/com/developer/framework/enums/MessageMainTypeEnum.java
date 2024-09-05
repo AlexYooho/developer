@@ -1,9 +1,9 @@
-package com.developer.im.enums;
+package com.developer.framework.enums;
 
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum MessageMainType {
+public enum MessageMainTypeEnum {
 
     PRIVATE_MESSAGE(0,"私聊消息"),
 

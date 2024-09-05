@@ -1,9 +1,9 @@
-package com.developer.im.enums;
+package com.developer.framework.enums;
 
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum MessageContentType {
+public enum MessageContentTypeEnum {
 
     TEXT(0,"文本"),
 

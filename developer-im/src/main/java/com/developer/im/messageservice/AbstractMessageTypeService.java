@@ -1,11 +1,11 @@
 package com.developer.im.messageservice;
 
-import com.developer.im.dto.MessageDTO;
-import com.developer.im.enums.MessageMainType;
+import com.developer.framework.dto.MessageDTO;
+import com.developer.framework.enums.MessageMainTypeEnum;
 
 public abstract class AbstractMessageTypeService {
 
-    public abstract MessageMainType messageMainType();
+    public abstract MessageMainTypeEnum messageMainType();
 
     public abstract void handler(MessageDTO messageDTO);
 

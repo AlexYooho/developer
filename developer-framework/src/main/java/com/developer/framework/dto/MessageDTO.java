@@ -1,8 +1,8 @@
-package com.developer.im.dto;
+package com.developer.framework.dto;
 
-import com.developer.im.enums.IMTerminalType;
-import com.developer.im.enums.MessageContentType;
-import com.developer.im.enums.MessageMainType;
+import com.developer.framework.enums.IMTerminalTypeEnum;
+import com.developer.framework.enums.MessageContentTypeEnum;
+import com.developer.framework.enums.MessageMainTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -12,13 +12,13 @@ import java.util.List;
 @Data
 public class MessageDTO implements Serializable {
 
-    private MessageMainType messageMainType;
+    private MessageMainTypeEnum messageMainTypeEnum;
 
-    private MessageContentType messageContentType;
+    private MessageContentTypeEnum messageContentTypeEnum;
 
     private Integer messageStatus;
 
-    private IMTerminalType terminalType;
+    private IMTerminalTypeEnum terminalType;
 
     private Long messageId;
 

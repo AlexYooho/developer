@@ -1,4 +1,4 @@
-package com.developer.friend.constant;
+package com.developer.framework.constant;
 
 public class MQMessageTypeConstant {
 

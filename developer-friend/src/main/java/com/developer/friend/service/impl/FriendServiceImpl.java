@@ -2,6 +2,9 @@ package com.developer.friend.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.enums.IMTerminalTypeEnum;
+import com.developer.framework.enums.MessageContentTypeEnum;
+import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.friend.dto.FriendInfoDTO;
 import com.developer.friend.dto.NewFriendListDTO;
@@ -97,7 +100,7 @@ public class FriendServiceImpl implements FriendService {
         }
 
         // 发送添加请求
-        rabbitMQUtil.pushMQMessage(MessageMainType.SYSTEM_MESSAGE, MessageContentType.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatus.UNSEND.code(), IMTerminalType.WEB, new Date());
+        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND.code(), IMTerminalTypeEnum.WEB, new Date());
         return DeveloperResult.success();
     }
 
@@ -134,7 +137,7 @@ public class FriendServiceImpl implements FriendService {
         friendApplicationRecordPORepository.updateStatus(userId, req.getFriendId(), status.code());
 
         if (ObjectUtil.isNotEmpty(message)) {
-            rabbitMQUtil.pushMQMessage(MessageMainType.SYSTEM_MESSAGE, MessageContentType.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatus.UNSEND.code(), IMTerminalType.WEB, new Date());
+            rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND.code(), IMTerminalTypeEnum.WEB, new Date());
         }
 
         return DeveloperResult.success();

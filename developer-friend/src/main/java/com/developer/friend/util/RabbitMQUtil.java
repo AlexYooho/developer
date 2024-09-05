@@ -1,12 +1,12 @@
 package com.developer.friend.util;
 
-import com.developer.friend.constant.DeveloperMQConstant;
-import com.developer.friend.constant.MQMessageTypeConstant;
-import com.developer.friend.dto.MQMessageDTO;
-import com.developer.friend.dto.MessageDTO;
-import com.developer.friend.enums.IMTerminalType;
-import com.developer.friend.enums.MessageContentType;
-import com.developer.friend.enums.MessageMainType;
+import com.developer.framework.constant.DeveloperMQConstant;
+import com.developer.framework.constant.MQMessageTypeConstant;
+import com.developer.framework.dto.MQMessageDTO;
+import com.developer.framework.dto.MessageDTO;
+import com.developer.framework.enums.IMTerminalTypeEnum;
+import com.developer.framework.enums.MessageContentTypeEnum;
+import com.developer.framework.enums.MessageMainTypeEnum;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,10 +21,10 @@ public class RabbitMQUtil {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    public void pushMQMessage(MessageMainType messageMainType, MessageContentType messageContentType, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, Integer messageStatus, IMTerminalType terminalType, Date sendTime){
+    public void pushMQMessage(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, Integer messageStatus, IMTerminalTypeEnum terminalType, Date sendTime){
         MessageDTO messageDTO = new MessageDTO();
-        messageDTO.setMessageMainType(messageMainType);
-        messageDTO.setMessageContentType(messageContentType);
+        messageDTO.setMessageMainTypeEnum(messageMainTypeEnum);
+        messageDTO.setMessageContentTypeEnum(messageContentTypeEnum);
         messageDTO.setMessageId(messageId);
         messageDTO.setGroupId(groupId);
         messageDTO.setSendId(sendId);

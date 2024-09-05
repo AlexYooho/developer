@@ -3,13 +3,12 @@ package com.developer.friend.enums;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum MessageContentType {
+public enum MessageStatusEnum {
 
-    TEXT(0,"文本"),
-
-    IMAGE(1,"图片"),
-
-    DOCUMENT(2,"文档");
+    UNSEND(0,"未送达"),
+    SENDED(1,"送达"),
+    RECALL(2,"撤回"),
+    READED(3,"已读");
 
     private final Integer code;
 
@@ -19,5 +18,4 @@ public enum MessageContentType {
     public Integer code(){
         return this.code;
     }
-
 }

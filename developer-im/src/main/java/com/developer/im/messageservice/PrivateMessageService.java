@@ -1,10 +1,10 @@
 package com.developer.im.messageservice;
 
+import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.dto.MessageDTO;
 import com.developer.framework.utils.BeanUtils;
-import com.developer.im.dto.MessageDTO;
 import com.developer.im.dto.PrivateMessageDTO;
 import com.developer.im.enums.IMCmdType;
-import com.developer.im.enums.MessageMainType;
 import com.developer.im.model.IMPrivateMessageModel;
 import com.developer.im.model.IMUserInfoModel;
 import com.developer.im.netty.IMClient;
@@ -17,8 +17,8 @@ public class PrivateMessageService extends AbstractMessageTypeService {
     @Autowired
     private IMClient imClients;
 
-    public MessageMainType messageMainType() {
-        return MessageMainType.PRIVATE_MESSAGE;
+    public MessageMainTypeEnum messageMainType() {
+        return MessageMainTypeEnum.PRIVATE_MESSAGE;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class PrivateMessageService extends AbstractMessageTypeService {
         assert privateMessageDTO != null;
         privateMessageDTO.setReceiverId(dto.getReceiverIds().get(0));
         privateMessageDTO.setId(dto.getMessageId());
-        privateMessageDTO.setMessageContentType(dto.getMessageContentType().code());
+        privateMessageDTO.setMessageContentType(dto.getMessageContentTypeEnum().code());
         IMPrivateMessageModel<PrivateMessageDTO> sendMessage = new IMPrivateMessageModel<>();
         sendMessage.setSender(new IMUserInfoModel(dto.getSendId(),dto.getTerminalType()));
         sendMessage.setReceiverId(dto.getReceiverIds().get(0));

@@ -1,9 +1,8 @@
 package com.developer.im.model;
 
-import com.developer.im.enums.IMTerminalType;
+import com.developer.framework.enums.IMTerminalTypeEnum;
 import lombok.Data;
 
-import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -22,7 +21,7 @@ public class IMPrivateMessageModel<T> {
     /**
      * 接收者终端类型,默认全部
      */
-    private List<Integer> recvTerminals = IMTerminalType.codes();
+    private List<Integer> recvTerminals = IMTerminalTypeEnum.codes();
 
     /**
      * 是否发送给自己的其他终端,默认true

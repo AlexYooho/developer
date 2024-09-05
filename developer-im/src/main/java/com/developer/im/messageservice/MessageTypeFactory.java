@@ -1,7 +1,7 @@
 package com.developer.im.messageservice;
 
+import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.utils.SpringContext;
-import com.developer.im.enums.MessageMainType;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -28,7 +28,7 @@ public abstract class MessageTypeFactory {
         }
     }
 
-    public AbstractMessageTypeService getMessageProcessor(MessageMainType messageMainType){
+    public AbstractMessageTypeService getMessageProcessor(MessageMainTypeEnum messageMainType){
         initAllMessageTypeService();
         List<AbstractMessageTypeService> collect = messageMainTypeList.stream().filter(x -> x.messageMainType() == messageMainType).collect(Collectors.toList());
         if(!collect.isEmpty()) {

@@ -1,9 +1,9 @@
 package com.developer.im.processor;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.developer.framework.enums.IMTerminalTypeEnum;
 import com.developer.im.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
-import com.developer.im.enums.IMTerminalType;
 import com.developer.im.model.IMGroupMessageModel;
 import com.developer.im.model.IMPrivateMessageModel;
 import com.developer.im.model.IMRecvInfoModel;
@@ -41,7 +41,7 @@ public class IMProcessor {
             recvInfo.setCmd(cmdType.code());
             recvInfo.setSendResult(message.getSendResult());
             recvInfo.setSender(message.getSender());
-            recvInfo.setReceivers(Collections.singletonList(new IMUserInfoModel(message.getReceiverId(),IMTerminalType.fromCode(terminal))));
+            recvInfo.setReceivers(Collections.singletonList(new IMUserInfoModel(message.getReceiverId(),IMTerminalTypeEnum.fromCode(terminal))));
             recvInfo.setData(message.getData());
             AbstractMessageProcessor processor = ProcessorFactory.getHandler(cmdType);
             processor.handler(recvInfo,cmdType);
@@ -59,7 +59,7 @@ public class IMProcessor {
         for (Integer terminal : message.getRecvTerminals()) {
             message.getRecvIds().stream().forEach(id->{
                 String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, id.toString(), terminal.toString());
-                sendMap.put(key,new IMUserInfoModel(id,IMTerminalType.fromCode(terminal)));
+                sendMap.put(key,new IMUserInfoModel(id, IMTerminalTypeEnum.fromCode(terminal)));
             });
         }
 
@@ -97,27 +97,27 @@ public class IMProcessor {
      * @param userIds
      * @return
      */
-    public Map<Long,List<IMTerminalType>> getOnlineTerminal(List<Long> userIds){
+    public Map<Long,List<IMTerminalTypeEnum>> getOnlineTerminal(List<Long> userIds){
         if(CollectionUtil.isEmpty(userIds)){
             return Collections.EMPTY_MAP;
         }
         // 把所有用户的key都存起来
         Map<String, IMUserInfoModel> userMap = new HashMap<>();
         for(Long id:userIds){
-            for (Integer terminal : IMTerminalType.codes()) {
+            for (Integer terminal : IMTerminalTypeEnum.codes()) {
                 String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, id.toString(), terminal.toString());
-                userMap.put(key,new IMUserInfoModel(id,IMTerminalType.fromCode(terminal)));
+                userMap.put(key,new IMUserInfoModel(id,IMTerminalTypeEnum.fromCode(terminal)));
             }
         }
         // 批量拉取
         List<Object> serverIds = redisTemplate.opsForValue().multiGet(userMap.keySet());
         int idx = 0;
-        Map<Long,List<IMTerminalType>> onlineMap = new HashMap<>();
+        Map<Long,List<IMTerminalTypeEnum>> onlineMap = new HashMap<>();
         for (Map.Entry<String,IMUserInfoModel> entry : userMap.entrySet()) {
             // serverid有值表示用户在线
             if(serverIds.get(idx++) != null){
                 IMUserInfoModel userInfo = entry.getValue();
-                List<IMTerminalType> terminals = onlineMap.computeIfAbsent(userInfo.getId(), o -> new LinkedList<>());
+                List<IMTerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getId(), o -> new LinkedList<>());
                 terminals.add(userInfo.getTerminal());
             }
         }

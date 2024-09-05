@@ -1,4 +1,4 @@
-package com.developer.friend.dto;
+package com.developer.framework.dto;
 
 import lombok.Data;
 
