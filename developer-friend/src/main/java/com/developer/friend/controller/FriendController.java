@@ -100,4 +100,15 @@ public class FriendController {
     public DeveloperResult updateAddFriendRecordStatus(){
         return friendService.updateAddFriendRecordStatus();
     }
+
+    /**
+     * 是否是好友
+     * @param friendId
+     * @param userId
+     * @return
+     */
+    @GetMapping("{friendId}/isfriend/{userId}")
+    public DeveloperResult isFriend(@PathVariable("friendId") Long friendId,@PathVariable("userId") Long userId){
+        return friendService.isFriend(userId,friendId);
+    }
 }

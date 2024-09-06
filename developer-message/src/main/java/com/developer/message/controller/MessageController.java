@@ -1,6 +1,7 @@
 package com.developer.message.controller;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.message.client.FriendClient;
 import com.developer.message.dto.SendMessageRequestDTO;
 import com.developer.message.service.MessageServiceFactoryRegistry;
 import com.developer.message.service.MessageServiceType;
@@ -14,6 +15,9 @@ public class MessageController {
     @Autowired
     private MessageServiceFactoryRegistry registry;
 
+    @Autowired
+    private FriendClient friendClient;
+
     /**
      * 发送群聊消息
      * @param req
@@ -21,7 +25,8 @@ public class MessageController {
      */
     @PostMapping("/send")
     public DeveloperResult sendMessage(@RequestBody SendMessageRequestDTO req){
-        return registry.getFactory(MessageServiceType.GROUP).createMessageService().sendMessage(req);
+        //DeveloperResult result = friendClient.isFriend(3l,4l);
+        return registry.getFactory(MessageServiceType.PRIVATE).createMessageService().sendMessage(req);
     }
 
     /**

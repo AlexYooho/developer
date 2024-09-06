@@ -3,7 +3,9 @@ package com.developer.message.service.impl;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.SendMessageRequestDTO;
 import com.developer.message.service.MessageService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class GroupMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult loadMessage(Long minId) {

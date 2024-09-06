@@ -57,7 +57,8 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public DeveloperResult isFriend(Long userId1, Long userId2) {
-        return DeveloperResult.success();
+        boolean result = friendRepository.isFriend(userId1,userId2);
+        return DeveloperResult.success(result);
     }
 
     @Override
