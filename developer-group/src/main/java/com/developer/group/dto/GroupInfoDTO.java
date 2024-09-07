@@ -21,4 +21,6 @@ public class GroupInfoDTO {
 
     private String remark;
 
+    private Boolean deleted;
+
 }

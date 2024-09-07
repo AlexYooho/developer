@@ -6,7 +6,7 @@ import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.model.SelfUserInfoModel;
 import com.developer.im.config.ResourceServerConfiger;
 import com.developer.im.constant.ChannelAttrKey;
-import com.developer.im.constant.RedisKeyConstant;
+import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMLoginInfoModel;
 import com.developer.im.model.IMSendMessageInfoModel;

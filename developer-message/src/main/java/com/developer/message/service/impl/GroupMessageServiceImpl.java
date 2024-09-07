@@ -1,6 +1,7 @@
 package com.developer.message.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.IMTerminalTypeEnum;
 import com.developer.framework.enums.MessageContentTypeEnum;
@@ -9,8 +10,11 @@ import com.developer.framework.enums.MessageStatusEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.DateTimeUtils;
+import com.developer.message.client.GroupInfoClient;
 import com.developer.message.client.GroupMemberClient;
+import com.developer.message.dto.GroupInfoDTO;
 import com.developer.message.dto.GroupMessageDTO;
+import com.developer.message.dto.SelfJoinGroupInfoDTO;
 import com.developer.message.dto.SendMessageRequestDTO;
 import com.developer.message.pojo.GroupMessageMemberReceiveRecordPO;
 import com.developer.message.pojo.GroupMessagePO;
@@ -39,20 +43,24 @@ public class GroupMessageServiceImpl implements MessageService {
     private RedisTemplate<String,Object> redisTemplate;
 
     @Autowired
-    private GroupMemberClient groupMemberClient;
+    private GroupInfoClient groupInfoClient;
 
     @Autowired
     private GroupMessageMemberReceiveRecordRepository groupMessageMemberReceiveRecordRepository;
 
+    @Autowired
+    private GroupMemberClient groupMemberClient;
+
     @Override
     public DeveloperResult loadMessage(Long minId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        List<GroupMember> members = groupMemberRepository.findByUserId(userId);
-        List<Long> groupIds = members.stream().map(GroupMember::getGroupId).collect(Collectors.toList());
-        DeveloperResult selfAllGroup = groupMemberClient.findSelfAllGroup();
-        if(CollectionUtils.isEmpty(groupIds)){
+        DeveloperResult developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
+        List<SelfJoinGroupInfoDTO> joinGroupInfoList = (List<SelfJoinGroupInfoDTO>) developerResult.getData();
+        if(joinGroupInfoList.isEmpty()){
             return DeveloperResult.success();
         }
+
+        List<Long> groupIds = joinGroupInfoList.stream().map(SelfJoinGroupInfoDTO::getUserId).collect(Collectors.toList());
 
         // 当前用户有多少群消息未读
         List<GroupMessageMemberReceiveRecordPO> unreadMessageList = groupMessageMemberReceiveRecordRepository.findAllUnreadMessageList(userId);
@@ -65,7 +73,7 @@ public class GroupMessageServiceImpl implements MessageService {
             GroupMessageDTO vo = BeanUtils.copyProperties(x, GroupMessageDTO.class);
             Integer messageStatus = unreadMessageList.stream().anyMatch(z -> {
                 return Objects.equals(z.getGroupId(), x.getGroupId()) && Objects.equals(z.getMessageId(), x.getId());
-            }) ?0:3;
+            }) ? MessageStatusEnum.UNSEND.code() : MessageStatusEnum.READED.code();
             assert vo != null;
             vo.setMessageStatus(messageStatus);
 
@@ -85,17 +93,20 @@ public class GroupMessageServiceImpl implements MessageService {
     public DeveloperResult sendMessage(SendMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        Group group = groupRepository.findById(req.getGroupId());
-        if(Objects.isNull(group)){
+
+        DeveloperResult developerResult = groupInfoClient.findGroup(req.getGroupId());
+        GroupInfoDTO groupInfoDTO = (GroupInfoDTO) developerResult.getData();
+        if(Objects.isNull(groupInfoDTO)){
             return DeveloperResult.error("群聊不存在");
         }
 
-        if(group.getDeleted()){
+        if(groupInfoDTO.getDeleted()){
             return DeveloperResult.error("群已解散");
         }
 
-        GroupMember groupMember = groupMemberRepository.findByGroupIdAndUserId(req.getGroupId(), userId);
-        if(Objects.isNull(groupMember) || groupMember.getQuit()){
+        DeveloperResult developerResult2 = groupInfoClient.getSelfJoinAllGroupInfo();
+        List<SelfJoinGroupInfoDTO> joinGroupInfoList = (List<SelfJoinGroupInfoDTO>) developerResult2.getData();
+        if(joinGroupInfoList.stream().noneMatch(x -> x.getGroupId().equals(req.getGroupId()) && x.getQuit())){
             return DeveloperResult.error("您已不在该群聊中,无法发送消息");
         }
 
@@ -104,7 +115,7 @@ public class GroupMessageServiceImpl implements MessageService {
         this.groupMessageRepository.save(message);
 
         // 需要接受消息的成员
-        List<Long> receiverIds = groupMemberRepository.findByGroupId(group.getId()).stream().map(GroupMember::getUserId).collect(Collectors.toList());
+        List<Long> receiverIds = (List<Long>)groupMemberClient.findGroupMemberUserId(groupInfoDTO.getId()).getData();
         receiverIds = receiverIds.stream().filter(id->!userId.equals(id)).collect(Collectors.toList());
 
         List<GroupMessageMemberReceiveRecordPO> receiveRecods = new ArrayList<>();
@@ -158,7 +169,6 @@ public class GroupMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult recallMessage(Long id) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         GroupMessagePO groupMessage = groupMessageRepository.getById(id);
         if(groupMessage==null){
             return DeveloperResult.error("消息不存在");
@@ -168,20 +178,22 @@ public class GroupMessageServiceImpl implements MessageService {
             return DeveloperResult.error("无法撤回不是自己发送的消息");
         }
 
-        GroupMember groupMember = groupMemberRepository.findByGroupIdAndUserId(groupMessage.getGroupId(), userId);
-        if(groupMember==null || groupMember.getQuit()){
-            return DeveloperResult.error("您已不在群中,无法撤回消息");
+        DeveloperResult developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
+        List<SelfJoinGroupInfoDTO> joinGroupInfoList = (List<SelfJoinGroupInfoDTO>) developerResult.getData();
+        SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = joinGroupInfoList.stream().filter(x -> x.getGroupId().equals(groupMessage.getGroupId()) && x.getQuit()).findFirst().get();
+        if(selfJoinGroupInfoDTO==null){
+            return DeveloperResult.error("您已不在该群聊中,无法撤回消息");
         }
 
         groupMessage.setMessageStatus(MessageStatusEnum.RECALL.code());
         groupMessageRepository.updateById(groupMessage);
 
-        List<Long> receiverIds = groupMemberRepository.findByGroupId(groupMessage.getGroupId()).stream().map(GroupMember::getUserId).collect(Collectors.toList());
+        List<Long> receiverIds = (List<Long>)groupMemberClient.findGroupMemberUserId(groupMessage.getId()).getData();
         receiverIds = receiverIds.stream().filter(x->!userId.equals(x)).collect(Collectors.toList());
 
-        String message = String.format("%s 撤回了一条消息",groupMember.getAliasName());
+        String message = String.format("%s 撤回了一条消息",selfJoinGroupInfoDTO.getAliasName());
 
-        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(), groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), groupMessage.getMessageStatus(), IMTerminalType.WEB,new Date());
+        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(), groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), groupMessage.getMessageStatus(), IMTerminalTypeEnum.WEB,new Date());
 
         return DeveloperResult.success();
     }
@@ -193,12 +205,14 @@ public class GroupMessageServiceImpl implements MessageService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         long stIdx = (page-1)*size;
 
-        GroupMember member = groupMemberRepository.findByGroupIdAndUserId(groupId, userId);
-        if(member==null || member.getQuit()){
+        DeveloperResult developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
+        List<SelfJoinGroupInfoDTO> joinGroupInfoList = (List<SelfJoinGroupInfoDTO>) developerResult.getData();
+        SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = joinGroupInfoList.stream().filter(x -> x.getGroupId().equals(groupId) && x.getQuit()).findFirst().get();
+        if(selfJoinGroupInfoDTO==null){
             return DeveloperResult.error("您已不在群聊");
         }
 
-        List<GroupMessagePO> messages = groupMessageRepository.findHistoryMessage(groupId, member.getCreatedTime(), stIdx, size);
+        List<GroupMessagePO> messages = groupMessageRepository.findHistoryMessage(groupId, selfJoinGroupInfoDTO.getCreatedTime(), stIdx, size);
         List<GroupMessageDTO> list = messages.stream().map(x -> BeanUtils.copyProperties(x, GroupMessageDTO.class)).collect(Collectors.toList());
         return DeveloperResult.success(list);
     }

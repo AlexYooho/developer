@@ -2,7 +2,7 @@ package com.developer.im.processor;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.developer.framework.enums.IMTerminalTypeEnum;
-import com.developer.im.constant.RedisKeyConstant;
+import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMGroupMessageModel;
 import com.developer.im.model.IMPrivateMessageModel;

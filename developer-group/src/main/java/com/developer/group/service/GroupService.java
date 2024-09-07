@@ -67,4 +67,10 @@ public interface GroupService {
      */
     DeveloperResult kickGroup(Long groupId,Long userId);
 
+    /**
+     * 获取当前用户所加入的群信息
+     * @return
+     */
+    DeveloperResult findSelfJoinAllGroupInfo();
+
 }

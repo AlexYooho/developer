@@ -25,4 +25,15 @@ public class GroupMessageRepository extends ServiceImpl<GroupMessageMapper, Grou
                 .last("limit 1").select(GroupMessagePO::getId).one();
     }
 
+    public List<GroupMessagePO> find(Long minId, Date minDate,List<Long> ids){
+        return this.lambdaQuery()
+                .gt(GroupMessagePO::getId,minId)
+                .gt(GroupMessagePO::getSendTime,minDate)
+                .in(GroupMessagePO::getGroupId,ids)
+                .ne(GroupMessagePO::getMessageStatus, MessageStatusEnum.RECALL.code())
+                .orderByAsc(GroupMessagePO::getId)
+                .last("limit 100")
+                .list();
+    }
+
 }

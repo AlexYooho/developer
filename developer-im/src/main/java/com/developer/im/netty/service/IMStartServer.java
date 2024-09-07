@@ -1,6 +1,6 @@
 package com.developer.im.netty.service;
 
-import com.developer.im.constant.RedisKeyConstant;
+import com.developer.framework.constant.RedisKeyConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;

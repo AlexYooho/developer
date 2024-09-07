@@ -3,7 +3,7 @@ package com.developer.im.processor;
 import cn.hutool.core.bean.BeanUtil;
 import com.developer.framework.constant.DeveloperConstant;
 import com.developer.im.constant.ChannelAttrKey;
-import com.developer.im.constant.RedisKeyConstant;
+import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMHeartbeatInfoModel;
 import com.developer.im.model.IMSendMessageInfoModel;

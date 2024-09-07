@@ -1,6 +1,6 @@
 package com.developer.im.processor;
 
-import com.developer.im.constant.RedisKeyConstant;
+import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.enums.SendCodeType;
 import com.developer.im.model.IMRecvInfoModel;

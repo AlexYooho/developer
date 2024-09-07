@@ -1,14 +1,10 @@
 package com.developer.im.netty.service;
 
-import com.developer.framework.utils.SpringContext;
-import com.developer.im.config.ResourceServerConfiger;
 import com.developer.im.constant.ChannelAttrKey;
-import com.developer.im.constant.RedisKeyConstant;
-import com.developer.im.converter.AccessTokenConvertor;
+import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMSendMessageInfoModel;
 import com.developer.im.processor.AbstractMessageProcessor;
-import com.developer.im.processor.LoginProcessor;
 import com.developer.im.processor.ProcessorFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -18,9 +14,6 @@ import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.stereotype.Component;
 
 @Slf4j

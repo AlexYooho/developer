@@ -105,6 +105,12 @@ public class GroupController {
         return groupService.kickGroup(groupId,userId);
     }
 
-
-
+    /**
+     * 获取当前用户所加入的群信息
+     * @return
+     */
+    @GetMapping("get-self-join-all-group-info")
+    public DeveloperResult getSelfJoinAllGroupInfo(){
+        return groupService.findSelfJoinAllGroupInfo();
+    }
 }

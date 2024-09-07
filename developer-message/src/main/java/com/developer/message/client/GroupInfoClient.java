@@ -7,8 +7,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(name="developer-group",configuration = {FeignRequestInterceptor.class})
-public interface GroupMemberClient {
+public interface GroupInfoClient {
 
-    @GetMapping("group-module/api/group-member/group/{groupId}/get-group-member-user-id")
-    DeveloperResult findGroupMemberUserId(@PathVariable("groupId") Long groupId);
+    @GetMapping("group-module/api/group/get-self-join-all-group-info")
+    DeveloperResult getSelfJoinAllGroupInfo();
+
+    @GetMapping("group-module/api/group/find/{groupId}")
+    DeveloperResult findGroup(@PathVariable Long groupId);
+
 }

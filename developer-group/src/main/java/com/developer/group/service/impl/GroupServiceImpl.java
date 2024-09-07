@@ -4,10 +4,7 @@ import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
-import com.developer.group.dto.CreateGroupRequestDTO;
-import com.developer.group.dto.GroupInfoDTO;
-import com.developer.group.dto.GroupInviteRequestDTO;
-import com.developer.group.dto.GroupMemberDTO;
+import com.developer.group.dto.*;
 import com.developer.group.pojo.GroupInfoPO;
 import com.developer.group.pojo.GroupMemberPO;
 import com.developer.group.repository.GroupInfoRepository;
@@ -211,5 +208,12 @@ public class GroupServiceImpl implements GroupService {
 
         groupMemberRepository.removeByGroupAndUserId(groupId,targetUserId);
         return DeveloperResult.success();
+    }
+
+    @Override
+    public DeveloperResult findSelfJoinAllGroupInfo() {
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        List<SelfJoinGroupInfoDTO> joinAllGroupInfoList = groupInfoRepository.findUserJoinGroupInfo(userId);
+        return DeveloperResult.success(joinAllGroupInfoList);
     }
 }
