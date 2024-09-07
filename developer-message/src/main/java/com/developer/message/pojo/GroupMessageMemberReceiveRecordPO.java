@@ -11,13 +11,14 @@ import java.util.Date;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("group_message")
-public class GroupMessagePO {
+@TableName("group_message_member_receive_record")
+public class GroupMessageMemberReceiveRecordPO {
     /**
      * id
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+
 
     /**
      * 群id
@@ -26,43 +27,38 @@ public class GroupMessagePO {
     private Long groupId;
 
     /**
-     * 发送用户id
+     * 发送者id
      */
     @TableField("send_id")
     private Long sendId;
 
     /**
-     * 发送用户昵称
+     * 接收者id
      */
-    @TableField("send_nick_name")
-    private String sendNickName;
+    @TableField("receiver_id")
+    private Long receiverId;
 
     /**
-     * @用户列表
+     * 消息id
      */
-    @TableField("at_user_ids")
-    private String atUserIds;
-    /**
-     * 发送内容
-     */
-    @TableField("content")
-    private String messageContent;
-
-    /**
-     * 消息类型 0:文字 1:图片 2:文件
-     */
-    @TableField("type")
-    private Integer messageContentType;
+    @TableField("message_id")
+    private Long messageId;
 
     /**
      * 状态
      */
     @TableField("status")
-    private Integer messageStatus;
+    private Integer status;
 
     /**
      * 发送时间
      */
-    @TableField("send_time")
-    private Date sendTime;
+    @TableField("create_time")
+    private Date createTime;
+
+    /**
+     * 发送时间
+     */
+    @TableField("update_time")
+    private Date updateTime;
 }
