@@ -11,9 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("message")
 public class MessageController {
 
-//    @Autowired
-//    private MessageServiceFactoryRegistry registry;
-
     @Autowired
     private MessageServiceRegister messageServiceRegister;
 

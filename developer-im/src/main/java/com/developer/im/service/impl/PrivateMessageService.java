@@ -1,6 +1,5 @@
-package com.developer.im.messageservice;
+package com.developer.im.service.impl;
 
-import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.dto.MessageDTO;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.im.dto.PrivateMessageDTO;
@@ -8,6 +7,7 @@ import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMPrivateMessageModel;
 import com.developer.im.model.IMUserInfoModel;
 import com.developer.im.netty.IMClient;
+import com.developer.im.service.AbstractMessageTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +16,6 @@ public class PrivateMessageService extends AbstractMessageTypeService {
 
     @Autowired
     private IMClient imClients;
-
-    public MessageMainTypeEnum messageMainType() {
-        return MessageMainTypeEnum.PRIVATE_MESSAGE;
-    }
 
     @Override
     public void handler(MessageDTO dto) {

@@ -1,12 +1,12 @@
-package com.developer.im.messageservice;
+package com.developer.im.service.impl;
 
-import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.dto.MessageDTO;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.im.dto.GroupMessageDTO;
 import com.developer.im.model.IMGroupMessageModel;
 import com.developer.im.model.IMUserInfoModel;
 import com.developer.im.netty.IMClient;
+import com.developer.im.service.AbstractMessageTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +15,6 @@ public class GroupMessageService extends AbstractMessageTypeService {
 
     @Autowired
     private IMClient imClients;
-
-    @Override
-    public MessageMainTypeEnum messageMainType() {
-        return MessageMainTypeEnum.GROUP_MESSAGE;
-    }
 
     @Override
     public void handler(MessageDTO dto) {
@@ -36,4 +31,3 @@ public class GroupMessageService extends AbstractMessageTypeService {
         imClients.sendGroupMessage(sendMessage);
     }
 }
-
