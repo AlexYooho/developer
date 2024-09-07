@@ -1,4 +1,4 @@
-package com.developer.message.client;
+package com.developer.message.interceptor;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;

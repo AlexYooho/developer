@@ -21,4 +21,13 @@ public enum MessageMainTypeEnum {
     public Integer code(){
         return this.code;
     }
+
+    public static MessageMainTypeEnum fromCode(Integer code){
+        for (MessageMainTypeEnum typeEnum:values()) {
+            if (typeEnum.code.equals(code)) {
+                return typeEnum;
+            }
+        }
+        return null;
+    }
 }

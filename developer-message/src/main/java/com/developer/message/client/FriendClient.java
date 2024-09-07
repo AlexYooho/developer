@@ -1,6 +1,7 @@
 package com.developer.message.client;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.message.interceptor.FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface FriendClient {
 
 
-    @GetMapping("friendmodule/api/friend/{friendId}/isfriend/{userId}")
+    @GetMapping("friend-module/api/friend/{friendId}/is-friend/{userId}")
     DeveloperResult isFriend(@PathVariable("friendId") Long friendId, @PathVariable("userId") Long userId);
 
 

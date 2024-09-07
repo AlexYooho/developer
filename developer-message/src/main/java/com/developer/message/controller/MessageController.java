@@ -1,10 +1,9 @@
 package com.developer.message.controller;
 
+import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.message.client.FriendClient;
 import com.developer.message.dto.SendMessageRequestDTO;
-import com.developer.message.service.MessageServiceFactoryRegistry;
-import com.developer.message.service.MessageServiceType;
+import com.developer.message.service.MessageServiceRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,21 +11,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("message")
 public class MessageController {
 
-    @Autowired
-    private MessageServiceFactoryRegistry registry;
+//    @Autowired
+//    private MessageServiceFactoryRegistry registry;
 
     @Autowired
-    private FriendClient friendClient;
+    private MessageServiceRegister messageServiceRegister;
 
     /**
      * 发送群聊消息
      * @param req
      * @return
      */
-    @PostMapping("/send")
-    public DeveloperResult sendMessage(@RequestBody SendMessageRequestDTO req){
-        //DeveloperResult result = friendClient.isFriend(3l,4l);
-        return registry.getFactory(MessageServiceType.PRIVATE).createMessageService().sendMessage(req);
+    @PostMapping("/{type}/send")
+    public DeveloperResult sendMessage(@PathVariable("type") Integer type,@RequestBody SendMessageRequestDTO req){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).sendMessage(req);
     }
 
     /**
@@ -34,9 +32,9 @@ public class MessageController {
      * @param id
      * @return
      */
-    @PostMapping("/recall/{id}")
-    public DeveloperResult recallMessage(@PathVariable Long id){
-        return registry.getFactory(MessageServiceType.GROUP).createMessageService().recallMessage(id);
+    @PostMapping("/{type}/recall/{id}")
+    public DeveloperResult recallMessage(@PathVariable("type") Integer type,@PathVariable Long id){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).recallMessage(id);
     }
 
     /**
@@ -44,9 +42,9 @@ public class MessageController {
      * @param minId
      * @return
      */
-    @GetMapping("/loadMessage")
-    public DeveloperResult loadMessage(@RequestParam Long minId){
-        return registry.getFactory(MessageServiceType.GROUP).createMessageService().loadMessage(minId);
+    @GetMapping("/{type}/loadMessage")
+    public DeveloperResult loadMessage(@PathVariable("type") Integer type,@RequestParam Long minId){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).loadMessage(minId);
     }
 
     /**
@@ -54,9 +52,9 @@ public class MessageController {
      * @param groupId
      * @return
      */
-    @PostMapping("/readed")
-    public DeveloperResult readedMessage(@RequestParam Long groupId){
-        return registry.getFactory(MessageServiceType.GROUP).createMessageService().readMessage(groupId);
+    @PostMapping("/{type}/readed")
+    public DeveloperResult readedMessage(@PathVariable("type") Integer type,@RequestParam Long groupId){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).readMessage(groupId);
     }
 
     /**
@@ -66,9 +64,9 @@ public class MessageController {
      * @param size
      * @return
      */
-    @GetMapping("/history")
-    public DeveloperResult recallMessage(@RequestParam Long groupId,@RequestParam Long page,@RequestParam Long size){
-        return registry.getFactory(MessageServiceType.GROUP).createMessageService().findHistoryMessage(groupId,page,size);
+    @GetMapping("/{type}/history")
+    public DeveloperResult recallMessage(@PathVariable("type") Integer type,@RequestParam Long groupId,@RequestParam Long page,@RequestParam Long size){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).findHistoryMessage(groupId,page,size);
     }
 
 
