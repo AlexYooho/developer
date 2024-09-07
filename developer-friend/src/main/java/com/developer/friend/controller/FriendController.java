@@ -107,7 +107,7 @@ public class FriendController {
      * @param userId
      * @return
      */
-    @GetMapping("{friendId}/isfriend/{userId}")
+    @GetMapping("{friendId}/is-friend/{userId}")
     public DeveloperResult isFriend(@PathVariable("friendId") Long friendId,@PathVariable("userId") Long userId){
         return friendService.isFriend(userId,friendId);
     }

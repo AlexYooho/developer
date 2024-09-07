@@ -7,13 +7,6 @@ import com.developer.friend.dto.SendAddFriendInfoRequestDTO;
 public interface FriendService {
 
     /**
-     * 通过用户id查询好友集合
-     * @param userId
-     * @return
-     */
-    DeveloperResult findFriendByUserId(Long userId);
-
-    /**
      * 获取好友列表
      * @return
      */

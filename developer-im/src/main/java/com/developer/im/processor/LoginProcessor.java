@@ -2,10 +2,10 @@ package com.developer.im.processor;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
+import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.model.SelfUserInfoModel;
 import com.developer.im.config.ResourceServerConfiger;
 import com.developer.im.constant.ChannelAttrKey;
-import com.developer.im.constant.IMConstant;
 import com.developer.im.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMLoginInfoModel;
@@ -83,7 +83,7 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
         ctx.channel().attr(hearBbeatAttr).set(0L);
         // 在redis上记录每个user的channelId，15秒没有心跳，则自动过期
         String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
-        redisTemplate.opsForValue().set(key, IMStartServer.serverId, IMConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(key, IMStartServer.serverId, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
         // 响应ws
         IMSendMessageInfoModel sendInfo = new IMSendMessageInfoModel();
         sendInfo.setCmd(IMCmdType.LOGIN.code());

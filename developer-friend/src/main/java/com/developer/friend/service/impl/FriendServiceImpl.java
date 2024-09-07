@@ -5,6 +5,7 @@ import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.IMTerminalTypeEnum;
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.MessageStatusEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.friend.dto.FriendInfoDTO;
 import com.developer.friend.dto.NewFriendListDTO;
@@ -34,12 +35,6 @@ public class FriendServiceImpl implements FriendService {
 
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
-
-    @Override
-    public DeveloperResult findFriendByUserId(Long userId) {
-        List<FriendPO> friendList = friendRepository.findFriendByUserId(userId);
-        return DeveloperResult.success(friendList);
-    }
 
     @Override
     public DeveloperResult findFriendList() {

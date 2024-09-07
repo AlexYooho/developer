@@ -1,13 +1,12 @@
 package com.developer.im.processor;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.developer.framework.constant.DeveloperConstant;
 import com.developer.im.constant.ChannelAttrKey;
-import com.developer.im.constant.IMConstant;
 import com.developer.im.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMHeartbeatInfoModel;
 import com.developer.im.model.IMSendMessageInfoModel;
-import com.developer.im.netty.protocol.WebSocketServer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +43,7 @@ public class HeartbeatProcessor extends AbstractMessageProcessor<IMHeartbeatInfo
             AttributeKey<Integer> terminalAttr = AttributeKey.valueOf(ChannelAttrKey.TERMINAL_TYPE);
             Integer terminal = ctx.channel().attr(terminalAttr).get();
             String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID,userId.toString(),terminal.toString());
-            redisTemplate.expire(key, IMConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
+            redisTemplate.expire(key, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
         }
     }
 

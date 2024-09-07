@@ -13,5 +13,7 @@ public interface FriendClient {
     @GetMapping("friend-module/api/friend/{friendId}/is-friend/{userId}")
     DeveloperResult isFriend(@PathVariable("friendId") Long friendId, @PathVariable("userId") Long userId);
 
+    @GetMapping("friend-module/api/friend/list")
+    DeveloperResult friends();
 
 }

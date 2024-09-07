@@ -1,4 +1,4 @@
-package com.developer.friend.enums;
+package com.developer.framework.enums;
 
 import lombok.AllArgsConstructor;
 
