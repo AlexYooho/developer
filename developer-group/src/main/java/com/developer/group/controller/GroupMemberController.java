@@ -1,12 +1,12 @@
 package com.developer.group.controller;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.group.dto.SelfJoinGroupInfoDTO;
 import com.developer.group.service.GroupMemberService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("group-member")
@@ -22,6 +22,11 @@ public class GroupMemberController {
     @GetMapping("/group/{groupId}/get-group-member-user-id")
     public DeveloperResult findGroupMemberUserId(@PathVariable("groupId") Long groupId){
         return groupMemberService.findGroupMember(groupId);
+    }
+
+    @PutMapping("update/list")
+    public DeveloperResult batchModifyGroupMemberInfo(@RequestBody List<SelfJoinGroupInfoDTO> list){
+        return groupMemberService.batchModifyGroupMemberInfo(list);
     }
 
 }

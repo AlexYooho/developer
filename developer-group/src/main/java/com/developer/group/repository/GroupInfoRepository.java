@@ -32,6 +32,7 @@ public class GroupInfoRepository extends ServiceImpl<GroupInfoMapper, GroupInfoP
                 .selectAs(GroupMemberPO::getQuit,SelfJoinGroupInfoDTO::getQuit)
                 .selectAs(GroupMemberPO::getAliasName,SelfJoinGroupInfoDTO::getAliasName)
                 .selectAs(GroupMemberPO::getCreatedTime,SelfJoinGroupInfoDTO::getCreatedTime)
+                .selectAs(GroupMemberPO::getHeadImage,SelfJoinGroupInfoDTO::getHeadImage)
                 .innerJoin(GroupMemberPO.class,GroupMemberPO::getGroupId,GroupInfoPO::getId)
                 .eq(GroupMemberPO::getUserId,userId);
         return groupInfoMapper.selectJoinList(SelfJoinGroupInfoDTO.class,lambdaWrapper);

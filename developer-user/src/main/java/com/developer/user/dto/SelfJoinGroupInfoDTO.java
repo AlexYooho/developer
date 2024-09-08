@@ -1,6 +1,5 @@
-package com.developer.group.dto;
+package com.developer.user.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.util.Date;
@@ -47,5 +46,4 @@ public class SelfJoinGroupInfoDTO {
      * 成员头像
      */
     private String headImage;
-
 }

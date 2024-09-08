@@ -1,8 +1,11 @@
 package com.developer.friend.service;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.friend.dto.FriendInfoDTO;
 import com.developer.friend.dto.ProcessAddFriendRequestDTO;
 import com.developer.friend.dto.SendAddFriendInfoRequestDTO;
+
+import java.util.List;
 
 public interface FriendService {
 
@@ -65,4 +68,11 @@ public interface FriendService {
      * @return
      */
     DeveloperResult updateAddFriendRecordStatus();
+
+    /**
+     * 批量修改好友信息
+     * @param list
+     * @return
+     */
+    DeveloperResult modifyFriendList(List<FriendInfoDTO> list);
 }

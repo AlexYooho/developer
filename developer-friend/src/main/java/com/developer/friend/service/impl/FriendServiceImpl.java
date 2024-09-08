@@ -7,6 +7,7 @@ import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.enums.MessageStatusEnum;
 import com.developer.framework.model.DeveloperResult;
+import com.developer.framework.utils.BeanUtils;
 import com.developer.friend.dto.FriendInfoDTO;
 import com.developer.friend.dto.NewFriendListDTO;
 import com.developer.friend.dto.ProcessAddFriendRequestDTO;
@@ -174,6 +175,13 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public DeveloperResult updateAddFriendRecordStatus() {
         friendApplicationRecordPORepository.updateStatusSentToViewed(SelfUserInfoContext.selfUserInfo().getUserId());
+        return DeveloperResult.success();
+    }
+
+    @Override
+    public DeveloperResult modifyFriendList(List<FriendInfoDTO> list) {
+        List<FriendPO> friendPOS = BeanUtils.copyProperties(list, FriendPO.class);
+        friendRepository.updateBatchById(friendPOS);
         return DeveloperResult.success();
     }
 

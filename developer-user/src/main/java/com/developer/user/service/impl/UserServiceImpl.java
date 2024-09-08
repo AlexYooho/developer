@@ -4,9 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.model.SelfUserInfoModel;
 import com.developer.framework.utils.BeanUtils;
-import com.developer.user.dto.ModifyUserInfoDTO;
-import com.developer.user.dto.UserInfoDTO;
-import com.developer.user.dto.UserRegisterDTO;
+import com.developer.framework.utils.IMOnlineUtil;
+import com.developer.user.client.FriendClient;
+import com.developer.user.client.GroupMemberClient;
+import com.developer.user.dto.*;
 import com.developer.user.pojo.UserPO;
 import com.developer.user.repository.UserRepository;
 import com.developer.user.service.UserService;
@@ -28,6 +29,16 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+
+    @Autowired
+    private IMOnlineUtil imOnlineUtil;
+
+    @Autowired
+    private FriendClient friendClient;
+
+    @Autowired
+    private GroupMemberClient groupMemberClient;
 
 
     /**
@@ -94,9 +105,7 @@ public class UserServiceImpl implements UserService {
     public DeveloperResult findUserByName(String name) {
         List<UserPO> userInfos = userRepository.findByName(name);
         List<Long> userIds = userInfos.stream().map(UserPO::getId).collect(Collectors.toList());
-        // TODO 获取在线客户端
-        //List<Long> onlineUserIds = imOnlineTools.getOnlineUser(userIds);
-        List<Long> onlineUserIds = new ArrayList<>();
+        List<Long> onlineUserIds = imOnlineUtil.getOnlineUser(userIds);
         List<UserInfoDTO> collect = userInfos.stream().map(x -> {
             UserInfoDTO userInfoDTO = BeanUtils.copyProperties(x, UserInfoDTO.class);
             userInfoDTO.setOnline(onlineUserIds.contains(x.getId()));
@@ -119,23 +128,25 @@ public class UserServiceImpl implements UserService {
 
         // TODO 跨服务更新所在好友，群当前用户信息
         // 更新自己好友列表中的昵称和头像
-//        if(!user.getNickname().equals(dto.getNickname()) || !user.getHeadImageThumb().equals(dto.getHeadImageThumb())){
-//            List<Friend> friends = friendRepository.findFriendByFriendId(userId);
-//            for (Friend friend:friends){
-//                friend.setFriendNickName(dto.getNickname());
-//                friend.setFriendHeadImage(dto.getHeadImage());
-//            }
-//            friendRepository.updateBatchById(friends);
-//        }
-//
-//        // 更新所在群的头像
-//        if(!user.getHeadImage().equals(dto.getHeadImage())){
-//            List<GroupMember> members = groupMemberRepository.findByUserId(userId);
-//            for (GroupMember member : members) {
-//                member.setHeadImage(dto.getHeadImage());
-//            }
-//            groupMemberRepository.updateBatchById(members);
-//        }
+        if(!user.getNickname().equals(dto.getNickname()) || !user.getHeadImageThumb().equals(dto.getHeadImageThumb())){
+            DeveloperResult friends = friendClient.friends();
+            List<FriendInfoDTO> list2 = (List<FriendInfoDTO>) friends.getData();
+            for (FriendInfoDTO friend:list2){
+                friend.setNickName(dto.getNickname());
+                friend.setHeadImage(dto.getHeadImage());
+            }
+            friendClient.modifyFriend(list2);
+        }
+
+        // 更新所在群的头像
+        if(!user.getHeadImage().equals(dto.getHeadImage())){
+            DeveloperResult selfJoinAllGroupInfo = groupMemberClient.getSelfJoinAllGroupInfo();
+            List<SelfJoinGroupInfoDTO> joinGroupInfoList = (List<SelfJoinGroupInfoDTO>) selfJoinAllGroupInfo.getData();
+            for (SelfJoinGroupInfoDTO member : joinGroupInfoList) {
+                member.setHeadImage(dto.getHeadImage());
+            }
+            groupMemberClient.batchModifyGroupMemberInfo(joinGroupInfoList);
+        }
 
         user.setNickname(dto.getNickname());
         user.setSex(dto.getSex());

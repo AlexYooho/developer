@@ -1,12 +1,15 @@
 package com.developer.friend.controller;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.friend.dto.FriendInfoDTO;
 import com.developer.friend.dto.ProcessAddFriendRequestDTO;
 import com.developer.friend.dto.SendAddFriendInfoRequestDTO;
 import com.developer.friend.service.FriendService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RequestMapping("friend")
@@ -52,6 +55,11 @@ public class FriendController {
     @PutMapping("/update")
     public DeveloperResult modifyFriend(){
         return DeveloperResult.success();
+    }
+
+    @PutMapping("/update/list")
+    public DeveloperResult modifyFriendList(@RequestBody List<FriendInfoDTO> list){
+        return friendService.modifyFriendList(list);
     }
 
     /**
