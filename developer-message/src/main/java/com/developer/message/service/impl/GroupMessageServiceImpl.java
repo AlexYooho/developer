@@ -12,10 +12,7 @@ import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.message.client.GroupInfoClient;
 import com.developer.message.client.GroupMemberClient;
-import com.developer.message.dto.GroupInfoDTO;
-import com.developer.message.dto.GroupMessageDTO;
-import com.developer.message.dto.SelfJoinGroupInfoDTO;
-import com.developer.message.dto.SendMessageRequestDTO;
+import com.developer.message.dto.*;
 import com.developer.message.pojo.GroupMessageMemberReceiveRecordPO;
 import com.developer.message.pojo.GroupMessagePO;
 import com.developer.message.repository.GroupMessageMemberReceiveRecordRepository;
@@ -215,6 +212,11 @@ public class GroupMessageServiceImpl implements MessageService {
         List<GroupMessagePO> messages = groupMessageRepository.findHistoryMessage(groupId, selfJoinGroupInfoDTO.getCreatedTime(), stIdx, size);
         List<GroupMessageDTO> list = messages.stream().map(x -> BeanUtils.copyProperties(x, GroupMessageDTO.class)).collect(Collectors.toList());
         return DeveloperResult.success(list);
+    }
+
+    @Override
+    public DeveloperResult insertMessage(MessageInsertDTO dto) {
+        return null;
     }
 
     private GroupMessagePO createGroupMessageMode(Long groupId, Long sendId, String sendNickName, List<Long> atUserIds, String message, MessageContentTypeEnum messageContentType){

@@ -126,7 +126,6 @@ public class UserServiceImpl implements UserService {
             return DeveloperResult.error("用户不存在");
         }
 
-        // TODO 跨服务更新所在好友，群当前用户信息
         // 更新自己好友列表中的昵称和头像
         if(!user.getNickname().equals(dto.getNickname()) || !user.getHeadImageThumb().equals(dto.getHeadImageThumb())){
             DeveloperResult friends = friendClient.friends();

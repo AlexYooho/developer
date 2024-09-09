@@ -2,6 +2,7 @@ package com.developer.message.controller;
 
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
+import com.developer.message.dto.MessageInsertDTO;
 import com.developer.message.dto.SendMessageRequestDTO;
 import com.developer.message.service.MessageServiceRegister;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,11 @@ public class MessageController {
     @GetMapping("/{type}/history")
     public DeveloperResult recallMessage(@PathVariable("type") Integer type,@RequestParam Long groupId,@RequestParam Long page,@RequestParam Long size){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).findHistoryMessage(groupId,page,size);
+    }
+
+    @PostMapping("{type}/add")
+    public DeveloperResult insertMessage(@PathVariable Integer type,@RequestBody MessageInsertDTO dto){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).insertMessage(dto);
     }
 
 

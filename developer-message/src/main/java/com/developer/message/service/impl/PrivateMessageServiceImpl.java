@@ -13,6 +13,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.message.client.FriendClient;
 import com.developer.message.dto.FriendInfoDTO;
+import com.developer.message.dto.MessageInsertDTO;
 import com.developer.message.dto.PrivateMessageDTO;
 import com.developer.message.dto.SendMessageRequestDTO;
 import com.developer.message.pojo.PrivateMessagePO;
@@ -143,6 +144,19 @@ public class PrivateMessageServiceImpl implements MessageService {
         List<PrivateMessagePO> list = privateMessageRepository.findPrivateMessageList(userId, friendId, pageIndex, size);
         List<PrivateMessageDTO> collect = list.stream().map(a -> BeanUtils.copyProperties(a, PrivateMessageDTO.class)).collect(Collectors.toList());
         return DeveloperResult.success(collect);
+    }
+
+    @Override
+    public DeveloperResult insertMessage(MessageInsertDTO dto) {
+        PrivateMessagePO privateMessage = new PrivateMessagePO();
+        privateMessage.setMessageStatus(0);
+        privateMessage.setMessageContent("我们已经是好友啦");
+        privateMessage.setSendId(dto.getSendId());
+        privateMessage.setReceiverId(dto.getReceiverId());
+        privateMessage.setMessageContentType(0);
+        privateMessage.setSendTime(new Date());
+        privateMessageRepository.save(privateMessage);
+        return DeveloperResult.success();
     }
 
     private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus){

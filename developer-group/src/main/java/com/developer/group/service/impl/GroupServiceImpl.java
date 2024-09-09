@@ -4,6 +4,8 @@ import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
+import com.developer.framework.utils.IMOnlineUtil;
+import com.developer.group.client.FriendClient;
 import com.developer.group.dto.*;
 import com.developer.group.pojo.GroupInfoPO;
 import com.developer.group.pojo.GroupMemberPO;
@@ -15,7 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +30,12 @@ public class GroupServiceImpl implements GroupService {
 
     @Autowired
     private GroupInfoRepository groupInfoRepository;
+
+    @Autowired
+    private FriendClient friendClient;
+
+    @Autowired
+    private IMOnlineUtil imOnlineUtil;
 
     @Override
     public DeveloperResult createGroup(CreateGroupRequestDTO dto) {
@@ -140,29 +150,29 @@ public class GroupServiceImpl implements GroupService {
             return DeveloperResult.error("群聊人数不能大于"+DeveloperConstant.MAX_GROUP_MEMBER+"人");
         }
 
-        // TODO
-        //List<Friend> friends = friendRepository.findFriendByUserId(userId);
-        //List<Friend> friendsList = req.getFriendIds().stream().map(id -> friends.stream().filter(f -> f.getFriendId().equals(id)).findFirst().get()).collect(Collectors.toList());
-        //if(friendsList.size()!=req.getFriendIds().size()){
-        //    return DeveloperResult.error("部分用户不是您的好友,邀请失败");
-        //}
+        DeveloperResult developerResult = friendClient.friends();
+        List<FriendInfoDTO> friends = (List<FriendInfoDTO>) developerResult.getData();
+        List<FriendInfoDTO> friendsList = req.getFriendIds().stream().map(id -> friends.stream().filter(f -> f.getId().equals(id)).findFirst().get()).collect(Collectors.toList());
+        if(friendsList.size()!=req.getFriendIds().size()){
+            return DeveloperResult.error("部分用户不是您的好友,邀请失败");
+        }
 
-        //List<GroupMemberPO> groupMembers = friendsList.stream().map(f -> {
-        //    Optional<GroupMemberPO> optional = members.stream().filter(m -> m.getUserId().equals(f.getFriendId())).findFirst();
-        //    GroupMemberPO groupMember = optional.orElseGet(GroupMemberPO::new);
-        //    groupMember.setGroupId(req.getGroupId());
-        //    groupMember.setUserId(f.getFriendId());
-        //    groupMember.setAliasName(f.getFriendNickName());
-        //    groupMember.setRemark(group.getName());
-        //    groupMember.setHeadImage(f.getFriendHeadImage());
-        //    groupMember.setCreatedTime(new Date());
-        //    groupMember.setQuit(false);
-        //    return groupMember;
-        //}).collect(Collectors.toList());
+        List<GroupMemberPO> groupMembers = friendsList.stream().map(f -> {
+            Optional<GroupMemberPO> optional = members.stream().filter(m -> m.getUserId().equals(f.getId())).findFirst();
+            GroupMemberPO groupMember = optional.orElseGet(GroupMemberPO::new);
+            groupMember.setGroupId(req.getGroupId());
+            groupMember.setUserId(f.getId());
+            groupMember.setAliasName(f.getNickName());
+            groupMember.setRemark(group.getName());
+            groupMember.setHeadImage(f.getHeadImage());
+            groupMember.setCreatedTime(new Date());
+            groupMember.setQuit(false);
+            return groupMember;
+        }).collect(Collectors.toList());
 
-        //if(!groupMembers.isEmpty()){
-        //    groupMemberRepository.saveOrUpdateBatch(groupMembers);
-        //}
+        if(!groupMembers.isEmpty()){
+            groupMemberRepository.saveOrUpdateBatch(groupMembers);
+        }
 
         return DeveloperResult.success();
     }
@@ -171,9 +181,7 @@ public class GroupServiceImpl implements GroupService {
     public DeveloperResult findGroupMembers(Long groupId) {
         List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(groupId);
         List<Long> userIds = members.stream().map(GroupMemberPO::getUserId).collect(Collectors.toList());
-        // TODO
-        //List<Long> onlineUserIds = imOnlineTools.getOnlineUser(userIds);
-        List<Long> onlineUserIds = new ArrayList<>();
+        List<Long> onlineUserIds = imOnlineUtil.getOnlineUser(userIds);
         List<GroupMemberDTO> list = members.stream().map(x -> {
             GroupMemberDTO vo = BeanUtils.copyProperties(x, GroupMemberDTO.class);
             vo.setOnline(onlineUserIds.contains(x.getUserId()));

@@ -8,10 +8,8 @@ import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.enums.MessageStatusEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
-import com.developer.friend.dto.FriendInfoDTO;
-import com.developer.friend.dto.NewFriendListDTO;
-import com.developer.friend.dto.ProcessAddFriendRequestDTO;
-import com.developer.friend.dto.SendAddFriendInfoRequestDTO;
+import com.developer.friend.client.MessageClient;
+import com.developer.friend.dto.*;
 import com.developer.friend.enums.*;
 import com.developer.friend.pojo.FriendApplicationRecordPO;
 import com.developer.friend.pojo.FriendPO;
@@ -36,6 +34,9 @@ public class FriendServiceImpl implements FriendService {
 
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
+
+    @Autowired
+    private MessageClient messageClient;
 
     @Override
     public DeveloperResult findFriendList() {
@@ -116,15 +117,14 @@ public class FriendServiceImpl implements FriendService {
             // 发送添加请求
             message = "我们已经是好友啦";
             // 新增消息记录
-            // TODO
-            //PrivateMessage privateMessage = new PrivateMessage();
-            //privateMessage.setMessageStatus(0);
-            //privateMessage.setMessageContent("我们已经是好友啦");
-            //privateMessage.setSendId(userId);
-            //privateMessage.setReceiverId(req.getFriendId());
-            //privateMessage.setMessageContentType(0);
-            //privateMessage.setSendTime(new Date());
-            //privateMessageRepository.save(privateMessage);
+            MessageInsertDTO privateMessage = new MessageInsertDTO();
+            privateMessage.setMessageStatus(0);
+            privateMessage.setMessageContent("我们已经是好友啦");
+            privateMessage.setSendId(userId);
+            privateMessage.setReceiverId(req.getFriendId());
+            privateMessage.setMessageContentType(0);
+            privateMessage.setSendTime(new Date());
+            messageClient.insertMessage(0,privateMessage);
         } else {
             // 拒绝,如果拒绝理由不为空则回复消息
             message = req.getRefuseReason();
