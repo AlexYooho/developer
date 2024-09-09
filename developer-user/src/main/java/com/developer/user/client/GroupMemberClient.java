@@ -7,17 +7,18 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
-@FeignClient(name="developer-gateway",configuration = {FeignRequestInterceptor.class})
+@FeignClient(name="developer-group",configuration = {FeignRequestInterceptor.class})
 public interface GroupMemberClient {
 
 
-    @GetMapping("group-module/api/group/get-self-join-all-group-info")
+    @GetMapping("/group/get-self-join-all-group-info")
     DeveloperResult getSelfJoinAllGroupInfo();
 
-    @PutMapping("update/list")
+    @PutMapping("/group-member/update/list")
     DeveloperResult batchModifyGroupMemberInfo(@RequestBody List<SelfJoinGroupInfoDTO> list);
 
 }

@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name="developer-gateway",configuration = {FeignRequestInterceptor.class})
+@FeignClient(name="developer-friend",configuration = {FeignRequestInterceptor.class})
 public interface FriendClient {
 
-    @GetMapping("friend-module/api/friend/list")
+    @GetMapping("/friend/list")
     DeveloperResult friends();
 
-    @PutMapping("/update")
+    @PutMapping("/friend/update")
     DeveloperResult modifyFriend(@RequestBody List<FriendInfoDTO> list);
 
 }
