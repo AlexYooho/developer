@@ -219,6 +219,11 @@ public class GroupMessageServiceImpl implements MessageService {
         return null;
     }
 
+    @Override
+    public DeveloperResult deleteMessage(Long friendId) {
+        return DeveloperResult.success();
+    }
+
     private GroupMessagePO createGroupMessageMode(Long groupId, Long sendId, String sendNickName, List<Long> atUserIds, String message, MessageContentTypeEnum messageContentType){
         GroupMessagePO groupMessage = new GroupMessagePO();
         groupMessage.setGroupId(groupId);

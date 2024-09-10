@@ -4,6 +4,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.friend.dto.MessageInsertDTO;
 import com.developer.friend.interceptor.FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,4 +16,6 @@ public interface MessageClient {
     @PostMapping("message/{type}/add")
     DeveloperResult insertMessage(@PathVariable Integer type, @RequestBody MessageInsertDTO dto);
 
+    @DeleteMapping("{type}/remove/{friendId}")
+    DeveloperResult removeFriendChatMessage(@PathVariable Integer type,@PathVariable Long friendId);
 }

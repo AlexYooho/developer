@@ -18,4 +18,6 @@ public interface MessageService {
 
     DeveloperResult insertMessage(MessageInsertDTO dto);
 
+    DeveloperResult deleteMessage(Long friendId);
+
 }

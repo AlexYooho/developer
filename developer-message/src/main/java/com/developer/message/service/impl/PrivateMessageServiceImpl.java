@@ -159,6 +159,13 @@ public class PrivateMessageServiceImpl implements MessageService {
         return DeveloperResult.success();
     }
 
+    @Override
+    public DeveloperResult deleteMessage(Long friendId) {
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        privateMessageRepository.deleteChatMessage(userId,friendId);
+        return DeveloperResult.success();
+    }
+
     private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus){
         PrivateMessagePO privateMessage = new PrivateMessagePO();
         privateMessage.setSendId(sendId);

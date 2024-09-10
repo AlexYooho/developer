@@ -72,5 +72,9 @@ public class MessageController {
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).insertMessage(dto);
     }
 
+    @DeleteMapping("{type}/remove/{friendId}")
+    public DeveloperResult removeFriendChatMessage(@PathVariable Integer type,@PathVariable Long friendId){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).deleteMessage(friendId);
+    }
 
 }

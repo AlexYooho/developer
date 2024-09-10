@@ -124,7 +124,7 @@ public class FriendServiceImpl implements FriendService {
             privateMessage.setReceiverId(req.getFriendId());
             privateMessage.setMessageContentType(0);
             privateMessage.setSendTime(new Date());
-            messageClient.insertMessage(0,privateMessage);
+            messageClient.insertMessage(MessageMainTypeEnum.PRIVATE_MESSAGE.code(),privateMessage);
         } else {
             // 拒绝,如果拒绝理由不为空则回复消息
             message = req.getRefuseReason();
@@ -150,10 +150,7 @@ public class FriendServiceImpl implements FriendService {
         }
 
         friendRepository.removeById(friend.getId());
-
-
-        // todo 推送消息，更新全段好友列表
-        // privateMessageRepository.deleteChatMessage(session.getId(), friendId);
+        messageClient.removeFriendChatMessage(MessageMainTypeEnum.PRIVATE_MESSAGE.code(),friendId);
 
         return DeveloperResult.success("删除成功");
     }

@@ -43,4 +43,10 @@ public class PrivateMessageRepository extends ServiceImpl<PrivateMessageMapper, 
                 .last("limit "+pageIndex+","+pageSize).list();
     }
 
+    public boolean deleteChatMessage(Long userId,Long friendId){
+        return this.lambdaUpdate().eq(PrivateMessagePO::getSendId,userId)
+                .eq(PrivateMessagePO::getReceiverId,friendId)
+                .remove();
+    }
+
 }
