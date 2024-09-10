@@ -7,12 +7,12 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
-@FeignClient(name="developer-friend",configuration = {FeignRequestInterceptor.class})
+@FeignClient(name="developer-gateway",contextId = "developer-friend",configuration = {FeignRequestInterceptor.class},url = "/friend-module/api")
 public interface FriendClient {
-
     @GetMapping("/friend/list")
     DeveloperResult friends();
 

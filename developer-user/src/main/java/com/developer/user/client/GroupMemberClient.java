@@ -11,10 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
-@FeignClient(name="developer-group",configuration = {FeignRequestInterceptor.class})
+@FeignClient(name="developer-gateway",contextId = "developer-group",configuration = {FeignRequestInterceptor.class},url="/group-module/api")
 public interface GroupMemberClient {
-
-
     @GetMapping("/group/get-self-join-all-group-info")
     DeveloperResult getSelfJoinAllGroupInfo();
 

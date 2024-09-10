@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name="developer-gateway",configuration = {FeignRequestInterceptor.class})
+@FeignClient(name="developer-gateway",contextId = "developer-message",configuration = {FeignRequestInterceptor.class},url = "/message-module/api")
 public interface MessageClient {
 
 
-    @PostMapping("{type}/add")
+    @PostMapping("message/{type}/add")
     DeveloperResult insertMessage(@PathVariable Integer type, @RequestBody MessageInsertDTO dto);
 
 }
