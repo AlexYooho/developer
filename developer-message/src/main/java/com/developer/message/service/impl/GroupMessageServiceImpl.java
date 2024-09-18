@@ -235,7 +235,7 @@ public class GroupMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult forwardMessage(Long messageId, List<Integer> userIdList) {
+    public DeveloperResult forwardMessage(Long messageId, List<Long> userIdList) {
         return null;
     }
 

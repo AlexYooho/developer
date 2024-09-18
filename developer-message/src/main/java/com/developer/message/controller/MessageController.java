@@ -122,7 +122,7 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/forward/{messageId}")
-    public DeveloperResult forwardMessage(@PathVariable Integer type, @PathVariable Long messageId, @RequestBody List<Integer> userIdList){
+    public DeveloperResult forwardMessage(@PathVariable Integer type, @PathVariable Long messageId, @RequestBody List<Long> userIdList){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).forwardMessage(messageId,userIdList);
     }
 

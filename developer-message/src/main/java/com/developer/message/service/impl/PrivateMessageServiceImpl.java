@@ -177,8 +177,21 @@ public class PrivateMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult forwardMessage(Long messageId, List<Integer> userIdList) {
-        return null;
+    public DeveloperResult forwardMessage(Long messageId, List<Long> userIdList) {
+        PrivateMessagePO messagePO = privateMessageRepository.getById(messageId);
+        if(messagePO==null){
+            return DeveloperResult.error("转发消息本体不存在");
+        }
+
+        for (Long userId : userIdList) {
+            SendMessageRequestDTO dto = new SendMessageRequestDTO();
+            dto.setMessageContent(messagePO.getMessageContent());
+            dto.setReceiverId(userId);
+            dto.setMessageContentType(MessageContentTypeEnum.fromCode(messagePO.getMessageContentType()));
+            dto.setMessageMainType(MessageMainTypeEnum.PRIVATE_MESSAGE);
+            this.sendMessage(dto);
+        }
+        return DeveloperResult.success();
     }
 
     private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus){

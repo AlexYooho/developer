@@ -75,5 +75,5 @@ public interface MessageService {
      * 转发消息
      * @return
      */
-    DeveloperResult forwardMessage(Long messageId, List<Integer> userIdList);
+    DeveloperResult forwardMessage(Long messageId, List<Long> userIdList);
 }

@@ -15,7 +15,14 @@ public enum MessageContentTypeEnum {
 
     private final String desc;
 
-
+    public static MessageContentTypeEnum fromCode(Integer code){
+        for (MessageContentTypeEnum typeEnum:values()) {
+            if (typeEnum.code.equals(code)) {
+                return typeEnum;
+            }
+        }
+        return null;
+    }
     public Integer code(){
         return this.code;
     }
