@@ -8,6 +8,8 @@ import com.developer.message.service.MessageServiceRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("message")
 public class MessageController {
@@ -67,14 +69,61 @@ public class MessageController {
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).findHistoryMessage(groupId,page,size);
     }
 
+    /**
+     * 新增消息
+     * @param type
+     * @param dto
+     * @return
+     */
     @PostMapping("{type}/add")
     public DeveloperResult insertMessage(@PathVariable Integer type,@RequestBody MessageInsertDTO dto){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).insertMessage(dto);
     }
 
+    /**
+     * 删除消息
+     * @param type
+     * @param friendId
+     * @return
+     */
     @DeleteMapping("{type}/remove/{friendId}")
     public DeveloperResult removeFriendChatMessage(@PathVariable Integer type,@PathVariable Long friendId){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).deleteMessage(friendId);
+    }
+
+    /**
+     * 回复消息
+     * @param type
+     * @param id
+     * @param dto
+     * @return
+     */
+    @PostMapping("{type}/reply/{id}")
+    public DeveloperResult replyMessage(@PathVariable Integer type,@PathVariable Long id,@RequestBody SendMessageRequestDTO dto){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).replyMessage(id,dto);
+    }
+
+    /**
+     * 收藏消息
+     * @param type
+     * @param id
+     * @return
+     */
+    @PostMapping("{type}/collection/{id}")
+    public DeveloperResult collectionMessage(@PathVariable Integer type,@PathVariable Long id) {
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).collectionMessage(id);
+    }
+
+    /**
+     * 转发消息
+     * @param type
+     * @param messageId
+     * @param userIdList
+     * @return
+     */
+    @PostMapping("{type}/forward/{messageId}")
+    public DeveloperResult forwardMessage(@PathVariable Integer type, @PathVariable Long messageId, @RequestBody List<Integer> userIdList){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).forwardMessage(messageId,userIdList);
     }
 
 }

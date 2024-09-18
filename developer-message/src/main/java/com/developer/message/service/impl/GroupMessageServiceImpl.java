@@ -224,6 +224,21 @@ public class GroupMessageServiceImpl implements MessageService {
         return DeveloperResult.success();
     }
 
+    @Override
+    public DeveloperResult replyMessage(Long id,SendMessageRequestDTO dto) {
+        return null;
+    }
+
+    @Override
+    public DeveloperResult collectionMessage(Long messageId) {
+        return null;
+    }
+
+    @Override
+    public DeveloperResult forwardMessage(Long messageId, List<Integer> userIdList) {
+        return null;
+    }
+
     private GroupMessagePO createGroupMessageMode(Long groupId, Long sendId, String sendNickName, List<Long> atUserIds, String message, MessageContentTypeEnum messageContentType){
         GroupMessagePO groupMessage = new GroupMessagePO();
         groupMessage.setGroupId(groupId);

@@ -166,6 +166,21 @@ public class PrivateMessageServiceImpl implements MessageService {
         return DeveloperResult.success();
     }
 
+    @Override
+    public DeveloperResult replyMessage(Long id,SendMessageRequestDTO dto) {
+        return null;
+    }
+
+    @Override
+    public DeveloperResult collectionMessage(Long messageId) {
+        return null;
+    }
+
+    @Override
+    public DeveloperResult forwardMessage(Long messageId, List<Integer> userIdList) {
+        return null;
+    }
+
     private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus){
         PrivateMessagePO privateMessage = new PrivateMessagePO();
         privateMessage.setSendId(sendId);
