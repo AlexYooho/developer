@@ -53,4 +53,10 @@ public class PrivateMessagePO {
      */
     @TableField("send_time")
     private Date sendTime;
+
+    /**
+     * 引用消息id
+     */
+    @TableField("reference_id")
+    private Long referenceId;
 }

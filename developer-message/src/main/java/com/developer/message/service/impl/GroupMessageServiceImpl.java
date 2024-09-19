@@ -216,7 +216,7 @@ public class GroupMessageServiceImpl implements MessageService {
 
     @Override
     public DeveloperResult insertMessage(MessageInsertDTO dto) {
-        return null;
+        return DeveloperResult.success();
     }
 
     @Override
@@ -226,7 +226,13 @@ public class GroupMessageServiceImpl implements MessageService {
 
     @Override
     public DeveloperResult replyMessage(Long id,SendMessageRequestDTO dto) {
-        return null;
+        GroupMessagePO groupMessagePO = groupMessageRepository.getById(id);
+        if(groupMessagePO==null){
+            return DeveloperResult.error("回复消息不存在");
+        }
+        dto.setReferenceId(id);
+        this.sendMessage(dto);
+        return DeveloperResult.success();
     }
 
     @Override
@@ -236,7 +242,20 @@ public class GroupMessageServiceImpl implements MessageService {
 
     @Override
     public DeveloperResult forwardMessage(Long messageId, List<Long> userIdList) {
-        return null;
+        GroupMessagePO groupMessagePO = groupMessageRepository.getById(messageId);
+        if(groupMessagePO==null){
+            return DeveloperResult.error("转发消息本体不存在");
+        }
+
+        for (Long userId : userIdList) {
+            SendMessageRequestDTO dto = new SendMessageRequestDTO();
+            dto.setMessageContent(groupMessagePO.getMessageContent());
+            dto.setReceiverId(userId);
+            dto.setMessageContentType(MessageContentTypeEnum.fromCode(groupMessagePO.getMessageContentType()));
+            dto.setMessageMainType(MessageMainTypeEnum.GROUP_MESSAGE);
+            this.sendMessage(dto);
+        }
+        return DeveloperResult.success();
     }
 
     private GroupMessagePO createGroupMessageMode(Long groupId, Long sendId, String sendNickName, List<Long> atUserIds, String message, MessageContentTypeEnum messageContentType){

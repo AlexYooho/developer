@@ -89,7 +89,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
         // 消息入库
-        PrivateMessagePO privateMessage = createPrivateMessageMode(userId, req.getReceiverId(), req.getMessageContent(), req.getMessageContentType(), MessageStatusEnum.SENDED);
+        PrivateMessagePO privateMessage = createPrivateMessageMode(userId, req.getReceiverId(), req.getMessageContent(), req.getMessageContentType(), MessageStatusEnum.SENDED,req.getReferenceId());
         this.privateMessageRepository.save(privateMessage);
         rabbitMQUtil.pushMQMessage(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, nickName, req.getMessageContent(), Arrays.asList(req.getReceiverId()),new ArrayList<>(), privateMessage.getMessageStatus(), IMTerminalTypeEnum.WEB,privateMessage.getSendTime());
 
@@ -168,7 +168,14 @@ public class PrivateMessageServiceImpl implements MessageService {
 
     @Override
     public DeveloperResult replyMessage(Long id,SendMessageRequestDTO dto) {
-        return null;
+        PrivateMessagePO messagePO = privateMessageRepository.getById(id);
+        if(messagePO==null){
+            return DeveloperResult.error("回复消息不存在");
+        }
+
+        dto.setReferenceId(id);
+        this.sendMessage(dto);
+        return DeveloperResult.success();
     }
 
     @Override
@@ -194,7 +201,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         return DeveloperResult.success();
     }
 
-    private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus){
+    private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus,Long referenceId){
         PrivateMessagePO privateMessage = new PrivateMessagePO();
         privateMessage.setSendId(sendId);
         privateMessage.setReceiverId(receiverId);
@@ -202,6 +209,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         privateMessage.setMessageContentType(messageContentType.code());
         privateMessage.setMessageStatus(messageStatus.code());
         privateMessage.setSendTime(new Date());
+        privateMessage.setReferenceId(referenceId);
         return privateMessage;
     }
 }
