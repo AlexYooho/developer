@@ -3,6 +3,7 @@ package com.developer.message.dto;
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class SendMessageRequestDTO {
 
     /**
