@@ -275,7 +275,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     private Long fetchAndModifyMessageId(Long userId,Long messageId){
         String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
         Long maxMessageId = (Long) redisTemplate.opsForValue().get(key);
-        if(maxMessageId<messageId){
+        if(maxMessageId == null || maxMessageId<messageId){
             redisTemplate.opsForValue().set(key,messageId,3600, TimeUnit.SECONDS);
             maxMessageId = messageId;
         }
