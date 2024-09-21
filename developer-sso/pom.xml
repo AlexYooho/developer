@@ -96,6 +96,12 @@
             <artifactId>fastjson</artifactId>
         </dependency>
 
+        <!-- openfeign 远程调用依赖 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

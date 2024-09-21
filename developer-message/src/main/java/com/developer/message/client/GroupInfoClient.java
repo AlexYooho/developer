@@ -13,6 +13,6 @@ public interface GroupInfoClient {
     DeveloperResult getSelfJoinAllGroupInfo();
 
     @GetMapping("group/find/{groupId}")
-    DeveloperResult findGroup(@PathVariable Long groupId);
+    DeveloperResult findGroup(@PathVariable("groupId") Long groupId);
 
 }

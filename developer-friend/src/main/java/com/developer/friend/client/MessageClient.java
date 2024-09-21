@@ -14,8 +14,8 @@ public interface MessageClient {
 
 
     @PostMapping("message/{type}/add")
-    DeveloperResult insertMessage(@PathVariable Integer type, @RequestBody MessageInsertDTO dto);
+    DeveloperResult insertMessage(@PathVariable("type") Integer type, @RequestBody MessageInsertDTO dto);
 
     @DeleteMapping("{type}/remove/{friendId}")
-    DeveloperResult removeFriendChatMessage(@PathVariable Integer type,@PathVariable Long friendId);
+    DeveloperResult removeFriendChatMessage(@PathVariable("type") Integer type,@PathVariable("friendId") Long friendId);
 }
