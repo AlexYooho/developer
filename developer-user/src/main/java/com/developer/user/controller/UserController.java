@@ -1,5 +1,6 @@
 package com.developer.user.controller;
 
+import com.developer.user.client.FriendClient;
 import com.developer.user.dto.ModifyUserInfoDTO;
 import com.developer.user.dto.UserRegisterDTO;
 import com.developer.framework.model.DeveloperResult;
@@ -13,6 +14,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private FriendClient friendClient;
 
     /**
      * 用户注册
@@ -39,6 +43,7 @@ public class UserController {
      */
     @GetMapping("selfInfo")
     public DeveloperResult getSelfUserInfo(){
+        DeveloperResult developerResult = friendClient.friends();
         return userService.findSelfUserInfo();
     }
 

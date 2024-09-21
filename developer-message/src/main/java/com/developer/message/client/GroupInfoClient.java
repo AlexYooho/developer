@@ -6,13 +6,13 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name="developer-gateway",contextId = "developer-group",configuration = {FeignRequestInterceptor.class},url = "/group-module/api")
+@FeignClient(name="developer-gateway",contextId = "developer-group",configuration = {FeignRequestInterceptor.class})
 public interface GroupInfoClient {
 
-    @GetMapping("group/get-self-join-all-group-info")
+    @GetMapping("/group-module/api/group/get-self-join-all-group-info")
     DeveloperResult getSelfJoinAllGroupInfo();
 
-    @GetMapping("group/find/{groupId}")
+    @GetMapping("/group-module/api/group/find/{groupId}")
     DeveloperResult findGroup(@PathVariable("groupId") Long groupId);
 
 }

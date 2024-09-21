@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
-@FeignClient(name="developer-gateway",contextId = "developer-friend",configuration = {FeignRequestInterceptor.class},url = "/friend-module/api")
+@FeignClient(name="developer-gateway",contextId = "developer-friend",configuration = {FeignRequestInterceptor.class})
 public interface FriendClient {
-    @GetMapping("/friend/list")
+    @GetMapping("/friend-module/api/friend/list")
     DeveloperResult friends();
 
     @PutMapping("/friend/update")

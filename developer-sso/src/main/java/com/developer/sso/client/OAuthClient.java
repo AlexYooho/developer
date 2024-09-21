@@ -6,10 +6,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-@FeignClient(name="developer-gateway",url = "/sso-module/api")
+//@FeignClient(name="developer-gateway",url = "/sso-module/api")
+@FeignClient(name="developer-gateway")
 public interface OAuthClient {
 
-    @PostMapping("/oauth/token")
+    @PostMapping("/sso-module/api/oauth/token")
     Map<String,Object> getToken(@RequestParam("grant_type") String grantType,
                                 @RequestParam("username") String username,
                                 @RequestParam("password") String password,

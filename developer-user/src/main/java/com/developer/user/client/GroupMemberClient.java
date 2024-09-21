@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
-@FeignClient(name="developer-gateway",contextId = "developer-group",configuration = {FeignRequestInterceptor.class},url="/group-module/api")
+@FeignClient(name="developer-gateway",contextId = "developer-group",configuration = {FeignRequestInterceptor.class})
 public interface GroupMemberClient {
-    @GetMapping("/group/get-self-join-all-group-info")
+    @GetMapping("/group-module/api/group/get-self-join-all-group-info")
     DeveloperResult getSelfJoinAllGroupInfo();
 
-    @PutMapping("/group-member/update/list")
+    @PutMapping("/group-module/api/group-member/update/list")
     DeveloperResult batchModifyGroupMemberInfo(@RequestBody List<SelfJoinGroupInfoDTO> list);
 
 }
