@@ -2,6 +2,7 @@ package com.developer.friend.controller;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.friend.dto.FriendInfoDTO;
+import com.developer.friend.dto.NewFriendListDTO;
 import com.developer.friend.dto.ProcessAddFriendRequestDTO;
 import com.developer.friend.dto.SendAddFriendInfoRequestDTO;
 import com.developer.friend.service.FriendService;
@@ -24,7 +25,7 @@ public class FriendController {
      * @return
      */
     @GetMapping("/list")
-    public DeveloperResult friends(){
+    public DeveloperResult<List<FriendInfoDTO>> friends(){
         return friendService.findFriendList();
     }
 
@@ -34,7 +35,7 @@ public class FriendController {
      * @return
      */
     @GetMapping("/find/{friendId}")
-    public DeveloperResult findFriend(@PathVariable("friendId") Long friendId){
+    public DeveloperResult<FriendInfoDTO> findFriend(@PathVariable("friendId") Long friendId){
         return friendService.findFriend(friendId);
     }
 
@@ -44,7 +45,7 @@ public class FriendController {
      * @return
      */
     @DeleteMapping("/delete/{friendId}")
-    public DeveloperResult deleteFriend(@PathVariable("friendId") Long friendId){
+    public DeveloperResult<Boolean> deleteFriend(@PathVariable("friendId") Long friendId){
         return friendService.deleteFriendByFriendId(friendId);
     }
 
@@ -53,12 +54,12 @@ public class FriendController {
      * @return
      */
     @PutMapping("/update")
-    public DeveloperResult modifyFriend(){
+    public DeveloperResult<Boolean> modifyFriend(){
         return DeveloperResult.success();
     }
 
     @PutMapping("/update/list")
-    public DeveloperResult modifyFriendList(@RequestBody List<FriendInfoDTO> list){
+    public DeveloperResult<Boolean> modifyFriendList(@RequestBody List<FriendInfoDTO> list){
         return friendService.modifyFriendList(list);
     }
 
@@ -68,7 +69,7 @@ public class FriendController {
      * @return
      */
     @PostMapping("/sendAddFriendRequest")
-    public DeveloperResult sendAddFriendRequest(@RequestBody SendAddFriendInfoRequestDTO req){
+    public DeveloperResult<Boolean> sendAddFriendRequest(@RequestBody SendAddFriendInfoRequestDTO req){
         return friendService.sendAddFriendRequest(req);
     }
 
@@ -78,7 +79,7 @@ public class FriendController {
      * @return
      */
     @PostMapping("/processFriendRequest")
-    public DeveloperResult processFriendRequest(@RequestBody ProcessAddFriendRequestDTO req){
+    public DeveloperResult<Boolean> processFriendRequest(@RequestBody ProcessAddFriendRequestDTO req){
         return friendService.processFriendRequest(req);
     }
 
@@ -87,7 +88,7 @@ public class FriendController {
      * @return
      */
     @GetMapping("/friendAddRequestCount")
-    public DeveloperResult friendAddRequestCount(){
+    public DeveloperResult<Integer> friendAddRequestCount(){
         return friendService.findFriendAddRequestCount();
     }
 
@@ -96,7 +97,7 @@ public class FriendController {
      * @return
      */
     @GetMapping("/new/list")
-    public DeveloperResult newFriendList(){
+    public DeveloperResult<List<NewFriendListDTO>> newFriendList(){
         return friendService.findNewFriendList();
     }
 
@@ -105,7 +106,7 @@ public class FriendController {
      * @return
      */
     @PutMapping("/update/friend/applicant/record/status")
-    public DeveloperResult updateAddFriendRecordStatus(){
+    public DeveloperResult<Boolean> updateAddFriendRecordStatus(){
         return friendService.updateAddFriendRecordStatus();
     }
 
@@ -116,7 +117,7 @@ public class FriendController {
      * @return
      */
     @GetMapping("{friendId}/is-friend/{userId}")
-    public DeveloperResult isFriend(@PathVariable("friendId") Long friendId,@PathVariable("userId") Long userId){
+    public DeveloperResult<Boolean> isFriend(@PathVariable("friendId") Long friendId,@PathVariable("userId") Long userId){
         return friendService.isFriend(userId,friendId);
     }
 }

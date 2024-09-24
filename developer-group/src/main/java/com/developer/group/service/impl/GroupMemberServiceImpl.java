@@ -19,14 +19,14 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     private GroupMemberRepository groupMemberRepository;
 
     @Override
-    public DeveloperResult findGroupMember(Long groupId) {
+    public DeveloperResult<List<Long>> findGroupMember(Long groupId) {
         List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(groupId);
         List<Long> userIds = members.stream().map(GroupMemberPO::getUserId).collect(Collectors.toList());
         return DeveloperResult.success(userIds);
     }
 
     @Override
-    public DeveloperResult batchModifyGroupMemberInfo(List<SelfJoinGroupInfoDTO> list) {
+    public DeveloperResult<Boolean> batchModifyGroupMemberInfo(List<SelfJoinGroupInfoDTO> list) {
 
         List<GroupMemberPO> ll = new ArrayList<>();
         this.groupMemberRepository.updateBatchById(ll);

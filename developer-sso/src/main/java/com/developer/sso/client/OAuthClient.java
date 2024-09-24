@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-//@FeignClient(name="developer-gateway",url = "/sso-module/api")
 @FeignClient(name="developer-gateway")
 public interface OAuthClient {
 

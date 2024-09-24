@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("sso")
 public class SsoController {
@@ -22,7 +24,7 @@ public class SsoController {
      * @return
      */
     @PostMapping("login")
-    public DeveloperResult login(@RequestBody LoginDTO dto){
+    public DeveloperResult<Map<String, Object>> login(@RequestBody LoginDTO dto){
         return sysUserService.Login(dto);
     }
 

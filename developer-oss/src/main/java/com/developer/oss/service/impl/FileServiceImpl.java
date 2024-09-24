@@ -28,8 +28,7 @@ public class FileServiceImpl implements FileService {
      * @return
      */
     @Override
-    public DeveloperResult uploadFile(MultipartFile file) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+    public DeveloperResult<String> uploadFile(MultipartFile file) {
         if(file.getSize()> DeveloperConstant.MAX_FILE_SIZE){
             return DeveloperResult.error("文件大小不能超过10M");
         }
@@ -48,7 +47,7 @@ public class FileServiceImpl implements FileService {
      * @return
      */
     @Override
-    public DeveloperResult uploadImage(MultipartFile file) {
+    public DeveloperResult<UploadImageDTO> uploadImage(MultipartFile file) {
         try{
             Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
             if(file.getSize()> DeveloperConstant.MAX_IMAGE_SIZE){

@@ -33,7 +33,7 @@ public class MessageController {
      * @return
      */
     @PostMapping("/{type}/recall/{id}")
-    public DeveloperResult recallMessage(@PathVariable("type") Integer type,@PathVariable Long id){
+    public DeveloperResult<Boolean> recallMessage(@PathVariable("type") Integer type,@PathVariable Long id){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).recallMessage(id);
     }
 
@@ -76,7 +76,7 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/add")
-    public DeveloperResult insertMessage(@PathVariable Integer type,@RequestBody MessageInsertDTO dto){
+    public DeveloperResult<Boolean> insertMessage(@PathVariable Integer type,@RequestBody MessageInsertDTO dto){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).insertMessage(dto);
     }
 
@@ -87,7 +87,7 @@ public class MessageController {
      * @return
      */
     @DeleteMapping("{type}/remove/{friendId}")
-    public DeveloperResult removeFriendChatMessage(@PathVariable Integer type,@PathVariable Long friendId){
+    public DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable Integer type,@PathVariable Long friendId){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).deleteMessage(friendId);
     }
 

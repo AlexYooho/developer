@@ -14,9 +14,9 @@ import java.util.List;
 @FeignClient(name="developer-gateway",contextId = "developer-friend",configuration = {FeignRequestInterceptor.class})
 public interface FriendClient {
     @GetMapping("/friend-module/api/friend/list")
-    DeveloperResult friends();
+    DeveloperResult<List<FriendInfoDTO>> friends();
 
     @PutMapping("/friend/update")
-    DeveloperResult modifyFriend(@RequestBody List<FriendInfoDTO> list);
+    DeveloperResult<Boolean> modifyFriend(@RequestBody List<FriendInfoDTO> list);
 
 }

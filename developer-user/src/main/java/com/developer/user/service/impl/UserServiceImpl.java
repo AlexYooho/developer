@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public DeveloperResult register(UserRegisterDTO dto) {
+    public DeveloperResult<Boolean> register(UserRegisterDTO dto) {
         if("".equals(dto.getAccount())){
             return DeveloperResult.error(500,"请输入正确的手机号");
         }
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public DeveloperResult findSelfUserInfo() {
+    public DeveloperResult<UserInfoDTO> findSelfUserInfo() {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         UserPO user = userRepository.getById(userId);
         UserInfoDTO userInfoDTO = BeanUtils.copyProperties(user, UserInfoDTO.class);
@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public DeveloperResult findUserInfoById(Long userId) {
+    public DeveloperResult<UserInfoDTO> findUserInfoById(Long userId) {
         UserPO user = userRepository.getById(userId);
         UserInfoDTO userInfoDTO = BeanUtils.copyProperties(user, UserInfoDTO.class);
         // 设置在线状态
@@ -102,7 +102,7 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public DeveloperResult findUserByName(String name) {
+    public DeveloperResult<List<UserInfoDTO>> findUserByName(String name) {
         List<UserPO> userInfos = userRepository.findByName(name);
         List<Long> userIds = userInfos.stream().map(UserPO::getId).collect(Collectors.toList());
         List<Long> onlineUserIds = imOnlineUtil.getOnlineUser(userIds);
@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public DeveloperResult modifyUserInfo(ModifyUserInfoDTO dto) {
+    public DeveloperResult<Boolean> modifyUserInfo(ModifyUserInfoDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         if(!userId.equals(dto.getId())){
             return DeveloperResult.error("不允许修改其他用户信息");
@@ -128,8 +128,8 @@ public class UserServiceImpl implements UserService {
 
         // 更新自己好友列表中的昵称和头像
         if(!user.getNickname().equals(dto.getNickname()) || !user.getHeadImageThumb().equals(dto.getHeadImageThumb())){
-            DeveloperResult friends = friendClient.friends();
-            List<FriendInfoDTO> list2 = (List<FriendInfoDTO>) friends.getData();
+            DeveloperResult<List<FriendInfoDTO>> friends = friendClient.friends();
+            List<FriendInfoDTO> list2 = friends.getData();
             for (FriendInfoDTO friend:list2){
                 friend.setNickName(dto.getNickname());
                 friend.setHeadImage(dto.getHeadImage());
@@ -139,8 +139,8 @@ public class UserServiceImpl implements UserService {
 
         // 更新所在群的头像
         if(!user.getHeadImage().equals(dto.getHeadImage())){
-            DeveloperResult selfJoinAllGroupInfo = groupMemberClient.getSelfJoinAllGroupInfo();
-            List<SelfJoinGroupInfoDTO> joinGroupInfoList = (List<SelfJoinGroupInfoDTO>) selfJoinAllGroupInfo.getData();
+            DeveloperResult<List<SelfJoinGroupInfoDTO>> selfJoinAllGroupInfo = groupMemberClient.getSelfJoinAllGroupInfo();
+            List<SelfJoinGroupInfoDTO> joinGroupInfoList = selfJoinAllGroupInfo.getData();
             for (SelfJoinGroupInfoDTO member : joinGroupInfoList) {
                 member.setHeadImage(dto.getHeadImage());
             }
@@ -152,8 +152,8 @@ public class UserServiceImpl implements UserService {
         user.setSignature(dto.getSignature());
         user.setHeadImage(dto.getHeadImage());
         user.setHeadImageThumb(dto.getHeadImageThumb());
-        this.userRepository.updateById(user);
-        return DeveloperResult.success("修改信息成功");
+        Boolean isSuccess = this.userRepository.updateById(user);
+        return DeveloperResult.success(isSuccess);
     }
 
 

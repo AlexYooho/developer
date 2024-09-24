@@ -34,7 +34,7 @@ public interface MessageService {
      * @param id
      * @return
      */
-    DeveloperResult recallMessage(Long id);
+    DeveloperResult<Boolean> recallMessage(Long id);
 
     /**
      * 查询历史记录
@@ -50,14 +50,14 @@ public interface MessageService {
      * @param dto
      * @return
      */
-    DeveloperResult insertMessage(MessageInsertDTO dto);
+    DeveloperResult<Boolean> insertMessage(MessageInsertDTO dto);
 
     /**
      * 删除消息
      * @param friendId
      * @return
      */
-    DeveloperResult deleteMessage(Long friendId);
+    DeveloperResult<Boolean> deleteMessage(Long friendId);
 
     /**
      * 回复消息

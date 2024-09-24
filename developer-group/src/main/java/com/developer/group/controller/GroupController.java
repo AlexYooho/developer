@@ -1,11 +1,12 @@
 package com.developer.group.controller;
 
 import com.developer.framework.model.DeveloperResult;
-import com.developer.group.dto.CreateGroupRequestDTO;
-import com.developer.group.dto.GroupInviteRequestDTO;
+import com.developer.group.dto.*;
 import com.developer.group.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("group")
@@ -21,7 +22,7 @@ public class GroupController {
      * @return
      */
     @PostMapping("/create")
-    public DeveloperResult createGroup(@RequestBody CreateGroupRequestDTO req){
+    public DeveloperResult<CreateGroupRequestDTO> createGroup(@RequestBody CreateGroupRequestDTO req){
         return groupService.createGroup(req);
     }
 
@@ -31,7 +32,7 @@ public class GroupController {
      * @return
      */
     @PutMapping("/modify")
-    public DeveloperResult modifyGroup(@RequestBody CreateGroupRequestDTO req){
+    public DeveloperResult<CreateGroupRequestDTO> modifyGroup(@RequestBody CreateGroupRequestDTO req){
         return groupService.modifyGroup(req);
     }
 
@@ -41,7 +42,7 @@ public class GroupController {
      * @return
      */
     @PostMapping("/delete/{groupId}")
-    public DeveloperResult deleteGroup(@PathVariable Long groupId){
+    public DeveloperResult<Boolean> deleteGroup(@PathVariable Long groupId){
         return groupService.deleteGroup(groupId);
     }
 
@@ -51,7 +52,7 @@ public class GroupController {
      * @return
      */
     @GetMapping("/find/{groupId}")
-    public DeveloperResult findGroup(@PathVariable Long groupId){
+    public DeveloperResult<GroupInfoDTO> findGroup(@PathVariable Long groupId){
         return groupService.findById(groupId);
     }
 
@@ -60,7 +61,7 @@ public class GroupController {
      * @return
      */
     @GetMapping("/list")
-    public DeveloperResult findGroups(){
+    public DeveloperResult<List<GroupInfoDTO>> findGroups(){
         return groupService.findGroupList();
     }
 
@@ -70,7 +71,7 @@ public class GroupController {
      * @return
      */
     @PostMapping("/invite")
-    public DeveloperResult invite(@RequestBody GroupInviteRequestDTO req){
+    public DeveloperResult<Boolean> invite(@RequestBody GroupInviteRequestDTO req){
         return groupService.invite(req);
     }
 
@@ -80,7 +81,7 @@ public class GroupController {
      * @return
      */
     @GetMapping("/{groupId}/members")
-    public DeveloperResult findGroupMembers(@PathVariable Long groupId){
+    public DeveloperResult<List<GroupMemberDTO>> findGroupMembers(@PathVariable Long groupId){
         return groupService.findGroupMembers(groupId);
     }
 
@@ -90,7 +91,7 @@ public class GroupController {
      * @return
      */
     @PostMapping("/{groupId}/quit")
-    public DeveloperResult quitGroup(@PathVariable Long groupId){
+    public DeveloperResult<Boolean> quitGroup(@PathVariable Long groupId){
         return groupService.quitGroup(groupId);
     }
 
@@ -101,7 +102,7 @@ public class GroupController {
      * @return
      */
     @PostMapping("/{groupId}/kick/{userId}")
-    public DeveloperResult removeGroup(@PathVariable Long groupId, @PathVariable Long userId){
+    public DeveloperResult<Boolean> removeGroup(@PathVariable Long groupId, @PathVariable Long userId){
         return groupService.kickGroup(groupId,userId);
     }
 
@@ -110,7 +111,7 @@ public class GroupController {
      * @return
      */
     @GetMapping("get-self-join-all-group-info")
-    public DeveloperResult getSelfJoinAllGroupInfo(){
+    public DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo(){
         return groupService.findSelfJoinAllGroupInfo();
     }
 }

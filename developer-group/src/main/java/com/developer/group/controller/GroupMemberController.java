@@ -20,12 +20,12 @@ public class GroupMemberController {
      * @return
      */
     @GetMapping("/group/{groupId}/get-group-member-user-id")
-    public DeveloperResult findGroupMemberUserId(@PathVariable("groupId") Long groupId){
+    public DeveloperResult<List<Long>> findGroupMemberUserId(@PathVariable("groupId") Long groupId){
         return groupMemberService.findGroupMember(groupId);
     }
 
     @PutMapping("update/list")
-    public DeveloperResult batchModifyGroupMemberInfo(@RequestBody List<SelfJoinGroupInfoDTO> list){
+    public DeveloperResult<Boolean> batchModifyGroupMemberInfo(@RequestBody List<SelfJoinGroupInfoDTO> list){
         return groupMemberService.batchModifyGroupMemberInfo(list);
     }
 

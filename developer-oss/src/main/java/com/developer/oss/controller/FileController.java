@@ -1,6 +1,7 @@
 package com.developer.oss.controller;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.oss.dto.UploadImageDTO;
 import com.developer.oss.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,7 +22,7 @@ public class FileController {
      * @return
      */
     @PostMapping("/image/upload")
-    public DeveloperResult uploadImage(MultipartFile file){
+    public DeveloperResult<UploadImageDTO> uploadImage(MultipartFile file){
         return fileService.uploadImage(file);
     }
 
@@ -31,7 +32,7 @@ public class FileController {
      * @return
      */
     @PostMapping("/file/upload")
-    public DeveloperResult uploadFile(MultipartFile file){
+    public DeveloperResult<String> uploadFile(MultipartFile file){
         return fileService.uploadFile(file);
     }
 

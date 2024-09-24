@@ -1,12 +1,16 @@
 package com.developer.user.controller;
 
 import com.developer.user.client.FriendClient;
+import com.developer.user.dto.FriendInfoDTO;
 import com.developer.user.dto.ModifyUserInfoDTO;
+import com.developer.user.dto.UserInfoDTO;
 import com.developer.user.dto.UserRegisterDTO;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -15,16 +19,13 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private FriendClient friendClient;
-
     /**
      * 用户注册
      * @param dto
      * @return
      */
     @PostMapping("register")
-    public DeveloperResult register(@RequestBody UserRegisterDTO dto){
+    public DeveloperResult<Boolean> register(@RequestBody UserRegisterDTO dto){
         return userService.register(dto);
     }
 
@@ -33,7 +34,7 @@ public class UserController {
      * @return
      */
     @PutMapping("/modify/password")
-    public DeveloperResult modifyPassword(){
+    public DeveloperResult<Boolean> modifyPassword(){
         return DeveloperResult.success();
     }
 
@@ -42,8 +43,7 @@ public class UserController {
      * @return
      */
     @GetMapping("selfInfo")
-    public DeveloperResult getSelfUserInfo(){
-        DeveloperResult developerResult = friendClient.friends();
+    public DeveloperResult<UserInfoDTO> getSelfUserInfo(){
         return userService.findSelfUserInfo();
     }
 
@@ -53,7 +53,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/find/{id}")
-    public DeveloperResult findById(@PathVariable("id") Long id){
+    public DeveloperResult<UserInfoDTO> findById(@PathVariable("id") Long id){
         return userService.findUserInfoById(id);
     }
 
@@ -63,7 +63,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/findByName")
-    public DeveloperResult findByName(@RequestParam("name") String name){
+    public DeveloperResult<List<UserInfoDTO>> findByName(@RequestParam("name") String name){
         return userService.findUserByName(name);
     }
 
@@ -73,7 +73,7 @@ public class UserController {
      * @return
      */
     @PutMapping("/modify")
-    public DeveloperResult modifyUserInfo(@RequestBody ModifyUserInfoDTO dto){
+    public DeveloperResult<Boolean> modifyUserInfo(@RequestBody ModifyUserInfoDTO dto){
         return userService.modifyUserInfo(dto);
     }
 

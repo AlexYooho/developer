@@ -79,8 +79,8 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult sendMessage(SendMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        DeveloperResult friend = friendClient.isFriend(userId, req.getReceiverId());
-        boolean isFriend = (boolean) friend.getData();
+        DeveloperResult<Boolean> friend = friendClient.isFriend(userId, req.getReceiverId());
+        boolean isFriend = friend.getData();
         if(!isFriend){
             return DeveloperResult.error("对方不是你好友,无法发送消息");
         }
@@ -116,7 +116,7 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     @Override
-    public DeveloperResult recallMessage(Long id) {
+    public DeveloperResult<Boolean> recallMessage(Long id) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         PrivateMessagePO privateMessage = privateMessageRepository.getById(id);
         if(privateMessage==null){
@@ -165,7 +165,7 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     @Override
-    public DeveloperResult insertMessage(MessageInsertDTO dto) {
+    public DeveloperResult<Boolean> insertMessage(MessageInsertDTO dto) {
         PrivateMessagePO privateMessage = PrivateMessagePO.builder()
                 .messageStatus(dto.getMessageStatus())
                 .messageContent(dto.getMessageContent())
@@ -173,8 +173,8 @@ public class PrivateMessageServiceImpl implements MessageService {
                 .receiverId(dto.getReceiverId())
                 .messageContentType(dto.getMessageContentType())
                 .sendTime(new Date()).build();
-        privateMessageRepository.save(privateMessage);
-        return DeveloperResult.success();
+        boolean isSuccess = privateMessageRepository.save(privateMessage);
+        return DeveloperResult.success(isSuccess);
     }
 
     /**
@@ -183,10 +183,10 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     @Override
-    public DeveloperResult deleteMessage(Long friendId) {
+    public DeveloperResult<Boolean> deleteMessage(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        privateMessageRepository.deleteChatMessage(userId,friendId);
-        return DeveloperResult.success();
+        boolean isSuccess = privateMessageRepository.deleteChatMessage(userId,friendId);
+        return DeveloperResult.success(isSuccess);
     }
 
     /**
@@ -273,13 +273,13 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     private Long fetchAndModifyMessageId(Long userId,Long messageId){
-        String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
-        Long maxMessageId = (Long) redisTemplate.opsForValue().get(key);
-        if(maxMessageId == null || maxMessageId<messageId){
-            redisTemplate.opsForValue().set(key,messageId,3600, TimeUnit.SECONDS);
-            maxMessageId = messageId;
-        }
+//        String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
+//        Long maxMessageId = (Long) redisTemplate.opsForValue().get(key);
+//        if(maxMessageId == null || maxMessageId<messageId){
+//            redisTemplate.opsForValue().set(key,messageId,3600, TimeUnit.SECONDS);
+//            maxMessageId = messageId;
+//        }
 
-        return maxMessageId;
+        return 0l;
     }
 }

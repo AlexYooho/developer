@@ -14,9 +14,9 @@ import java.util.List;
 @FeignClient(name="developer-gateway",contextId = "developer-group",configuration = {FeignRequestInterceptor.class})
 public interface GroupMemberClient {
     @GetMapping("/group-module/api/group/get-self-join-all-group-info")
-    DeveloperResult getSelfJoinAllGroupInfo();
+    DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo();
 
     @PutMapping("/group-module/api/group-member/update/list")
-    DeveloperResult batchModifyGroupMemberInfo(@RequestBody List<SelfJoinGroupInfoDTO> list);
+    DeveloperResult<Boolean> batchModifyGroupMemberInfo(@RequestBody List<SelfJoinGroupInfoDTO> list);
 
 }

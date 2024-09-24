@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface GroupMemberService {
 
-    DeveloperResult findGroupMember(Long groupId);
+    DeveloperResult<List<Long>> findGroupMember(Long groupId);
 
-    DeveloperResult batchModifyGroupMemberInfo(List<SelfJoinGroupInfoDTO> list);
+    DeveloperResult<Boolean> batchModifyGroupMemberInfo(List<SelfJoinGroupInfoDTO> list);
 
 }

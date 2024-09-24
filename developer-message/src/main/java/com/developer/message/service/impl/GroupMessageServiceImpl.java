@@ -22,7 +22,6 @@ import com.developer.message.util.RabbitMQUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,13 +50,13 @@ public class GroupMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult loadMessage(Long minId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        DeveloperResult developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
-        List<SelfJoinGroupInfoDTO> joinGroupInfoList = (List<SelfJoinGroupInfoDTO>) developerResult.getData();
+        DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
+        List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult.getData();
         if(joinGroupInfoList.isEmpty()){
             return DeveloperResult.success();
         }
 
-        List<Long> groupIds = joinGroupInfoList.stream().map(SelfJoinGroupInfoDTO::getUserId).collect(Collectors.toList());
+        List<Long> groupIds = joinGroupInfoList.stream().map(SelfJoinGroupInfoDTO::getGroupId).collect(Collectors.toList());
 
         // 当前用户有多少群消息未读
         List<GroupMessageMemberReceiveRecordPO> unreadMessageList = groupMessageMemberReceiveRecordRepository.findAllUnreadMessageList(userId);
@@ -68,15 +67,22 @@ public class GroupMessageServiceImpl implements MessageService {
         List<GroupMessagePO> messages = groupMessageRepository.find(minId, minDate, groupIds);
         List<GroupMessageDTO> vos = messages.stream().map(x -> {
             GroupMessageDTO vo = BeanUtils.copyProperties(x, GroupMessageDTO.class);
-            Integer messageStatus = unreadMessageList.stream().anyMatch(z -> {
-                return Objects.equals(z.getGroupId(), x.getGroupId()) && Objects.equals(z.getMessageId(), x.getId());
-            }) ? MessageStatusEnum.UNSEND.code() : MessageStatusEnum.READED.code();
-            assert vo != null;
+            if(vo==null){
+                return null;
+            }
+            Integer messageStatus = unreadMessageList.stream().anyMatch(z ->
+                 Objects.equals(z.getGroupId(), x.getGroupId()) && Objects.equals(z.getMessageId(), x.getId())
+            ) ? MessageStatusEnum.UNSEND.code() : MessageStatusEnum.READED.code();
+
             vo.setMessageStatus(messageStatus);
 
             if(vo.getSendId().equals(userId)){
-                long unReadCount = curUserSendMessageList.stream().filter(m-> Objects.equals(m.getMessageId(), vo.getId()) && m.getStatus()==0).collect(Collectors.toList()).size();
-                long readCount = curUserSendMessageList.stream().filter(m-> Objects.equals(m.getMessageId(), vo.getId()) && m.getStatus()==3).collect(Collectors.toList()).size();
+                Map<Long, Long> messageCounts = curUserSendMessageList.stream()
+                        .collect(Collectors.groupingBy(GroupMessageMemberReceiveRecordPO::getMessageId, Collectors.summingLong(m -> m.getStatus() == 0 ? 1 : m.getStatus() == 3 ? 1 : 0)));
+
+                long unReadCount = messageCounts.getOrDefault(vo.getId(), 0L);
+                long readCount = messageCounts.getOrDefault(vo.getId(), 0L);
+
                 vo.setUnReadCount(unReadCount);
                 vo.setReadCount(readCount);
             }
@@ -91,8 +97,8 @@ public class GroupMessageServiceImpl implements MessageService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
-        DeveloperResult developerResult = groupInfoClient.findGroup(req.getGroupId());
-        GroupInfoDTO groupInfoDTO = (GroupInfoDTO) developerResult.getData();
+        DeveloperResult<GroupInfoDTO> developerResult = groupInfoClient.findGroup(req.getGroupId());
+        GroupInfoDTO groupInfoDTO = developerResult.getData();
         if(Objects.isNull(groupInfoDTO)){
             return DeveloperResult.error("群聊不存在");
         }
@@ -101,8 +107,8 @@ public class GroupMessageServiceImpl implements MessageService {
             return DeveloperResult.error("群已解散");
         }
 
-        DeveloperResult developerResult2 = groupInfoClient.getSelfJoinAllGroupInfo();
-        List<SelfJoinGroupInfoDTO> joinGroupInfoList = (List<SelfJoinGroupInfoDTO>) developerResult2.getData();
+        DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult2 = groupInfoClient.getSelfJoinAllGroupInfo();
+        List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult2.getData();
         if(joinGroupInfoList.stream().noneMatch(x -> x.getGroupId().equals(req.getGroupId()) && x.getQuit())){
             return DeveloperResult.error("您已不在该群聊中,无法发送消息");
         }
@@ -112,7 +118,7 @@ public class GroupMessageServiceImpl implements MessageService {
         this.groupMessageRepository.save(message);
 
         // 需要接受消息的成员
-        List<Long> receiverIds = (List<Long>)groupMemberClient.findGroupMemberUserId(groupInfoDTO.getId()).getData();
+        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(groupInfoDTO.getId()).getData();
         receiverIds = receiverIds.stream().filter(id->!userId.equals(id)).collect(Collectors.toList());
 
         List<GroupMessageMemberReceiveRecordPO> receiveRecods = new ArrayList<>();
@@ -164,7 +170,7 @@ public class GroupMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult recallMessage(Long id) {
+    public DeveloperResult<Boolean> recallMessage(Long id) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         GroupMessagePO groupMessage = groupMessageRepository.getById(id);
         if(groupMessage==null){
@@ -175,8 +181,8 @@ public class GroupMessageServiceImpl implements MessageService {
             return DeveloperResult.error("无法撤回不是自己发送的消息");
         }
 
-        DeveloperResult developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
-        List<SelfJoinGroupInfoDTO> joinGroupInfoList = (List<SelfJoinGroupInfoDTO>) developerResult.getData();
+        DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
+        List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult.getData();
         SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = joinGroupInfoList.stream().filter(x -> x.getGroupId().equals(groupMessage.getGroupId()) && x.getQuit()).findFirst().get();
         if(selfJoinGroupInfoDTO==null){
             return DeveloperResult.error("您已不在该群聊中,无法撤回消息");
@@ -185,7 +191,7 @@ public class GroupMessageServiceImpl implements MessageService {
         groupMessage.setMessageStatus(MessageStatusEnum.RECALL.code());
         groupMessageRepository.updateById(groupMessage);
 
-        List<Long> receiverIds = (List<Long>)groupMemberClient.findGroupMemberUserId(groupMessage.getId()).getData();
+        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(groupMessage.getId()).getData();
         receiverIds = receiverIds.stream().filter(x->!userId.equals(x)).collect(Collectors.toList());
 
         String message = String.format("%s 撤回了一条消息",selfJoinGroupInfoDTO.getAliasName());
@@ -202,8 +208,8 @@ public class GroupMessageServiceImpl implements MessageService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         long stIdx = (page-1)*size;
 
-        DeveloperResult developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
-        List<SelfJoinGroupInfoDTO> joinGroupInfoList = (List<SelfJoinGroupInfoDTO>) developerResult.getData();
+        DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
+        List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult.getData();
         SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = joinGroupInfoList.stream().filter(x -> x.getGroupId().equals(groupId) && x.getQuit()).findFirst().get();
         if(selfJoinGroupInfoDTO==null){
             return DeveloperResult.error("您已不在群聊");
@@ -215,12 +221,12 @@ public class GroupMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult insertMessage(MessageInsertDTO dto) {
+    public DeveloperResult<Boolean> insertMessage(MessageInsertDTO dto) {
         return DeveloperResult.success();
     }
 
     @Override
-    public DeveloperResult deleteMessage(Long friendId) {
+    public DeveloperResult<Boolean> deleteMessage(Long friendId) {
         return DeveloperResult.success();
     }
 

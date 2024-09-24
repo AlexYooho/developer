@@ -36,7 +36,7 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public DeveloperResult Login(LoginDTO dto) {
+    public DeveloperResult<Map<String, Object>> Login(LoginDTO dto) {
         Map<String, Object> response = oAuthClient.getToken("password", dto.getAccount(), dto.getPassword(), "client_dev", "dev");
         return DeveloperResult.success(response);
     }

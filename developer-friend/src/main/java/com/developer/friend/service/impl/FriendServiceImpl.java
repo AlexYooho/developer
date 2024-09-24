@@ -39,7 +39,7 @@ public class FriendServiceImpl implements FriendService {
     private MessageClient messageClient;
 
     @Override
-    public DeveloperResult findFriendList() {
+    public DeveloperResult<List<FriendInfoDTO>> findFriendList() {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         List<FriendPO> friendList = friendRepository.findFriendByUserId(userId);
         List<FriendInfoDTO> list = friendList.stream().map(x -> {
@@ -53,28 +53,28 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public DeveloperResult isFriend(Long userId1, Long userId2) {
+    public DeveloperResult<Boolean> isFriend(Long userId1, Long userId2) {
         boolean result = friendRepository.isFriend(userId1,userId2);
         return DeveloperResult.success(result);
     }
 
     @Override
-    public DeveloperResult findFriend(Long friendId) {
+    public DeveloperResult<FriendInfoDTO> findFriend(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         FriendPO friend = friendRepository.findByFriendId(friendId, userId);
         if (friend == null) {
             return DeveloperResult.error("对方不是你的好友");
         }
 
-        FriendInfoDTO friendInfoRep = new FriendInfoDTO();
-        friendInfoRep.setId(friend.getId());
-        friendInfoRep.setHeadImage(friend.getFriendHeadImage());
-        friendInfoRep.setNickName(friend.getFriendNickName());
-        return DeveloperResult.success(friendInfoRep);
+        FriendInfoDTO friendInfoDTO = new FriendInfoDTO();
+        friendInfoDTO.setId(friend.getId());
+        friendInfoDTO.setHeadImage(friend.getFriendHeadImage());
+        friendInfoDTO.setNickName(friend.getFriendNickName());
+        return DeveloperResult.success(friendInfoDTO);
     }
 
     @Override
-    public DeveloperResult sendAddFriendRequest(SendAddFriendInfoRequestDTO req) {
+    public DeveloperResult<Boolean> sendAddFriendRequest(SendAddFriendInfoRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         FriendPO friend = friendRepository.findByFriendId(req.getFriendId(), userId);
         if (!ObjectUtil.isEmpty(friend)) {
@@ -99,11 +99,11 @@ public class FriendServiceImpl implements FriendService {
 
         // 发送添加请求
         rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND.code(), IMTerminalTypeEnum.WEB, new Date());
-        return DeveloperResult.success();
+        return DeveloperResult.success(true);
     }
 
     @Override
-    public DeveloperResult processFriendRequest(ProcessAddFriendRequestDTO req) {
+    public DeveloperResult<Boolean> processFriendRequest(ProcessAddFriendRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         if (Objects.equals(userId, req.getFriendId())) {
@@ -142,27 +142,27 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public DeveloperResult deleteFriendByFriendId(Long friendId) {
+    public DeveloperResult<Boolean> deleteFriendByFriendId(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         FriendPO friend = friendRepository.findByFriendId(friendId, userId);
         if (ObjectUtil.isEmpty(friend)) {
             return DeveloperResult.error("对方不是你的好友");
         }
 
-        friendRepository.removeById(friend.getId());
+        boolean isSuccess = friendRepository.removeById(friend.getId());
         messageClient.removeFriendChatMessage(MessageMainTypeEnum.PRIVATE_MESSAGE.code(),friendId);
 
-        return DeveloperResult.success("删除成功");
+        return DeveloperResult.success(isSuccess);
     }
 
     @Override
-    public DeveloperResult findFriendAddRequestCount() {
+    public DeveloperResult<Integer> findFriendAddRequestCount() {
         List<FriendApplicationRecordPO> list = friendApplicationRecordPORepository.findRecordByStatus(SelfUserInfoContext.selfUserInfo().getUserId(),AddFriendStatusEnum.SENT);
         return DeveloperResult.success(list.size());
     }
 
     @Override
-    public DeveloperResult findNewFriendList() {
+    public DeveloperResult<List<NewFriendListDTO>> findNewFriendList() {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         //List<NewFriendListDTO> lists = friendApplicationRecordPORepository.findNewFriendList(userId);
         List<NewFriendListDTO> list = new ArrayList<>();
@@ -170,16 +170,16 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public DeveloperResult updateAddFriendRecordStatus() {
-        friendApplicationRecordPORepository.updateStatusSentToViewed(SelfUserInfoContext.selfUserInfo().getUserId());
-        return DeveloperResult.success();
+    public DeveloperResult<Boolean> updateAddFriendRecordStatus() {
+        boolean isSuccess = friendApplicationRecordPORepository.updateStatusSentToViewed(SelfUserInfoContext.selfUserInfo().getUserId());
+        return DeveloperResult.success(isSuccess);
     }
 
     @Override
-    public DeveloperResult modifyFriendList(List<FriendInfoDTO> list) {
+    public DeveloperResult<Boolean> modifyFriendList(List<FriendInfoDTO> list) {
         List<FriendPO> friendPOS = BeanUtils.copyProperties(list, FriendPO.class);
-        friendRepository.updateBatchById(friendPOS);
-        return DeveloperResult.success();
+        boolean isSuccess = friendRepository.updateBatchById(friendPOS);
+        return DeveloperResult.success(isSuccess);
     }
 
     /**

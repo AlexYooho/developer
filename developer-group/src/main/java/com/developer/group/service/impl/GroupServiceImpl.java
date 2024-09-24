@@ -38,10 +38,11 @@ public class GroupServiceImpl implements GroupService {
     private IMOnlineUtil imOnlineUtil;
 
     @Override
-    public DeveloperResult createGroup(CreateGroupRequestDTO dto) {
+    public DeveloperResult<CreateGroupRequestDTO> createGroup(CreateGroupRequestDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         GroupInfoPO group = BeanUtils.copyProperties(dto, GroupInfoPO.class);
+        assert group != null;
         group.setOwnerId(userId);
         groupInfoRepository.save(group);
 
@@ -60,7 +61,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public DeveloperResult modifyGroup(CreateGroupRequestDTO req) {
+    public DeveloperResult<CreateGroupRequestDTO> modifyGroup(CreateGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         GroupInfoPO group = groupInfoRepository.getById(req.getId());
@@ -86,7 +87,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public DeveloperResult deleteGroup(Long groupId) {
+    public DeveloperResult<Boolean> deleteGroup(Long groupId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         GroupInfoPO group = this.groupInfoRepository.getById(groupId);
         if(!group.getOwnerId().equals(userId)){
@@ -102,7 +103,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public DeveloperResult findById(Long groupId) {
+    public DeveloperResult<GroupInfoDTO> findById(Long groupId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         GroupInfoPO group = groupInfoRepository.getById(groupId);
         GroupMemberPO groupMember = groupMemberRepository.findByGroupIdAndUserId(groupId, userId);
@@ -111,13 +112,14 @@ public class GroupServiceImpl implements GroupService {
         }
 
         GroupInfoDTO dto = BeanUtils.copyProperties(group, GroupInfoDTO.class);
+        assert dto != null;
         dto.setAliasName(groupMember.getAliasName());
         dto.setRemark(groupMember.getRemark());
         return DeveloperResult.success(dto);
     }
 
     @Override
-    public DeveloperResult findGroupList() {
+    public DeveloperResult<List<GroupInfoDTO>> findGroupList() {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         List<GroupMemberPO> groupMembers = groupMemberRepository.findByUserId(userId);
         if(groupMembers.isEmpty()){
@@ -129,6 +131,7 @@ public class GroupServiceImpl implements GroupService {
         List<GroupInfoDTO> list = groups.stream().map(x -> {
             GroupInfoDTO groupInfoRep = BeanUtils.copyProperties(x, GroupInfoDTO.class);
             GroupMemberPO member = groupMembers.stream().filter(m -> x.getId().equals(m.getGroupId())).findFirst().get();
+            assert groupInfoRep != null;
             groupInfoRep.setAliasName(member.getAliasName());
             groupInfoRep.setRemark(member.getRemark());
             return groupInfoRep;
@@ -137,8 +140,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public DeveloperResult invite(GroupInviteRequestDTO req) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+    public DeveloperResult<Boolean> invite(GroupInviteRequestDTO req) {
         GroupInfoPO group = this.groupInfoRepository.getById(req.getGroupId());
         if(group==null){
             return DeveloperResult.error("群聊不存在");
@@ -150,7 +152,7 @@ public class GroupServiceImpl implements GroupService {
             return DeveloperResult.error("群聊人数不能大于"+DeveloperConstant.MAX_GROUP_MEMBER+"人");
         }
 
-        DeveloperResult developerResult = friendClient.friends();
+        DeveloperResult<List<FriendInfoDTO>> developerResult = friendClient.friends();
         List<FriendInfoDTO> friends = (List<FriendInfoDTO>) developerResult.getData();
         List<FriendInfoDTO> friendsList = req.getFriendIds().stream().map(id -> friends.stream().filter(f -> f.getId().equals(id)).findFirst().get()).collect(Collectors.toList());
         if(friendsList.size()!=req.getFriendIds().size()){
@@ -178,12 +180,13 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public DeveloperResult findGroupMembers(Long groupId) {
+    public DeveloperResult<List<GroupMemberDTO>> findGroupMembers(Long groupId) {
         List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(groupId);
         List<Long> userIds = members.stream().map(GroupMemberPO::getUserId).collect(Collectors.toList());
         List<Long> onlineUserIds = imOnlineUtil.getOnlineUser(userIds);
         List<GroupMemberDTO> list = members.stream().map(x -> {
             GroupMemberDTO vo = BeanUtils.copyProperties(x, GroupMemberDTO.class);
+            assert vo != null;
             vo.setOnline(onlineUserIds.contains(x.getUserId()));
             return vo;
         }).collect(Collectors.toList());
@@ -191,7 +194,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public DeveloperResult quitGroup(Long groupId) {
+    public DeveloperResult<Boolean> quitGroup(Long groupId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         GroupInfoPO group = groupInfoRepository.getById(groupId);
         if(group.getOwnerId().equals(userId)){
@@ -203,7 +206,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public DeveloperResult kickGroup(Long groupId, Long targetUserId) {
+    public DeveloperResult<Boolean> kickGroup(Long groupId, Long targetUserId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         GroupInfoPO group = groupInfoRepository.getById(groupId);
         if(!group.getOwnerId().equals(userId)){
@@ -219,7 +222,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public DeveloperResult findSelfJoinAllGroupInfo() {
+    public DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo() {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         List<SelfJoinGroupInfoDTO> joinAllGroupInfoList = groupInfoRepository.findUserJoinGroupInfo(userId);
         return DeveloperResult.success(joinAllGroupInfoList);
