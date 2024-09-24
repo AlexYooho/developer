@@ -1,10 +1,7 @@
 package com.developer.user.controller;
 
 import com.developer.user.client.FriendClient;
-import com.developer.user.dto.FriendInfoDTO;
-import com.developer.user.dto.ModifyUserInfoDTO;
-import com.developer.user.dto.UserInfoDTO;
-import com.developer.user.dto.UserRegisterDTO;
+import com.developer.user.dto.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +72,11 @@ public class UserController {
     @PutMapping("/modify")
     public DeveloperResult<Boolean> modifyUserInfo(@RequestBody ModifyUserInfoDTO dto){
         return userService.modifyUserInfo(dto);
+    }
+
+    @GetMapping("/online/terminal")
+    public DeveloperResult<List<OnlineTerminalDTO>> onlineTerminal(@RequestParam("userIds") String userIds){
+        return userService.findOnlineTerminal(userIds);
     }
 
 }

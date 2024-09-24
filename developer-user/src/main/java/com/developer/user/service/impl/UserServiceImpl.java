@@ -2,6 +2,7 @@ package com.developer.user.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.enums.IMTerminalTypeEnum;
 import com.developer.framework.model.SelfUserInfoModel;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.IMOnlineUtil;
@@ -18,10 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -156,5 +154,21 @@ public class UserServiceImpl implements UserService {
         return DeveloperResult.success(isSuccess);
     }
 
+    /**
+     * 获取用户在线终端
+     * @param userIds
+     * @return
+     */
+    @Override
+    public DeveloperResult<List<OnlineTerminalDTO>> findOnlineTerminal(String userIds) {
+        List<Long> userIdList = Arrays.stream(userIds.split(",")).map(Long::parseLong).collect(Collectors.toList());
+        Map<Long, List<IMTerminalTypeEnum>> onlineTerminals = imOnlineUtil.getOnlineTerminal(userIdList);
+        List<OnlineTerminalDTO> list=new LinkedList<>();
+        onlineTerminals.forEach((userId,terminals)->{
+            List<Integer> collect = terminals.stream().map(IMTerminalTypeEnum::code).collect(Collectors.toList());
+            list.add(new OnlineTerminalDTO(userId,collect));
+        });
+        return DeveloperResult.success(list);
+    }
 
 }
