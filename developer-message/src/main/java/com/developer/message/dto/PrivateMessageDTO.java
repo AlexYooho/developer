@@ -5,18 +5,18 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class PrivateMessageDTO {
-    private long id;
+public class PrivateMessageDTO extends SendMessageResultDTO {
+    //private long id;
 
-    private Long sendId;
+    //private Long sendId;
 
     private Long receiverId;
 
-    private String messageContent;
+    //private String messageContent;
 
-    private Integer messageContentType;
+    //private Integer messageContentType;
 
-    private Integer messageStatus;
+    //private Integer messageStatus;
 
-    private Date sendTime;
+    //private Date sendTime;
 }

@@ -4,6 +4,7 @@ import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.MessageInsertDTO;
 import com.developer.message.dto.SendMessageRequestDTO;
+import com.developer.message.dto.SendMessageResultDTO;
 import com.developer.message.service.MessageServiceRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class MessageController {
      * @return
      */
     @PostMapping("/{type}/send")
-    public DeveloperResult sendMessage(@PathVariable("type") Integer type,@RequestBody SendMessageRequestDTO req){
+    public DeveloperResult<SendMessageResultDTO> sendMessage(@PathVariable("type") Integer type,@RequestBody SendMessageRequestDTO req){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).sendMessage(req);
     }
 
@@ -43,7 +44,7 @@ public class MessageController {
      * @return
      */
     @GetMapping("/{type}/loadMessage")
-    public DeveloperResult loadMessage(@PathVariable("type") Integer type,@RequestParam Long minId){
+    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(@PathVariable("type") Integer type, @RequestParam Long minId){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).loadMessage(minId);
     }
 
@@ -53,7 +54,7 @@ public class MessageController {
      * @return
      */
     @PostMapping("/{type}/readed")
-    public DeveloperResult readedMessage(@PathVariable("type") Integer type,@RequestParam Long groupId){
+    public DeveloperResult<Boolean> readedMessage(@PathVariable("type") Integer type,@RequestParam Long groupId){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).readMessage(groupId);
     }
 
@@ -65,7 +66,7 @@ public class MessageController {
      * @return
      */
     @GetMapping("/{type}/history")
-    public DeveloperResult recallMessage(@PathVariable("type") Integer type,@RequestParam Long groupId,@RequestParam Long page,@RequestParam Long size){
+    public DeveloperResult<List<SendMessageResultDTO>> recallMessage(@PathVariable("type") Integer type,@RequestParam Long groupId,@RequestParam Long page,@RequestParam Long size){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).findHistoryMessage(groupId,page,size);
     }
 
@@ -99,7 +100,7 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/reply/{id}")
-    public DeveloperResult replyMessage(@PathVariable Integer type,@PathVariable Long id,@RequestBody SendMessageRequestDTO dto){
+    public DeveloperResult<Boolean> replyMessage(@PathVariable Integer type,@PathVariable Long id,@RequestBody SendMessageRequestDTO dto){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).replyMessage(id,dto);
     }
 
@@ -110,7 +111,7 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/collection/{id}")
-    public DeveloperResult collectionMessage(@PathVariable Integer type,@PathVariable Long id) {
+    public DeveloperResult<Boolean> collectionMessage(@PathVariable Integer type,@PathVariable Long id) {
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).collectionMessage(id);
     }
 
@@ -122,7 +123,7 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/forward/{messageId}")
-    public DeveloperResult forwardMessage(@PathVariable Integer type, @PathVariable Long messageId, @RequestBody List<Long> userIdList){
+    public DeveloperResult<Boolean> forwardMessage(@PathVariable Integer type, @PathVariable Long messageId, @RequestBody List<Long> userIdList){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).forwardMessage(messageId,userIdList);
     }
 

@@ -13,6 +13,7 @@ import com.developer.message.client.FriendClient;
 import com.developer.message.dto.MessageInsertDTO;
 import com.developer.message.dto.PrivateMessageDTO;
 import com.developer.message.dto.SendMessageRequestDTO;
+import com.developer.message.dto.SendMessageResultDTO;
 import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.PrivateMessageRepository;
 import com.developer.message.service.MessageService;
@@ -48,8 +49,8 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     @Override
-    public DeveloperResult loadMessage(Long minId) {
-        List<PrivateMessageDTO> list = new ArrayList<>();
+    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(Long minId) {
+        List<SendMessageResultDTO> list = new ArrayList<>();
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         Long maxMessageId = fetchAndModifyMessageId(userId,minId);
         if(maxMessageId<=minId){
@@ -67,7 +68,6 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         log.info("拉取消息,用户id:{},数量:{}", userId, messages.size());
         list = messages.stream().map(m -> BeanUtils.copyProperties(m, PrivateMessageDTO.class)).collect(Collectors.toList());
-
         return DeveloperResult.success(list);
     }
 
@@ -77,7 +77,7 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     @Override
-    public DeveloperResult sendMessage(SendMessageRequestDTO req) {
+    public DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         DeveloperResult<Boolean> friend = friendClient.isFriend(userId, req.getReceiverId());
         boolean isFriend = friend.getData();
@@ -93,7 +93,9 @@ public class PrivateMessageServiceImpl implements MessageService {
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         rabbitMQUtil.pushMQMessage(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, nickName, req.getMessageContent(), Arrays.asList(req.getReceiverId()),new ArrayList<>(), privateMessage.getMessageStatus(), IMTerminalTypeEnum.WEB,privateMessage.getSendTime());
 
-        return DeveloperResult.success(privateMessage.getId());
+        PrivateMessageDTO dto = new PrivateMessageDTO();
+        dto.setId(privateMessage.getId());
+        return DeveloperResult.success(dto);
     }
 
     /**
@@ -102,7 +104,7 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     @Override
-    public DeveloperResult readMessage(Long friendId) {
+    public DeveloperResult<Boolean> readMessage(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "", Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED.code(), IMTerminalTypeEnum.WEB,new Date());
@@ -149,13 +151,13 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     @Override
-    public DeveloperResult findHistoryMessage(Long friendId, Long page, Long size) {
+    public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(Long friendId, Long page, Long size) {
         page = page>0?page:1;
         size = size>0?size:10;
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         long pageIndex = (page-1)*size;
         List<PrivateMessagePO> list = privateMessageRepository.getHistoryMessageList(userId, friendId, pageIndex, size);
-        List<PrivateMessageDTO> collect = list.stream().map(a -> BeanUtils.copyProperties(a, PrivateMessageDTO.class)).collect(Collectors.toList());
+        List<SendMessageResultDTO> collect = list.stream().map(a -> BeanUtils.copyProperties(a, PrivateMessageDTO.class)).collect(Collectors.toList());
         return DeveloperResult.success(collect);
     }
 
@@ -196,7 +198,7 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     @Override
-    public DeveloperResult replyMessage(Long id,SendMessageRequestDTO dto) {
+    public DeveloperResult<Boolean> replyMessage(Long id,SendMessageRequestDTO dto) {
         PrivateMessagePO messagePO = privateMessageRepository.getById(id);
         if(messagePO==null){
             return DeveloperResult.error("回复消息不存在");
@@ -213,7 +215,7 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     @Override
-    public DeveloperResult collectionMessage(Long messageId) {
+    public DeveloperResult<Boolean> collectionMessage(Long messageId) {
         return null;
     }
 
@@ -224,7 +226,7 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     @Override
-    public DeveloperResult forwardMessage(Long messageId, List<Long> userIdList) {
+    public DeveloperResult<Boolean> forwardMessage(Long messageId, List<Long> userIdList) {
         PrivateMessagePO messagePO = privateMessageRepository.getById(messageId);
         if(messagePO==null){
             return DeveloperResult.error("转发消息本体不存在");

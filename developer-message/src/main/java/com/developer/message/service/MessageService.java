@@ -3,6 +3,7 @@ package com.developer.message.service;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.MessageInsertDTO;
 import com.developer.message.dto.SendMessageRequestDTO;
+import com.developer.message.dto.SendMessageResultDTO;
 
 import java.util.List;
 
@@ -13,21 +14,21 @@ public interface MessageService {
      * @param minId
      * @return
      */
-    DeveloperResult loadMessage(Long minId);
+    DeveloperResult<List<SendMessageResultDTO>> loadMessage(Long minId);
 
     /**
      * 发送消息
      * @param req
      * @return
      */
-    DeveloperResult sendMessage(SendMessageRequestDTO req);
+    DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req);
 
     /**
      * 已读消息
      * @param friendId
      * @return
      */
-    DeveloperResult readMessage(Long friendId);
+    DeveloperResult<Boolean> readMessage(Long friendId);
 
     /**
      * 撤回消息
@@ -43,7 +44,7 @@ public interface MessageService {
      * @param size
      * @return
      */
-    DeveloperResult findHistoryMessage(Long friendId,Long page,Long size);
+    DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(Long friendId,Long page,Long size);
 
     /**
      * 新增消息
@@ -63,17 +64,17 @@ public interface MessageService {
      * 回复消息
      * @return
      */
-    DeveloperResult replyMessage(Long id,SendMessageRequestDTO dto);
+    DeveloperResult<Boolean> replyMessage(Long id,SendMessageRequestDTO dto);
 
     /**
      * 收藏消息
      * @return
      */
-    DeveloperResult collectionMessage(Long messageId);
+    DeveloperResult<Boolean> collectionMessage(Long messageId);
 
     /**
      * 转发消息
      * @return
      */
-    DeveloperResult forwardMessage(Long messageId, List<Long> userIdList);
+    DeveloperResult<Boolean> forwardMessage(Long messageId, List<Long> userIdList);
 }

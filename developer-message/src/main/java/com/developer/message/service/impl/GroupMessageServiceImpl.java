@@ -48,7 +48,7 @@ public class GroupMessageServiceImpl implements MessageService {
     private GroupMemberClient groupMemberClient;
 
     @Override
-    public DeveloperResult loadMessage(Long minId) {
+    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(Long minId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
         List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult.getData();
@@ -65,7 +65,7 @@ public class GroupMessageServiceImpl implements MessageService {
 
         Date minDate = DateTimeUtils.addMonths(new Date(), -3);
         List<GroupMessagePO> messages = groupMessageRepository.find(minId, minDate, groupIds);
-        List<GroupMessageDTO> vos = messages.stream().map(x -> {
+        List<SendMessageResultDTO> vos = messages.stream().map(x -> {
             GroupMessageDTO vo = BeanUtils.copyProperties(x, GroupMessageDTO.class);
             if(vo==null){
                 return null;
@@ -93,7 +93,7 @@ public class GroupMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult sendMessage(SendMessageRequestDTO req) {
+    public DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
@@ -146,7 +146,7 @@ public class GroupMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult readMessage(Long groupId) {
+    public DeveloperResult<Boolean> readMessage(Long groupId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
@@ -202,7 +202,7 @@ public class GroupMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult findHistoryMessage(Long groupId, Long page, Long size) {
+    public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(Long groupId, Long page, Long size) {
         page = page>0?page:1;
         size = size>0?size:10;
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -216,7 +216,7 @@ public class GroupMessageServiceImpl implements MessageService {
         }
 
         List<GroupMessagePO> messages = groupMessageRepository.findHistoryMessage(groupId, selfJoinGroupInfoDTO.getCreatedTime(), stIdx, size);
-        List<GroupMessageDTO> list = messages.stream().map(x -> BeanUtils.copyProperties(x, GroupMessageDTO.class)).collect(Collectors.toList());
+        List<SendMessageResultDTO> list = messages.stream().map(x -> BeanUtils.copyProperties(x, GroupMessageDTO.class)).collect(Collectors.toList());
         return DeveloperResult.success(list);
     }
 
@@ -231,7 +231,7 @@ public class GroupMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult replyMessage(Long id,SendMessageRequestDTO dto) {
+    public DeveloperResult<Boolean> replyMessage(Long id,SendMessageRequestDTO dto) {
         GroupMessagePO groupMessagePO = groupMessageRepository.getById(id);
         if(groupMessagePO==null){
             return DeveloperResult.error("回复消息不存在");
@@ -242,12 +242,12 @@ public class GroupMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult collectionMessage(Long messageId) {
+    public DeveloperResult<Boolean> collectionMessage(Long messageId) {
         return null;
     }
 
     @Override
-    public DeveloperResult forwardMessage(Long messageId, List<Long> userIdList) {
+    public DeveloperResult<Boolean> forwardMessage(Long messageId, List<Long> userIdList) {
         GroupMessagePO groupMessagePO = groupMessageRepository.getById(messageId);
         if(groupMessagePO==null){
             return DeveloperResult.error("转发消息本体不存在");
