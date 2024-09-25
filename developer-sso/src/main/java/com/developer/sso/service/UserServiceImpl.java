@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("用户不存在: " + userName);
         }
         // 这里一定要基于 BCrypt 加密,不然会不通过
-        return new User(userInfo.getUsername(), new BCryptPasswordEncoder().encode(userInfo.getPassword()), new ArrayList<>());
+        return new User(userInfo.getUsername(), userInfo.getPassword(), new ArrayList<>());
     }
 
 }

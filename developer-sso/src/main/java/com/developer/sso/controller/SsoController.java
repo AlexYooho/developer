@@ -2,6 +2,7 @@ package com.developer.sso.controller;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.sso.dto.LoginDTO;
+import com.developer.sso.dto.TokenDTO;
 import com.developer.sso.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +25,7 @@ public class SsoController {
      * @return
      */
     @PostMapping("login")
-    public DeveloperResult<Map<String, Object>> login(@RequestBody LoginDTO dto){
+    public DeveloperResult<TokenDTO> login(@RequestBody LoginDTO dto){
         return sysUserService.Login(dto);
     }
 

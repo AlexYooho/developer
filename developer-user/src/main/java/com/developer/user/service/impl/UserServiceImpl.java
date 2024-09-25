@@ -16,6 +16,7 @@ import com.developer.framework.model.DeveloperResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private GroupMemberClient groupMemberClient;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * 用户注册
@@ -58,12 +61,13 @@ public class UserServiceImpl implements UserService {
             return DeveloperResult.error(500,"请输入昵称");
         }
 
+
         UserPO userPO = userRepository.findByAccount(dto.getAccount());
         if(userPO!=null){
             return DeveloperResult.error(500,"手机号已存在,请重新输入");
         }
 
-        userPO = new UserPO(dto.getAccount(), "", dto.getNickname(), "","", dto.getPassword(), dto.getSex(),0,"",new Date(),new Date());
+        userPO = new UserPO(dto.getAccount(), "", dto.getNickname(), "","", passwordEncoder.encode(dto.getPassword()), dto.getSex(),0,"",new Date(),new Date());
         userRepository.save(userPO);
         return DeveloperResult.success();
     }

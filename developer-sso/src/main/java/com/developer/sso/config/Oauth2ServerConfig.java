@@ -1,5 +1,6 @@
 package com.developer.sso.config;
 
+import com.developer.sso.handler.CustomOauth2ExceptionHandler;
 import com.developer.sso.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -82,6 +83,9 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
                 .scopes("all");
     }
 
+    @Autowired
+    private CustomOauth2ExceptionHandler customOauth2ExceptionHandler;
+
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
         super.configure(endpoints);
@@ -89,6 +93,7 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
                 .tokenStore(tokenStore())//token存储方式
                 .authenticationManager(authenticationManager)// 开启密码验证，由 WebSecurityConfigurerAdapter
                 .userDetailsService(userDetailsService)// 读取验证用户信息
+                .exceptionTranslator(customOauth2ExceptionHandler)
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET,HttpMethod.POST,HttpMethod.DELETE,HttpMethod.PUT)
                 .tokenServices(authorizationServerTokenServices());
     }

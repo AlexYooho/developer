@@ -36,6 +36,8 @@ public class AccessTokenConvertor extends DefaultAccessTokenConverter {
         selfUserInfoModel.setNickName(userInfo.getNickname());
         selfUserInfoModel.setTerminal(0);
         String jsonString = JSON.toJSONString(selfUserInfoModel);
+
+
         stringMap.put("selfUserInfoKey",jsonString);
 
         return stringMap;
