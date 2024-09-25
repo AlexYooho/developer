@@ -42,6 +42,7 @@ public class ResourceServerConfiger extends ResourceServerConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .and().authorizeRequests()
+                .antMatchers("/user/register").permitAll()
                 .antMatchers("/**").authenticated();
     }
 
