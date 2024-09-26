@@ -9,6 +9,7 @@ import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.enums.MessageStatusEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
+import com.developer.framework.utils.RedisUtil;
 import com.developer.message.client.FriendClient;
 import com.developer.message.dto.MessageInsertDTO;
 import com.developer.message.dto.PrivateMessageDTO;
@@ -20,7 +21,6 @@ import com.developer.message.service.MessageService;
 import com.developer.message.util.RabbitMQUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -41,7 +41,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     private RabbitMQUtil rabbitMQUtil;
 
     @Autowired
-    private RedisTemplate<String,Object> redisTemplate;
+    private RedisUtil redisUtil;
 
     /**
      * 拉取最新消息
@@ -275,13 +275,13 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @return
      */
     private Long fetchAndModifyMessageId(Long userId,Long messageId){
-//        String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
-//        Long maxMessageId = (Long) redisTemplate.opsForValue().get(key);
-//        if(maxMessageId == null || maxMessageId<messageId){
-//            redisTemplate.opsForValue().set(key,messageId,3600, TimeUnit.SECONDS);
-//            maxMessageId = messageId;
-//        }
+        String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
+        Long maxMessageId = redisUtil.get(key, Long.class);
+        if(maxMessageId<messageId){
+            redisUtil.set(key,messageId,3600, TimeUnit.SECONDS);
+            maxMessageId = messageId;
+        }
 
-        return 0l;
+        return maxMessageId;
     }
 }
