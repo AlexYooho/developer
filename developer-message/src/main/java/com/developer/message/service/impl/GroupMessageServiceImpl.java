@@ -210,7 +210,7 @@ public class GroupMessageServiceImpl implements MessageService {
 
         DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
         List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult.getData();
-        SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = joinGroupInfoList.stream().filter(x -> x.getGroupId().equals(groupId) && x.getQuit()).findFirst().get();
+        SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = joinGroupInfoList.stream().filter(x -> x.getGroupId().equals(groupId) && !x.getQuit()).findFirst().get();
         if(selfJoinGroupInfoDTO==null){
             return DeveloperResult.error("您已不在群聊");
         }
