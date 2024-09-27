@@ -53,8 +53,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         List<SendMessageResultDTO> list = new ArrayList<>();
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         Long maxMessageId = fetchAndModifyMessageId(userId,minId);
-        if(maxMessageId<=minId){
-            log.info("拉取消息,用户id:{},数量:{}", userId, 0);
+        if(minId<=maxMessageId){
             return DeveloperResult.success(list);
         }
 
@@ -277,6 +276,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     private Long fetchAndModifyMessageId(Long userId,Long messageId){
         String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
         Long maxMessageId = redisUtil.get(key, Long.class);
+        maxMessageId = maxMessageId==null?0l:maxMessageId;
         if(maxMessageId<messageId){
             redisUtil.set(key,messageId,3600, TimeUnit.SECONDS);
             maxMessageId = messageId;

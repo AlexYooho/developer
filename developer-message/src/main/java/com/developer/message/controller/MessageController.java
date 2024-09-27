@@ -66,8 +66,8 @@ public class MessageController {
      * @return
      */
     @GetMapping("/{type}/history")
-    public DeveloperResult<List<SendMessageResultDTO>> recallMessage(@PathVariable("type") Integer type,@RequestParam Long groupId,@RequestParam Long page,@RequestParam Long size){
-        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).findHistoryMessage(groupId,page,size);
+    public DeveloperResult<List<SendMessageResultDTO>> recallMessage(@PathVariable("type") Integer type,@RequestParam Long targetId,@RequestParam Long page,@RequestParam Long size){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).findHistoryMessage(targetId,page,size);
     }
 
     /**
