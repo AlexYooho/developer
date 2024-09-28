@@ -133,4 +133,9 @@ public class MessageController {
     	return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).likeMessage(messageId);
     }
 
+    @PostMapping("{type}/unlike/{messageId}")
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).likeMessage(messageId);
+    }
+
 }

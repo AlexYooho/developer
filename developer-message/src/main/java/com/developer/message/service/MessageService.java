@@ -86,4 +86,11 @@ public interface MessageService {
      * @return
      */
     CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId);
+
+    /**
+     * 取消点赞
+     * @param messageId
+     * @return
+     */
+    CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId);
 }

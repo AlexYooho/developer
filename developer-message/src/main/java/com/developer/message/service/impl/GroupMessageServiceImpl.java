@@ -284,14 +284,24 @@ public class GroupMessageServiceImpl implements MessageService {
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        // 生成分布式锁的key,基于messageId和userId
-        String lockKey = RedisKeyConstant.MESSAGE_LIKE_KEY(MessageMainTypeEnum.GROUP_MESSAGE, messageId, userId);
-        RLock lock = redissonClient.getLock(lockKey);
 
+        String lockKey = RedisKeyConstant.MESSAGE_LIKE_KEY(MessageMainTypeEnum.GROUP_MESSAGE, messageId, userId);
+        String messageLikeStatusKey = RedisKeyConstant.MESSAGE_LIKE_USER_KEY(MessageMainTypeEnum.GROUP_MESSAGE, messageId, userId);
+        String messageLikeCountKey = RedisKeyConstant.MESSAGE_LIKE_MESSAGE_KEY(MessageMainTypeEnum.GROUP_MESSAGE,messageId);
+        if(!redisUtil.hasKey(messageLikeCountKey)){
+            // 做缓存预热
+            GroupMessagePO groupMessagePO = groupMessageRepository.getById(messageId);
+            if(groupMessagePO!=null){
+                redisUtil.set(messageLikeCountKey,groupMessagePO.getLikeCount(),1,TimeUnit.HOURS);
+            }
+        }
+
+        // 生成分布式锁的key,基于messageId和userId
+        RLock lock = redissonClient.getLock(lockKey);
         try{
             if(lock.tryLock(100,10,TimeUnit.SECONDS)){
-                String likeStatusKey = RedisKeyConstant.MESSAGE_LIKE_USER_KEY(MessageMainTypeEnum.GROUP_MESSAGE, messageId, userId);
-                Boolean isLiked = redisUtil.get(likeStatusKey, Boolean.class);
+
+                Boolean isLiked = redisUtil.get(messageLikeStatusKey, Boolean.class);
 
                 if(isLiked!=null && isLiked){
                     return CompletableFuture.completedFuture(DeveloperResult.error("不能重复点赞"));
@@ -302,8 +312,9 @@ public class GroupMessageServiceImpl implements MessageService {
                     return CompletableFuture.completedFuture(DeveloperResult.error("消息不存在"));
                 }
 
-                redisUtil.set(likeStatusKey,true);
-                redisUtil.increment(RedisKeyConstant.MESSAGE_LIKE_MESSAGE_KEY(MessageMainTypeEnum.GROUP_MESSAGE,messageId));
+                redisUtil.set(messageLikeStatusKey,true,24,TimeUnit.HOURS);
+                redisUtil.increment(messageLikeCountKey);
+                redisUtil.setExpire(messageLikeCountKey,1,TimeUnit.HOURS);
 
                 // 推送mq事件，更新数据库
                 MessageLikeEventDTO eventDTO = MessageLikeEventDTO.builder().messageId(messageId).userId(userId).build();
@@ -322,6 +333,13 @@ public class GroupMessageServiceImpl implements MessageService {
                 lock.unlock();
             }
         }
+    }
+
+    @Async
+    @Transactional
+    @Override
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId) {
+        return null;
     }
 
     private GroupMessagePO createGroupMessageMode(Long groupId, Long sendId, String sendNickName, List<Long> atUserIds, String message, MessageContentTypeEnum messageContentType){

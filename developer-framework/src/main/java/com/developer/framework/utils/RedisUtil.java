@@ -60,4 +60,12 @@ public class RedisUtil {
         redisTemplate.opsForValue().increment(key);
     }
 
+    public void setExpire(String key, long timeOut, TimeUnit timeUnit) {
+        redisTemplate.expire(key, timeOut, timeUnit);
+    }
+
+    public boolean hasKey(String key) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
 }

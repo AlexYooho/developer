@@ -21,9 +21,12 @@ import com.developer.message.service.MessageService;
 import com.developer.message.util.RabbitMQUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -243,7 +246,26 @@ public class PrivateMessageServiceImpl implements MessageService {
         return DeveloperResult.success();
     }
 
-    private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus,Long referenceId){
+    /**
+     * 点赞消息
+     * @param messageId
+     * @return
+     */
+    @Async
+    @Transactional
+    @Override
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId) {
+        return null;
+    }
+
+    @Async
+    @Transactional
+    @Override
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId) {
+        return null;
+    }
+
+    private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus, Long referenceId){
         return PrivateMessagePO.builder()
                 .sendId(sendId)
                 .receiverId(receiverId)
