@@ -60,7 +60,7 @@ public class MessageController {
 
     /**
      * 查询聊天记录
-     * @param groupId
+     * @param targetId
      * @param page
      * @param size
      * @return
@@ -77,7 +77,7 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/add")
-    public DeveloperResult<Boolean> insertMessage(@PathVariable Integer type,@RequestBody MessageInsertDTO dto){
+    public DeveloperResult<Boolean> insertMessage(@PathVariable("type") Integer type,@RequestBody MessageInsertDTO dto){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).insertMessage(dto);
     }
 
@@ -88,7 +88,7 @@ public class MessageController {
      * @return
      */
     @DeleteMapping("{type}/remove/{friendId}")
-    public DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable Integer type,@PathVariable Long friendId){
+    public DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") Integer type,@PathVariable("friendId") Long friendId){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).deleteMessage(friendId);
     }
 
@@ -99,9 +99,9 @@ public class MessageController {
      * @param dto
      * @return
      */
-    @PostMapping("{type}/reply/{id}")
-    public DeveloperResult<Boolean> replyMessage(@PathVariable Integer type,@PathVariable Long id,@RequestBody SendMessageRequestDTO dto){
-        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).replyMessage(id,dto);
+    @PostMapping("{type}/reply/{messageId}")
+    public DeveloperResult<Boolean> replyMessage(@PathVariable("type") Integer type,@PathVariable("messageId") Long messageId,@RequestBody SendMessageRequestDTO dto){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).replyMessage(messageId,dto);
     }
 
     /**
@@ -110,9 +110,9 @@ public class MessageController {
      * @param id
      * @return
      */
-    @PostMapping("{type}/collection/{id}")
-    public DeveloperResult<Boolean> collectionMessage(@PathVariable Integer type,@PathVariable Long id) {
-        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).collectionMessage(id);
+    @PostMapping("{type}/collection/{messageId}")
+    public DeveloperResult<Boolean> collectionMessage(@PathVariable("type") Integer type,@PathVariable("messageId") Long messageId) {
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).collectionMessage(messageId);
     }
 
     /**
@@ -123,8 +123,13 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/forward/{messageId}")
-    public DeveloperResult<Boolean> forwardMessage(@PathVariable Integer type, @PathVariable Long messageId, @RequestBody List<Long> userIdList){
+    public DeveloperResult<Boolean> forwardMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId, @RequestBody List<Long> userIdList){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).forwardMessage(messageId,userIdList);
+    }
+
+    @PostMapping("{type}/like/{messageId}")
+    public DeveloperResult<Boolean> likeMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId){
+    	return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).likeMessage(messageId);
     }
 
 }

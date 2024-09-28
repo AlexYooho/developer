@@ -10,20 +10,27 @@ import com.developer.framework.enums.MessageStatusEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.DateTimeUtils;
+import com.developer.framework.utils.RedisUtil;
 import com.developer.message.client.GroupInfoClient;
 import com.developer.message.client.GroupMemberClient;
 import com.developer.message.dto.*;
+import com.developer.message.enums.MessageLikeEnum;
 import com.developer.message.pojo.GroupMessageMemberReceiveRecordPO;
 import com.developer.message.pojo.GroupMessagePO;
+import com.developer.message.pojo.MessageLikeRecordPO;
 import com.developer.message.repository.GroupMessageMemberReceiveRecordRepository;
 import com.developer.message.repository.GroupMessageRepository;
+import com.developer.message.repository.MessageLikeRecordRepository;
 import com.developer.message.service.MessageService;
 import com.developer.message.util.RabbitMQUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +43,7 @@ public class GroupMessageServiceImpl implements MessageService {
     private RabbitMQUtil rabbitMQUtil;
 
     @Autowired
-    private RedisTemplate<String,Object> redisTemplate;
+    private RedisUtil redisUtil;
 
     @Autowired
     private GroupInfoClient groupInfoClient;
@@ -46,6 +53,9 @@ public class GroupMessageServiceImpl implements MessageService {
 
     @Autowired
     private GroupMemberClient groupMemberClient;
+
+    @Autowired
+    private MessageLikeRecordRepository messageLikeRecordRepository;
 
     @Override
     public DeveloperResult<List<SendMessageResultDTO>> loadMessage(Long minId) {
@@ -165,7 +175,7 @@ public class GroupMessageServiceImpl implements MessageService {
         });
 
         String key = StrUtil.join(",", RedisKeyConstant.IM_GROUP_READED_POSITION,groupId,userId);
-        redisTemplate.opsForValue().set(key,lastMessage.getId());
+        redisUtil.set(key,lastMessage.getId(),3600*24L, TimeUnit.SECONDS);
         return DeveloperResult.success();
     }
 
@@ -262,6 +272,43 @@ public class GroupMessageServiceImpl implements MessageService {
             this.sendMessage(dto);
         }
         return DeveloperResult.success();
+    }
+
+    @Async
+    @Transactional
+    @Override
+    public DeveloperResult<Boolean> likeMessage(Long messageId) {
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        try {
+            MessageLikeRecordPO likeRecord = messageLikeRecordRepository.findLikeRecord(messageId, userId, MessageMainTypeEnum.GROUP_MESSAGE);
+            if (likeRecord != null && Objects.equals(likeRecord.getLikeStatus(), MessageLikeEnum.LIKE)) {
+                return DeveloperResult.error("不能重复点赞");
+            }
+
+            GroupMessagePO message = groupMessageRepository.getById(messageId);
+            if (message == null) {
+                return DeveloperResult.error("消息不存在");
+            }
+
+            if (likeRecord == null) {
+                messageLikeRecordRepository.save(MessageLikeRecordPO.builder()
+                        .messageId(messageId)
+                        .messageType(MessageMainTypeEnum.GROUP_MESSAGE)
+                        .userId(userId)
+                        .LikeStatus(MessageLikeEnum.LIKE)
+                        .LikeTime(new Date())
+                        .CreateTime(new Date())
+                        .UpdateTime(new Date())
+                        .build());
+            }
+
+            message.setLikeCount(message.getLikeCount() + 1);
+            groupMessageRepository.updateById(message);
+        } finally {
+
+        }
+
+        return DeveloperResult.success(true);
     }
 
     private GroupMessagePO createGroupMessageMode(Long groupId, Long sendId, String sendNickName, List<Long> atUserIds, String message, MessageContentTypeEnum messageContentType){

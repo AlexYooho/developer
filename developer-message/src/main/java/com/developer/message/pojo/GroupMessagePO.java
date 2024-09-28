@@ -71,4 +71,10 @@ public class GroupMessagePO {
      */
     @TableField("reference_id")
     private Long referenceId;
+
+    /**
+     * 消息点赞数
+     */
+    @TableField("like_count")
+    private Integer likeCount;
 }

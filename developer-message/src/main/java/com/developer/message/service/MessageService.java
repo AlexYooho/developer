@@ -77,4 +77,11 @@ public interface MessageService {
      * @return
      */
     DeveloperResult<Boolean> forwardMessage(Long messageId, List<Long> userIdList);
+
+    /**
+     * 消息点赞
+     * @param messageId
+     * @return
+     */
+    DeveloperResult<Boolean> likeMessage(Long messageId);
 }
