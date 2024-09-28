@@ -61,4 +61,10 @@ public class PrivateMessagePO {
      */
     @TableField("reference_id")
     private Long referenceId;
+
+    /**
+     * 点赞数
+     */
+    @TableField("like_count")
+    private Long likeCount;
 }

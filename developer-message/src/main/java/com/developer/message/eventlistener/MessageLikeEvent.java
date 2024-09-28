@@ -35,7 +35,7 @@ public class MessageLikeEvent {
             // 插入新的点赞记录
             messageLikeRecordRepository.save(MessageLikeRecordPO.builder()
                     .messageId(messageId)
-                    .messageType(MessageMainTypeEnum.GROUP_MESSAGE)
+                    .messageType(event.getMessageMainTypeEnum())
                     .userId(userId)
                     .LikeStatus(MessageLikeEnum.LIKE)
                     .LikeTime(new Date())
@@ -44,11 +44,13 @@ public class MessageLikeEvent {
                     .build());
         }
 
-        // 更新消息的点赞数
-        GroupMessagePO message = groupMessageRepository.getById(messageId);
-        if (message != null) {
-            message.setLikeCount(message.getLikeCount() + 1);
-            groupMessageRepository.updateById(message);
+        if(event.getMessageMainTypeEnum().equals(MessageMainTypeEnum.GROUP_MESSAGE)) {
+            // 更新消息的点赞数
+            GroupMessagePO message = groupMessageRepository.getById(messageId);
+            if (message != null) {
+                message.setLikeCount(message.getLikeCount() + 1);
+                groupMessageRepository.updateById(message);
+            }
         }
     }
 

@@ -76,5 +76,5 @@ public class GroupMessagePO {
      * 消息点赞数
      */
     @TableField("like_count")
-    private Integer likeCount;
+    private Long likeCount;
 }

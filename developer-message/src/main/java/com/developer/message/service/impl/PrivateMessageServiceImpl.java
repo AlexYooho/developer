@@ -11,15 +11,16 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.message.client.FriendClient;
-import com.developer.message.dto.MessageInsertDTO;
-import com.developer.message.dto.PrivateMessageDTO;
-import com.developer.message.dto.SendMessageRequestDTO;
-import com.developer.message.dto.SendMessageResultDTO;
+import com.developer.message.dto.*;
+import com.developer.message.pojo.GroupMessagePO;
 import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.PrivateMessageRepository;
+import com.developer.message.service.MessageLikeService;
 import com.developer.message.service.MessageService;
 import com.developer.message.util.RabbitMQUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,12 @@ public class PrivateMessageServiceImpl implements MessageService {
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    @Autowired
+    private MessageLikeService messageLikeService;
 
     /**
      * 拉取最新消息
@@ -255,14 +262,14 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Transactional
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId) {
-        return null;
+        return messageLikeService.like(messageId, MessageMainTypeEnum.PRIVATE_MESSAGE);
     }
 
     @Async
     @Transactional
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId) {
-        return null;
+        return messageLikeService.unLike(messageId, MessageMainTypeEnum.PRIVATE_MESSAGE);
     }
 
     private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus, Long referenceId){
