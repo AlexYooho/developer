@@ -1,5 +1,7 @@
 package com.developer.framework.constant;
 
+import com.developer.framework.enums.MessageMainTypeEnum;
+
 public class RedisKeyConstant {
 
     /**
@@ -39,5 +41,24 @@ public class RedisKeyConstant {
      */
     public static String DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(Long userId){
         return String.format("developer:message:private:user:%s:max:id",userId);
+    }
+
+    /**
+     * 点赞记录key
+     * @param messageMainTypeEnum
+     * @param messageId
+     * @param userId
+     * @return
+     */
+    public static String MESSAGE_LIKE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId, Long userId){
+        return String.format("developer:message:like:%s:%s:%s",messageMainTypeEnum.code(),messageId,userId);
+    }
+
+    public static String MESSAGE_LIKE_USER_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId, Long userId){
+        return String.format("developer:message:like:%s:%s:user:%s",messageMainTypeEnum.code(),messageId,userId);
+    }
+
+    public static String MESSAGE_LIKE_MESSAGE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId){
+        return String.format("developer:message:like:%s:%s",messageMainTypeEnum.code(),messageId);
     }
 }

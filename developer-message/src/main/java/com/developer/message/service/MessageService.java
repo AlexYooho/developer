@@ -6,6 +6,7 @@ import com.developer.message.dto.SendMessageRequestDTO;
 import com.developer.message.dto.SendMessageResultDTO;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface MessageService {
 
@@ -80,8 +81,9 @@ public interface MessageService {
 
     /**
      * 消息点赞
+     *
      * @param messageId
      * @return
      */
-    DeveloperResult<Boolean> likeMessage(Long messageId);
+    CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId);
 }

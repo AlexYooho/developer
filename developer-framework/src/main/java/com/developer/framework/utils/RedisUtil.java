@@ -52,11 +52,12 @@ public class RedisUtil {
         redisTemplate.opsForValue().set(key, value,timeOut,timeUnit);
     }
 
-    public boolean tryLock(String key) {
-        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(key, "locked", 5, TimeUnit.SECONDS));
+    public void set(String key, Object value) {
+        redisTemplate.opsForValue().set(key, value);
     }
 
-    public void unlock(String key) {
-        redisTemplate.delete(key);
+    public void increment(String key){
+        redisTemplate.opsForValue().increment(key);
     }
+
 }

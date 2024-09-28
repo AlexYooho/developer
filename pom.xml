@@ -32,6 +32,7 @@
         <spring-dloud-alibaba.version>2021.0.1.0</spring-dloud-alibaba.version>
         <mysql-connector-java.version>8.0.29</mysql-connector-java.version>
         <spring-boot-starter-data-redis.version>2.6.3</spring-boot-starter-data-redis.version>
+        <redisson-spring-boot-starter.version>3.17.0</redisson-spring-boot-starter.version>
         <mybatis-plus-boot-starter.version>3.5.3.1</mybatis-plus-boot-starter.version>
         <mybatis-plus-join-boot-starter.version>1.4.11</mybatis-plus-join-boot-starter.version>
         <fastjson.version>1.2.70</fastjson.version>
@@ -92,6 +93,13 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-data-redis</artifactId>
                 <version>${spring-boot-starter-data-redis.version}</version>
+            </dependency>
+
+            <!-- Redisson -->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson-spring-boot-starter.version}</version>
             </dependency>
 
             <!-- mybatis-plus -->

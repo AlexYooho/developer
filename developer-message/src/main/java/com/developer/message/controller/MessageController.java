@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("message")
@@ -128,7 +129,7 @@ public class MessageController {
     }
 
     @PostMapping("{type}/like/{messageId}")
-    public DeveloperResult<Boolean> likeMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId){
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId){
     	return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).likeMessage(messageId);
     }
 

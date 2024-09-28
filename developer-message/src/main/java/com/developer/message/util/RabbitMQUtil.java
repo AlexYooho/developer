@@ -43,5 +43,7 @@ public class RabbitMQUtil {
         rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_EXCHANGE,DeveloperMQConstant.ROUTING_KEY,data);
     }
 
-
+    public void pushMessage(String queue, Object data){
+        rabbitTemplate.convertAndSend(queue,data);
+    }
 }
