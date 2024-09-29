@@ -11,12 +11,14 @@ public class DeveloperMQConstant {
 
 
     // 交换机
-    public static final String MESSAGE_EXCHANGE = "message-exchange";
+    public static final String MESSAGE_CHAT_EXCHANGE = "message-chat-exchange";
+
+    public static final String MESSAGE_LIKE_EXCHANGE = "message-like-exchange";
 
     // 路由键
-    public static final String CHAT_MESSAGE_ROUTING_KEY ="*.message.chat.#";
+    public static final String CHAT_MESSAGE_ROUTING_KEY ="message.chat";
 
-    public static final String MESSAGE_LIKE_ROUTING_KEY = "*.message.like.#";
+    public static final String MESSAGE_LIKE_ROUTING_KEY = "message.like";
 
     // 队列
     public static final String MESSAGE_QUEUE="message-chat-queue";
