@@ -21,6 +21,7 @@
         <module>developer-message</module>
         <module>developer-oss</module>
         <module>developer-sso</module>
+        <module>developer-payment</module>
     </modules>
 
     <properties>
