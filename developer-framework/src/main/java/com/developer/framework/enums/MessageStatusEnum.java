@@ -18,4 +18,13 @@ public enum MessageStatusEnum {
     public Integer code(){
         return this.code;
     }
+
+    public static MessageStatusEnum fromCode(Integer code){
+        for (MessageStatusEnum typeEnum:values()) {
+            if (typeEnum.code.equals(code)) {
+                return typeEnum;
+            }
+        }
+        return null;
+    }
 }

@@ -1,7 +1,11 @@
 package com.developer.friend.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.developer.framework.constant.DeveloperMQConstant;
+import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.dto.MQMessageDTO;
+import com.developer.framework.dto.MessageDTO;
 import com.developer.framework.enums.IMTerminalTypeEnum;
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
@@ -16,7 +20,7 @@ import com.developer.friend.pojo.FriendPO;
 import com.developer.friend.repository.FriendApplicationRecordPORepository;
 import com.developer.friend.repository.FriendRepository;
 import com.developer.friend.service.FriendService;
-import com.developer.friend.util.RabbitMQUtil;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,10 +37,10 @@ public class FriendServiceImpl implements FriendService {
     private FriendApplicationRecordPORepository friendApplicationRecordPORepository;
 
     @Autowired
-    private RabbitMQUtil rabbitMQUtil;
+    private MessageClient messageClient;
 
     @Autowired
-    private MessageClient messageClient;
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public DeveloperResult<List<FriendInfoDTO>> findFriendList() {
@@ -98,7 +102,7 @@ public class FriendServiceImpl implements FriendService {
         }
 
         // 发送添加请求
-        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND.code(), IMTerminalTypeEnum.WEB, new Date());
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, IMTerminalTypeEnum.WEB, new Date()));
         return DeveloperResult.success(true);
     }
 
@@ -135,7 +139,7 @@ public class FriendServiceImpl implements FriendService {
         friendApplicationRecordPORepository.updateStatus(userId, req.getFriendId(), status.code());
 
         if (ObjectUtil.isNotEmpty(message)) {
-            rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND.code(), IMTerminalTypeEnum.WEB, new Date());
+            rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, IMTerminalTypeEnum.WEB, new Date()));
         }
 
         return DeveloperResult.success();
@@ -189,5 +193,24 @@ public class FriendServiceImpl implements FriendService {
      * @param friendId
      */
     public void bindFriend(Long userId, Long friendId) {
+    }
+
+    private MQMessageDTO<MessageDTO> builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, IMTerminalTypeEnum terminalType, Date sendTime){
+        return MQMessageDTO.<MessageDTO>builder()
+                .serialNo(UUID.randomUUID().toString())
+                .type(MQMessageTypeConstant.SENDMESSAGE)
+                .data(MessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
+                        .messageContentTypeEnum(messageContentTypeEnum)
+                        .messageId(messageId)
+                        .groupId(groupId)
+                        .sendId(sendId)
+                        .sendNickName(sendNickName)
+                        .messageContent(messageContent)
+                        .receiverIds(receiverIds)
+                        .atUserIds(atUserIds)
+                        .messageStatus(messageStatus.code())
+                        .terminalType(terminalType)
+                        .sendTime(sendTime).build())
+                .build();
     }
 }

@@ -1,5 +1,6 @@
 package com.developer.message.service.impl;
 
+import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.MessageMainTypeEnum;
@@ -11,9 +12,9 @@ import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.GroupMessageRepository;
 import com.developer.message.repository.PrivateMessageRepository;
 import com.developer.message.service.MessageLikeService;
-import com.developer.message.util.RabbitMQUtil;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,10 +34,10 @@ public class MessageLikeServiceImpl implements MessageLikeService {
     private GroupMessageRepository groupMessageRepository;
 
     @Autowired
-    private RabbitMQUtil rabbitMQUtil;
+    private RedissonClient redissonClient;
 
     @Autowired
-    private RedissonClient redissonClient;
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> like(Long messageId, MessageMainTypeEnum messageMainTypeEnum) {
@@ -69,7 +70,7 @@ public class MessageLikeServiceImpl implements MessageLikeService {
 
                 // 推送mq事件，更新数据库
                 MessageLikeEventDTO eventDTO = MessageLikeEventDTO.builder().messageId(messageId).userId(userId).messageMainTypeEnum(messageMainTypeEnum).build();
-                rabbitMQUtil.pushMessage("like.queue",eventDTO);
+                rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_LIKE_QUEUE,DeveloperMQConstant.MESSAGE_LIKE_ROUTING_KEY, MessageLikeEventDTO.builder().messageId(messageId).userId(userId).messageMainTypeEnum(messageMainTypeEnum).build());
 
                 return CompletableFuture.completedFuture(DeveloperResult.success(true));
             }else{

@@ -1,8 +1,12 @@
 package com.developer.message.service.impl;
 
 import com.developer.framework.constant.DeveloperConstant;
+import com.developer.framework.constant.DeveloperMQConstant;
+import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.dto.MQMessageDTO;
+import com.developer.framework.dto.MessageDTO;
 import com.developer.framework.enums.IMTerminalTypeEnum;
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
@@ -12,15 +16,12 @@ import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.message.client.FriendClient;
 import com.developer.message.dto.*;
-import com.developer.message.pojo.GroupMessagePO;
 import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.PrivateMessageRepository;
 import com.developer.message.service.MessageLikeService;
 import com.developer.message.service.MessageService;
-import com.developer.message.util.RabbitMQUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -42,13 +43,10 @@ public class PrivateMessageServiceImpl implements MessageService {
     private PrivateMessageRepository privateMessageRepository;
 
     @Autowired
-    private RabbitMQUtil rabbitMQUtil;
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private RedisUtil redisUtil;
-
-    @Autowired
-    private RedissonClient redissonClient;
 
     @Autowired
     private MessageLikeService messageLikeService;
@@ -100,7 +98,9 @@ public class PrivateMessageServiceImpl implements MessageService {
         fetchAndModifyMessageId(userId,privateMessage.getId());
 
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.pushMQMessage(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, nickName, req.getMessageContent(), Arrays.asList(req.getReceiverId()),new ArrayList<>(), privateMessage.getMessageStatus(), IMTerminalTypeEnum.WEB,privateMessage.getSendTime());
+//        rabbitMQUtil.pushMQMessage(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, nickName, req.getMessageContent(),Arrays.asList(req.getReceiverId()),new ArrayList<>(), privateMessage.getMessageStatus(), IMTerminalTypeEnum.WEB,privateMessage.getSendTime());
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, nickName, req.getMessageContent(), Collections.singletonList(req.getReceiverId()),new ArrayList<>(), MessageStatusEnum.fromCode(privateMessage.getMessageStatus()), IMTerminalTypeEnum.WEB,privateMessage.getSendTime()));
+
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
@@ -116,7 +116,10 @@ public class PrivateMessageServiceImpl implements MessageService {
     public DeveloperResult<Boolean> readMessage(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "", Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED.code(), IMTerminalTypeEnum.WEB,new Date());
+//        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED.code(), IMTerminalTypeEnum.WEB,new Date());
+
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, IMTerminalTypeEnum.WEB,new Date()));
+
         privateMessageRepository.updateMessageStatus(friendId,userId,MessageStatusEnum.READED.code());
         return DeveloperResult.success();
     }
@@ -147,7 +150,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         privateMessageRepository.updateById(privateMessage);
 
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName, "对方撤回了一条消息",Arrays.asList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL.code(), IMTerminalTypeEnum.WEB,new Date());
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName,"对方撤回了一条消息", Collections.singletonList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL, IMTerminalTypeEnum.WEB,new Date()));
 
         return DeveloperResult.success();
     }
@@ -312,5 +315,40 @@ public class PrivateMessageServiceImpl implements MessageService {
         }
 
         return maxMessageId;
+    }
+
+    /**
+     * 构建mq消息dto
+     * @param messageMainTypeEnum
+     * @param messageContentTypeEnum
+     * @param messageId
+     * @param groupId
+     * @param sendId
+     * @param sendNickName
+     * @param messageContent
+     * @param receiverIds
+     * @param atUserIds
+     * @param messageStatus
+     * @param terminalType
+     * @param sendTime
+     * @return
+     */
+    private MQMessageDTO<MessageDTO> builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, IMTerminalTypeEnum terminalType, Date sendTime){
+        return MQMessageDTO.<MessageDTO>builder()
+                .serialNo(UUID.randomUUID().toString())
+                .type(MQMessageTypeConstant.SENDMESSAGE)
+                .data(MessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
+                        .messageContentTypeEnum(messageContentTypeEnum)
+                        .messageId(messageId)
+                        .groupId(groupId)
+                        .sendId(sendId)
+                        .sendNickName(sendNickName)
+                        .messageContent(messageContent)
+                        .receiverIds(receiverIds)
+                        .atUserIds(atUserIds)
+                        .messageStatus(messageStatus.code())
+                        .terminalType(terminalType)
+                        .sendTime(sendTime).build())
+                .build();
     }
 }

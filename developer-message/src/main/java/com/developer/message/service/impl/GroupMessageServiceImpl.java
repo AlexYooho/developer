@@ -1,8 +1,12 @@
 package com.developer.message.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.developer.framework.constant.DeveloperMQConstant;
+import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.dto.MQMessageDTO;
+import com.developer.framework.dto.MessageDTO;
 import com.developer.framework.enums.IMTerminalTypeEnum;
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
@@ -14,18 +18,13 @@ import com.developer.framework.utils.RedisUtil;
 import com.developer.message.client.GroupInfoClient;
 import com.developer.message.client.GroupMemberClient;
 import com.developer.message.dto.*;
-import com.developer.message.enums.MessageLikeEnum;
 import com.developer.message.pojo.GroupMessageMemberReceiveRecordPO;
 import com.developer.message.pojo.GroupMessagePO;
-import com.developer.message.pojo.MessageLikeRecordPO;
 import com.developer.message.repository.GroupMessageMemberReceiveRecordRepository;
 import com.developer.message.repository.GroupMessageRepository;
-import com.developer.message.repository.MessageLikeRecordRepository;
 import com.developer.message.service.MessageLikeService;
 import com.developer.message.service.MessageService;
-import com.developer.message.util.RabbitMQUtil;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -43,13 +42,10 @@ public class GroupMessageServiceImpl implements MessageService {
     private GroupMessageRepository groupMessageRepository;
 
     @Autowired
-    private RabbitMQUtil rabbitMQUtil;
-
-    @Autowired
     private RedisUtil redisUtil;
 
     @Autowired
-    private RedissonClient redissonClient;
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private GroupInfoClient groupInfoClient;
@@ -152,7 +148,10 @@ public class GroupMessageServiceImpl implements MessageService {
 
         groupMessageMemberReceiveRecordRepository.saveBatch(receiveRecods);
 
-        rabbitMQUtil.pushMQMessage(req.getMessageMainType(),req.getMessageContentType(),message.getId(),message.getGroupId(),userId,nickName, req.getMessageContent(),receiverIds,req.getAtUserIds(),message.getMessageStatus(),IMTerminalTypeEnum.WEB,message.getSendTime());
+//        rabbitMQUtil.pushMQMessage(req.getMessageMainType(),req.getMessageContentType(),message.getId(),message.getGroupId(),userId,nickName,req.getMessageContent(),receiverIds,req.getAtUserIds(),message.getMessageStatus(),IMTerminalTypeEnum.WEB,message.getSendTime());
+
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(),message.getId(),message.getGroupId(),userId,nickName,req.getMessageContent(),receiverIds,req.getAtUserIds(),MessageStatusEnum.fromCode(message.getMessageStatus()),IMTerminalTypeEnum.WEB,message.getSendTime()));
+
 
         GroupMessageDTO data = new GroupMessageDTO();
         data.setId(message.getId());
@@ -175,7 +174,10 @@ public class GroupMessageServiceImpl implements MessageService {
         List<GroupMessageMemberReceiveRecordPO> records = groupMessageMemberReceiveRecordRepository.findCurGroupUnreadRecordList(groupId, userId);
         records.forEach(x->{
             // 通知前端
-            rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.GROUP_MESSAGE,MessageContentTypeEnum.TEXT, x.getMessageId(), groupId, userId, nickName, "", Collections.singletonList(x.getSendId()), new ArrayList<>(), 3, IMTerminalTypeEnum.WEB,new Date());
+//            rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.GROUP_MESSAGE,MessageContentTypeEnum.TEXT, x.getMessageId(), groupId, userId, nickName,"", Collections.singletonList(x.getSendId()), new ArrayList<>(), 3, IMTerminalTypeEnum.WEB,new Date());
+
+            rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE,MessageContentTypeEnum.TEXT, x.getMessageId(), groupId, userId, nickName,"", Collections.singletonList(x.getSendId()), new ArrayList<>(), MessageStatusEnum.READED, IMTerminalTypeEnum.WEB,new Date()));
+
             x.setStatus(MessageStatusEnum.READED.code());
             groupMessageMemberReceiveRecordRepository.updateById(x);
         });
@@ -212,7 +214,9 @@ public class GroupMessageServiceImpl implements MessageService {
 
         String message = String.format("%s 撤回了一条消息",selfJoinGroupInfoDTO.getAliasName());
 
-        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(), groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), groupMessage.getMessageStatus(), IMTerminalTypeEnum.WEB,new Date());
+//        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(),groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), groupMessage.getMessageStatus(), IMTerminalTypeEnum.WEB,new Date());
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(),groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), MessageStatusEnum.fromCode(groupMessage.getMessageStatus()), IMTerminalTypeEnum.WEB,new Date()));
+
 
         return DeveloperResult.success();
     }
@@ -307,5 +311,24 @@ public class GroupMessageServiceImpl implements MessageService {
             groupMessage.setAtUserIds(atUserIds.toString());
         }
         return groupMessage;
+    }
+
+    private MQMessageDTO<MessageDTO> builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, IMTerminalTypeEnum terminalType, Date sendTime){
+        return MQMessageDTO.<MessageDTO>builder()
+                .serialNo(UUID.randomUUID().toString())
+                .type(MQMessageTypeConstant.SENDMESSAGE)
+                .data(MessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
+                        .messageContentTypeEnum(messageContentTypeEnum)
+                        .messageId(messageId)
+                        .groupId(groupId)
+                        .sendId(sendId)
+                        .sendNickName(sendNickName)
+                        .messageContent(messageContent)
+                        .receiverIds(receiverIds)
+                        .atUserIds(atUserIds)
+                        .messageStatus(messageStatus.code())
+                        .terminalType(terminalType)
+                        .sendTime(sendTime).build())
+                .build();
     }
 }
