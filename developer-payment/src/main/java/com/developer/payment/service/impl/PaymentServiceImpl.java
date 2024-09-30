@@ -61,7 +61,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .beforeBalance(beforeBalance)
                 .amount(dto.getRedPacketsAmount())
                 .afterBalance(afterBalance)
-                .relatedUserId(dto.getTargetUserId())
+                .relatedUserId(dto.getTargetId())
                 .status(TransactionStatusEnum.PENDING)
                 .createdTime(new Date())
                 .updateTime(new Date())

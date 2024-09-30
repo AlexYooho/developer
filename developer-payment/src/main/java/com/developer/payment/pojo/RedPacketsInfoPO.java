@@ -3,7 +3,7 @@ package com.developer.payment.pojo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.payment.enums.RedPacketsChannelEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.enums.RedPacketsTypeEnum;
 import lombok.Builder;
@@ -59,10 +59,10 @@ public class RedPacketsInfoPO {
     private Long messageId;
 
     /**
-     * 消息主类型
+     * 红包来源渠道
      */
-    @TableField("message_main_type")
-    private MessageMainTypeEnum messageMainType;
+    @TableField("channel")
+    private RedPacketsChannelEnum channel;
 
     /**
      * 发送金额
