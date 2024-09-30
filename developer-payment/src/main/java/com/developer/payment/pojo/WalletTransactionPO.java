@@ -59,6 +59,7 @@ public class WalletTransactionPO {
     @TableField("after_balance")
     private BigDecimal afterBalance;
 
+
     /**
      * 关联用户id,转账收款人id
      */

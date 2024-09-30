@@ -1,0 +1,64 @@
+package com.developer.payment.pojo;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
+import lombok.Builder;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+@Data
+@Builder
+public class RedPacketsReceiveDetailsPO {
+
+    /**
+     * id
+     */
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
+
+    /**
+     * 红包id
+     */
+    @TableField("red_packets_id")
+    private Long redPacketsId;
+
+    /**
+     * 领取用户id
+     */
+    @TableField("receive_user_id")
+    private Long receiveUserId;
+
+    /**
+     * 领取金额
+     */
+    @TableField("receive_amount")
+    private BigDecimal receiveAmount;
+
+    /**
+     * 领取时间
+     */
+    @TableField("receive_time")
+    private Date receiveTime;
+
+    /**
+     * 领取状态
+     */
+    @TableField("status")
+    private RedPacketsReceiveStatusEnum status;
+
+    /**
+     * 创建时间
+     */
+    @TableField("create_time")
+    private Date createTime;
+
+    /**
+     * 修改时间
+     */
+    @TableField("update_time")
+    private Date updateTime;
+}

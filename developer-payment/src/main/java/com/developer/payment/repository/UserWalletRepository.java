@@ -7,4 +7,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class UserWalletRepository extends ServiceImpl<UserWalletMapper, UserWalletPO> {
+
+    public UserWalletPO findByUserId(Long userId) {
+        return this.lambdaQuery().eq(UserWalletPO::getUserId, userId).one();
+    }
+
 }
