@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public enum IMTerminalTypeEnum {
+public enum MessageTerminalTypeEnum {
 
     WEB(0,"web"),
     APP(1,"app");
@@ -17,8 +17,8 @@ public enum IMTerminalTypeEnum {
     private String desc;
 
 
-    public static IMTerminalTypeEnum fromCode(Integer code){
-        for (IMTerminalTypeEnum typeEnum:values()) {
+    public static MessageTerminalTypeEnum fromCode(Integer code){
+        for (MessageTerminalTypeEnum typeEnum:values()) {
             if (typeEnum.code.equals(code)) {
                 return typeEnum;
             }
@@ -27,7 +27,7 @@ public enum IMTerminalTypeEnum {
     }
 
     public static List<Integer> codes(){
-        return Arrays.stream(values()).map(IMTerminalTypeEnum::code).collect(Collectors.toList());
+        return Arrays.stream(values()).map(MessageTerminalTypeEnum::code).collect(Collectors.toList());
     }
 
     public Integer code(){

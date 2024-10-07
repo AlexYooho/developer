@@ -9,7 +9,11 @@ public enum MessageContentTypeEnum {
 
     IMAGE(1,"图片"),
 
-    DOCUMENT(2,"文档");
+    DOCUMENT(2,"文档"),
+
+    RED_PACKETS(3,"红包"),
+
+    TRANSFER(4,"转账");
 
     private final Integer code;
 

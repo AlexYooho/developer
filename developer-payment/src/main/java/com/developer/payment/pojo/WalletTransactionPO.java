@@ -12,6 +12,9 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * 钱包交易记录表
+ */
 @Data
 @Builder
 @TableName("wallet_transaction")
@@ -70,7 +73,7 @@ public class WalletTransactionPO {
      * 外部流水编号
      */
     @TableField("reference_id")
-    private BigDecimal referenceId;
+    private String referenceId;
 
     /**
      * 交易状态

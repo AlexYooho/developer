@@ -10,6 +10,11 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * @author ： liaopenghui
+ * @date ：Created in 2020/7/27 15:06
+ * @description： 红包领取明细
+ */
 @Data
 @Builder
 public class RedPacketsReceiveDetailsPO {

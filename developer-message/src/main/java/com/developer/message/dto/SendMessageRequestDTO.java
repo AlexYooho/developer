@@ -2,11 +2,13 @@ package com.developer.message.dto;
 
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.RedPacketsTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -49,5 +51,20 @@ public class SendMessageRequestDTO {
      * 引用消息id
      */
     private Long referenceId;
+
+    /**
+     * 红包金额
+     */
+    private BigDecimal redPacketsAmount;
+
+    /**
+     * 红包类型
+     */
+    private RedPacketsTypeEnum type;
+
+    /**
+     * 红包个数
+     */
+    private Integer totalCount;
 
 }

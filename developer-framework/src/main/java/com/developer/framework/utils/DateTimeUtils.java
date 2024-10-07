@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 /**
@@ -28,6 +30,10 @@ public class DateTimeUtils extends DateUtils {
         xFormat = StringUtils.isNotEmpty(xFormat) == true ? xFormat : FULL_DATE_FORMAT;
         SimpleDateFormat sdf = new SimpleDateFormat(xFormat);
         return sdf.format(date);
+    }
+
+    public static Date addTime(Integer timeLength, ChronoUnit unit){
+        return Date.from(new Date().toInstant().plus(timeLength, unit));
     }
 
 

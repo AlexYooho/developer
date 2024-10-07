@@ -20,7 +20,7 @@ public class MessageController {
     private MessageServiceRegister messageServiceRegister;
 
     /**
-     * 发送群聊消息
+     * 发送消息
      * @param req
      * @return
      */
@@ -128,11 +128,23 @@ public class MessageController {
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).forwardMessage(messageId,userIdList);
     }
 
+    /**
+     * 消息点赞
+     * @param type
+     * @param messageId
+     * @return
+     */
     @PostMapping("{type}/like/{messageId}")
     public CompletableFuture<DeveloperResult<Boolean>> likeMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId){
     	return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).likeMessage(messageId);
     }
 
+    /**
+     * 消息取消点赞
+     * @param type
+     * @param messageId
+     * @return
+     */
     @PostMapping("{type}/unlike/{messageId}")
     public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId){
         return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).likeMessage(messageId);

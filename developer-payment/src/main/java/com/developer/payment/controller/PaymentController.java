@@ -3,6 +3,7 @@ package com.developer.payment.controller;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.SendRedPacketsDTO;
 import com.developer.payment.service.PaymentService;
+import com.developer.payment.service.redpackets.RedPacketsTypeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,13 +17,16 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
+    @Autowired
+    private RedPacketsTypeRegister redPacketsTypeRegister;
+
     /**
      * 发红包
      * @return
      */
     @PostMapping("send-red-packets")
     public DeveloperResult<Boolean> sendRedPackets(@RequestBody SendRedPacketsDTO dto){
-        return paymentService.sendRedPackets(dto);
+        return redPacketsTypeRegister.findRedPacketsTypeInstance(dto.getType()).sendRedPackets(dto);
     }
 
     /**

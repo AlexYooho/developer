@@ -1,6 +1,6 @@
 package com.developer.framework.dto;
 
-import com.developer.framework.enums.IMTerminalTypeEnum;
+import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
 import lombok.Builder;
@@ -20,7 +20,7 @@ public class MessageDTO implements Serializable {
 
     private Integer messageStatus;
 
-    private IMTerminalTypeEnum terminalType;
+    private MessageTerminalTypeEnum terminalType;
 
     private Long messageId;
 

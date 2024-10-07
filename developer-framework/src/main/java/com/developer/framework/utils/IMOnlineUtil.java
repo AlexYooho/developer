@@ -1,7 +1,7 @@
 package com.developer.framework.utils;
 
 import com.developer.framework.constant.RedisKeyConstant;
-import com.developer.framework.enums.IMTerminalTypeEnum;
+import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.model.IMUserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -26,14 +26,14 @@ public class IMOnlineUtil {
     }
 
 
-    public Map<Long,List<IMTerminalTypeEnum>> getOnlineTerminal(List<Long> userIds){
+    public Map<Long,List<MessageTerminalTypeEnum>> getOnlineTerminal(List<Long> userIds){
         if(userIds.isEmpty()){
             return Collections.EMPTY_MAP;
         }
         // 把所有用户的key都存起来
         Map<String, IMUserInfo> userMap = new HashMap<>();
         for(Long id:userIds){
-            for (Integer terminal : IMTerminalTypeEnum.codes()) {
+            for (Integer terminal : MessageTerminalTypeEnum.codes()) {
                 String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, id.toString(), terminal.toString());
                 userMap.put(key,new IMUserInfo(id,terminal));
             }
@@ -41,13 +41,13 @@ public class IMOnlineUtil {
         // 批量拉取
         List<Object> serverIds = redisTemplate.opsForValue().multiGet(userMap.keySet());
         int idx = 0;
-        Map<Long,List<IMTerminalTypeEnum>> onlineMap = new HashMap<>();
+        Map<Long,List<MessageTerminalTypeEnum>> onlineMap = new HashMap<>();
         for (Map.Entry<String, IMUserInfo> entry : userMap.entrySet()) {
             // serverid有值表示用户在线
             if(serverIds.get(idx++) != null){
                 IMUserInfo userInfo = entry.getValue();
-                List<IMTerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getId(), o -> new LinkedList<>());
-                terminals.add(IMTerminalTypeEnum.fromCode(userInfo.getTerminal()));
+                List<MessageTerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getId(), o -> new LinkedList<>());
+                terminals.add(MessageTerminalTypeEnum.fromCode(userInfo.getTerminal()));
             }
         }
         // 去重并返回

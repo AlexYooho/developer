@@ -20,9 +20,13 @@ public class DeveloperMQConstant {
 
     public static final String MESSAGE_LIKE_ROUTING_KEY = "message.like";
 
+    public static final String MESSAGE_MONEY_ROUTING_KEY = "message.money";
+
     // 队列
     public static final String MESSAGE_QUEUE="message-chat-queue";
 
     public static final String MESSAGE_LIKE_QUEUE = "message-like-queue";
+
+    public static final String MESSAGE_MONEY_QUEUE = "message-money-queue";
 
 }

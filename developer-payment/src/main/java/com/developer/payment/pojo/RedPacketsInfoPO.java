@@ -3,15 +3,20 @@ package com.developer.payment.pojo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.developer.payment.enums.RedPacketsChannelEnum;
+import com.developer.framework.enums.RedPacketsChannelEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
-import com.developer.payment.enums.RedPacketsTypeEnum;
+import com.developer.framework.enums.RedPacketsTypeEnum;
 import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * @Description: 红包表
+ * @author liaopenghui
+ * @date 2021/3/16 15:04
+ */
 @Data
 @Builder
 public class RedPacketsInfoPO {

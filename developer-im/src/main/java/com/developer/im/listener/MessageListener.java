@@ -3,6 +3,7 @@ package com.developer.im.listener;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.dto.MQMessageDTO;
 import com.developer.framework.dto.MessageDTO;
+import com.developer.im.service.AbstractMessageTypeService;
 import com.developer.im.service.MessageServiceRegister;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ public class MessageListener {
             LocalDateTime begin = LocalDateTime.now();
             MessageDTO messageDTO = (MessageDTO) dto.getData();
 
-            com.developer.im.service.AbstractMessageTypeService messageService = messageServiceRegister.getMessageService(messageDTO.getMessageMainTypeEnum());
+            AbstractMessageTypeService messageService = messageServiceRegister.getMessageService(messageDTO.getMessageMainTypeEnum());
             if(messageService==null){
                 log.info("【IM消息服务】消息内容:{},没有对应的消息处理器",dto);
                 return;

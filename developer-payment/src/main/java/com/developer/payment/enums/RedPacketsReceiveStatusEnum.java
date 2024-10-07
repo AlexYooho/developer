@@ -5,9 +5,11 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum RedPacketsReceiveStatusEnum {
 
-    SUCCESS(0,"成功"),
+    PENDING(0,"待领取"),
 
-    FAILED(1,"失败");
+    SUCCESS(1,"成功"),
+
+    FAILED(2,"失败");
 
     private final Integer code;
 

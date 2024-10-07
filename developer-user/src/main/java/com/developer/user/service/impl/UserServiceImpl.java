@@ -1,9 +1,7 @@
 package com.developer.user.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.enums.IMTerminalTypeEnum;
-import com.developer.framework.model.SelfUserInfoModel;
+import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.IMOnlineUtil;
 import com.developer.user.client.FriendClient;
@@ -14,10 +12,7 @@ import com.developer.user.repository.UserRepository;
 import com.developer.user.service.UserService;
 import com.developer.framework.model.DeveloperResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -166,10 +161,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public DeveloperResult<List<OnlineTerminalDTO>> findOnlineTerminal(String userIds) {
         List<Long> userIdList = Arrays.stream(userIds.split(",")).map(Long::parseLong).collect(Collectors.toList());
-        Map<Long, List<IMTerminalTypeEnum>> onlineTerminals = imOnlineUtil.getOnlineTerminal(userIdList);
+        Map<Long, List<MessageTerminalTypeEnum>> onlineTerminals = imOnlineUtil.getOnlineTerminal(userIdList);
         List<OnlineTerminalDTO> list=new LinkedList<>();
         onlineTerminals.forEach((userId,terminals)->{
-            List<Integer> collect = terminals.stream().map(IMTerminalTypeEnum::code).collect(Collectors.toList());
+            List<Integer> collect = terminals.stream().map(MessageTerminalTypeEnum::code).collect(Collectors.toList());
             list.add(new OnlineTerminalDTO(userId,collect));
         });
         return DeveloperResult.success(list);

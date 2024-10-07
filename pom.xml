@@ -51,6 +51,7 @@
         <druid-spring-boot-starter.version>1.2.16</druid-spring-boot-starter.version>
         <spring-cloud-starter-oauth2.version>2.2.5.RELEASE</spring-cloud-starter-oauth2.version>
         <spring-boot-starter-amqp.version>3.3.2</spring-boot-starter-amqp.version>
+        <seata.version>2.0.0</seata.version>
     </properties>
 
     <dependencyManagement>
@@ -230,6 +231,12 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-oauth2-client</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>io.seata</groupId>
+                <artifactId>seata-all</artifactId>
+                <version>${seata.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

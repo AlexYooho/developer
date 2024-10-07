@@ -1,11 +1,13 @@
-package com.developer.payment.dto;
+package com.developer.message.dto;
 
 import com.developer.framework.enums.RedPacketsChannelEnum;
 import com.developer.framework.enums.RedPacketsTypeEnum;
+import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
 
+@Builder
 @Data
 public class SendRedPacketsDTO {
 
@@ -38,4 +40,5 @@ public class SendRedPacketsDTO {
      * 消息id
      */
     private Long messageId;
+
 }

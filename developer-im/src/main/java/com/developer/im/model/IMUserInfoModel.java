@@ -1,6 +1,6 @@
 package com.developer.im.model;
 
-import com.developer.framework.enums.IMTerminalTypeEnum;
+import com.developer.framework.enums.MessageTerminalTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -14,6 +14,6 @@ public class IMUserInfoModel {
 
     private Long id;
 
-    private IMTerminalTypeEnum terminal;
+    private MessageTerminalTypeEnum terminal;
 
 }
