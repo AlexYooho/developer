@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Service
 public abstract class RedPacketsPaymentService implements PaymentService {
 
@@ -20,4 +22,6 @@ public abstract class RedPacketsPaymentService implements PaymentService {
     }
 
     public abstract DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto);
+
+    public abstract DeveloperResult<BigDecimal> openRedPackets();
 }

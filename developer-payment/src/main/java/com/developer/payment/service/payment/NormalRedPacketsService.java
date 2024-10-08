@@ -87,6 +87,11 @@ public class NormalRedPacketsService extends RedPacketsPaymentService{
         return DeveloperResult.success();
     }
 
+    @Override
+    public DeveloperResult<BigDecimal> openRedPackets() {
+        return null;
+    }
+
     public DeveloperResult<List<BigDecimal>> distributeRedPacketsAmount(BigDecimal totalAmount, int totalCount) {
         BigDecimal avgAmount = totalAmount.divide(BigDecimal.valueOf(totalCount), 2, RoundingMode.UP);
         List<BigDecimal> amounts = new ArrayList<>();

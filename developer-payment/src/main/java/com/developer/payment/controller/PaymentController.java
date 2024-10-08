@@ -1,5 +1,6 @@
 package com.developer.payment.controller;
 
+import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.SendRedPacketsDTO;
 import com.developer.payment.service.payment.register.RedPacketsTypeRegister;
@@ -8,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("payment")
@@ -30,8 +33,8 @@ public class PaymentController {
      * @return
      */
     @PostMapping("open-red-packets")
-    public DeveloperResult<Boolean> openRedPackets(){
-        return DeveloperResult.success();
+    public DeveloperResult<BigDecimal> openRedPackets(){
+        return redPacketsTypeRegister.findRedPacketsTypeInstance(RedPacketsTypeEnum.NORMAL).openRedPackets();
     }
 
     /**
