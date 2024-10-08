@@ -20,31 +20,12 @@ public class PaymentController {
     private RedPacketsTypeRegister redPacketsTypeRegister;
 
     /**
-     * 发红包
-     * @return
-     */
-    @PostMapping("send-red-packets")
-    public DeveloperResult<Boolean> sendRedPackets(@RequestBody SendRedPacketsDTO dto){
-        return redPacketsTypeRegister.findRedPacketsTypeInstance(dto.getType()).sendRedPackets(dto);
-    }
-
-    /**
      * 打开红包
      * @return
      */
     @PostMapping("open-red-packets")
     public DeveloperResult<BigDecimal> openRedPackets(){
         return redPacketsTypeRegister.findRedPacketsTypeInstance(RedPacketsTypeEnum.NORMAL).openRedPackets();
-    }
-
-    /**
-     * 转账
-     * @return
-     */
-    @PostMapping("transfer-money")
-    public DeveloperResult<Boolean> transferMoney(){
-
-        return DeveloperResult.success();
     }
 
     /**
