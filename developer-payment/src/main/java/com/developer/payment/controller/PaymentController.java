@@ -2,8 +2,7 @@ package com.developer.payment.controller;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.SendRedPacketsDTO;
-import com.developer.payment.service.PaymentService;
-import com.developer.payment.service.redpackets.RedPacketsTypeRegister;
+import com.developer.payment.service.payment.register.RedPacketsTypeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,9 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("payment")
 public class PaymentController {
-
-    @Autowired
-    private PaymentService paymentService;
 
     @Autowired
     private RedPacketsTypeRegister redPacketsTypeRegister;

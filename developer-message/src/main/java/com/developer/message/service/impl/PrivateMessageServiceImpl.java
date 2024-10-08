@@ -97,7 +97,7 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         // 红包转账
         if(req.getMessageContentType()==MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType()==MessageContentTypeEnum.TRANSFER){
-            rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_MONEY_ROUTING_KEY,SendRedPacketsDTO.builder().redPacketsAmount(req.getRedPacketsAmount()).targetId(req.getReceiverId()).totalCount(req.getTotalCount()).type(req.getType()).channel(RedPacketsChannelEnum.FRIEND).messageId(privateMessage.getId()).build());
+            rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,SendRedPacketsDTO.builder().redPacketsAmount(req.getRedPacketsAmount()).targetId(req.getReceiverId()).totalCount(req.getTotalCount()).type(req.getType()).channel(RedPacketsChannelEnum.FRIEND).messageId(privateMessage.getId()).build());
         }
 
         // 发送消息

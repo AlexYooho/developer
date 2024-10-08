@@ -1,30 +1,26 @@
-package com.developer.payment.service.redpackets.config;
+package com.developer.payment.service.payment.config;
 
 import com.developer.framework.enums.RedPacketsTypeEnum;
-import com.developer.payment.service.redpackets.RedPacketsTypeRegister;
-import com.developer.payment.service.redpackets.impl.LuckRedPacketsServiceImpl;
-import com.developer.payment.service.redpackets.impl.NormalRedPacketServiceImpl;
+import com.developer.payment.service.payment.LuckRedPacketsService;
+import com.developer.payment.service.payment.NormalRedPacketsService;
+import com.developer.payment.service.payment.register.RedPacketsTypeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
-@Configuration
+@Component
 public class RedPacketsTypeConfig {
 
     @Autowired
-    private NormalRedPacketServiceImpl normalRedPacketsService;
+    private NormalRedPacketsService normalRedPacketsService;
 
     @Autowired
-    private LuckRedPacketsServiceImpl luckRedPacketsService;
+    private LuckRedPacketsService luckRedPacketsService;
 
-    @Bean
     public RedPacketsTypeRegister register(){
         RedPacketsTypeRegister typeRegister = new RedPacketsTypeRegister();
         typeRegister.registerRedPacketsTypeInstance(RedPacketsTypeEnum.NORMAL, normalRedPacketsService);
         typeRegister.registerRedPacketsTypeInstance(RedPacketsTypeEnum.LUCKY, luckRedPacketsService);
         return typeRegister;
     }
-
-
 
 }

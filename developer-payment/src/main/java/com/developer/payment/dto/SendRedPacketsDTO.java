@@ -2,6 +2,7 @@ package com.developer.payment.dto;
 
 import com.developer.framework.enums.RedPacketsChannelEnum;
 import com.developer.framework.enums.RedPacketsTypeEnum;
+import com.developer.payment.enums.PaymentTypeEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -23,6 +24,11 @@ public class SendRedPacketsDTO {
      * 红包个数
      */
     private Integer totalCount;
+
+    /**
+     * 支付类型
+     */
+    private PaymentTypeEnum paymentTypeEnum;
 
     /**
      * 红包类型

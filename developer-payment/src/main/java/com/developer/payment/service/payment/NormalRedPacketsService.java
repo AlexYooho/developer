@@ -1,4 +1,4 @@
-package com.developer.payment.service.redpackets.impl;
+package com.developer.payment.service.payment;
 
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.model.DeveloperResult;
@@ -12,7 +12,6 @@ import com.developer.payment.pojo.RedPacketsReceiveDetailsPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.repository.RedPacketsReceiveDetailsRepository;
 import com.developer.payment.service.WalletService;
-import com.developer.payment.service.redpackets.RedPacketsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Service
-public class NormalRedPacketServiceImpl implements RedPacketsService {
+public class NormalRedPacketsService extends RedPacketsPaymentService{
 
     @Autowired
     private FriendClient friendClient;
@@ -40,22 +41,21 @@ public class NormalRedPacketServiceImpl implements RedPacketsService {
     @Transactional
     @Override
     public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
-
-        if(dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO)<=0){
+        if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return DeveloperResult.error("红包金额必须大于0");
         }
 
-        if(dto.getTotalCount()<=0){
+        if (dto.getTotalCount() <= 0) {
             return DeveloperResult.error("红包数量必须大于0");
         }
 
-        if(dto.getTargetId()<=0){
+        if (dto.getTargetId() <= 0) {
             return DeveloperResult.error("请指定红包接收人！");
         }
 
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         Boolean isFriend = friendClient.isFriend(dto.getTargetId(), userId).getData();
-        if(!isFriend){
+        if (!isFriend) {
             return DeveloperResult.error("对方不是您的好友，无法发送红包！");
         }
 
@@ -67,7 +67,7 @@ public class NormalRedPacketServiceImpl implements RedPacketsService {
                 .sendTime(new Date()).expireTime(DateTimeUtils.addTime(24, ChronoUnit.HOURS)).createTime(new Date()).updateTime(new Date()).build();
 
         List<RedPacketsReceiveDetailsPO> list = new ArrayList<>();
-        for (BigDecimal amount:distributeAmountList) {
+        for (BigDecimal amount : distributeAmountList) {
             list.add(RedPacketsReceiveDetailsPO.builder()
                     .redPacketsId(redPacketsInfoPO.getId())
                     .receiveUserId(0L)
@@ -87,13 +87,6 @@ public class NormalRedPacketServiceImpl implements RedPacketsService {
         return DeveloperResult.success();
     }
 
-    /**
-     * 分配红包金额
-     * @param totalAmount
-     * @param totalCount
-     * @return
-     */
-    @Override
     public DeveloperResult<List<BigDecimal>> distributeRedPacketsAmount(BigDecimal totalAmount, int totalCount) {
         BigDecimal avgAmount = totalAmount.divide(BigDecimal.valueOf(totalCount), 2, RoundingMode.UP);
         List<BigDecimal> amounts = new ArrayList<>();
