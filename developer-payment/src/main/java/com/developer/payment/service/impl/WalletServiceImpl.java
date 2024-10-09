@@ -10,6 +10,7 @@ import com.developer.payment.pojo.WalletTransactionPO;
 import com.developer.payment.repository.UserWalletRepository;
 import com.developer.payment.repository.WalletTransactionRepository;
 import com.developer.payment.service.WalletService;
+import io.seata.rm.tcc.api.BusinessActionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,15 +26,13 @@ public class WalletServiceImpl implements WalletService {
     @Autowired
     private WalletTransactionRepository walletTransactionRepository;
 
-
-
     @Override
-    public DeveloperResult<Boolean> doMoneyTransfer(Long senderId, Long targetId, BigDecimal amount) {
+    public DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context,Long senderId, Long targetId, BigDecimal amount) {
 
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
         if(walletInfo==null){
-            return DeveloperResult.error("用户不存在");
+            return DeveloperResult.error("用户未开通钱包");
         }
 
         if (walletInfo.getBalance().compareTo(amount) < 0) {
@@ -56,5 +55,15 @@ public class WalletServiceImpl implements WalletService {
                 .relatedUserId(targetId).referenceId("").status(TransactionStatusEnum.PENDING).createdTime(new Date()).updateTime(new Date()).build());
 
         return DeveloperResult.success();
+    }
+
+    @Override
+    public DeveloperResult<Boolean> confirmTransaction(BusinessActionContext context) {
+        return null;
+    }
+
+    @Override
+    public DeveloperResult<Boolean> cancelTransaction(BusinessActionContext context) {
+        return null;
     }
 }

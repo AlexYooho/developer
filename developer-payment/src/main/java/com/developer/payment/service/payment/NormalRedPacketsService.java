@@ -82,7 +82,7 @@ public class NormalRedPacketsService extends RedPacketsPaymentService{
         redPacketsReceiveDetailsRepository.saveBatch(list);
 
         // 处理钱包信息
-        walletService.doMoneyTransfer(userId, dto.getTargetId(), dto.getRedPacketsAmount());
+        walletService.doMoneyTransaction(null,userId, dto.getTargetId(), dto.getRedPacketsAmount());
 
         return DeveloperResult.success();
     }

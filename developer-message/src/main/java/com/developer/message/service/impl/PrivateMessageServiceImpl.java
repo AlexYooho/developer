@@ -12,6 +12,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.message.client.FriendClient;
+import com.developer.message.client.PaymentClient;
 import com.developer.message.dto.*;
 import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.PrivateMessageRepository;
@@ -47,6 +48,9 @@ public class PrivateMessageServiceImpl implements MessageService {
 
     @Autowired
     private MessageLikeService messageLikeService;
+
+    @Autowired
+    private PaymentClient paymentClient;
 
     /**
      * 拉取最新消息
@@ -97,6 +101,10 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         // 红包转账
         if(req.getMessageContentType()==MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType()==MessageContentTypeEnum.TRANSFER){
+            DeveloperResult<Boolean> freezeResult = paymentClient.freezePaymentAmount(userId, req.getRedPacketsAmount());
+            if(!freezeResult.getData()){
+                return DeveloperResult.error(freezeResult.getMsg());
+            }
             rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,SendRedPacketsDTO.builder().redPacketsAmount(req.getRedPacketsAmount()).targetId(req.getReceiverId()).totalCount(req.getTotalCount()).type(req.getType()).channel(RedPacketsChannelEnum.FRIEND).messageId(privateMessage.getId()).build());
         }
 
