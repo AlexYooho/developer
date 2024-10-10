@@ -8,6 +8,14 @@ import java.math.BigDecimal;
 
 public interface WalletService {
 
+    /**
+     * 发起支付交易
+     * @param context
+     * @param senderId
+     * @param targetId
+     * @param amount
+     * @return
+     */
     @TwoPhaseBusinessAction(name = "doMoneyTransaction", commitMethod = "confirmTransaction", rollbackMethod = "cancelTransaction")
     DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context,Long senderId, Long targetId, BigDecimal amount);
 
