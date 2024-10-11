@@ -81,7 +81,7 @@ public class WalletServiceImpl implements WalletService {
         if (transaction != null && transaction.getStatus() == TransactionStatusEnum.PENDING) {
             // 还原余额
             UserWalletPO walletInfo = walletRepository.getById(transaction.getWalletId());
-            walletInfo.setBalance(walletInfo.getBalance().add(transaction.getAmount()));
+            walletInfo.setBalance(transaction.getBeforeBalance());
             walletInfo.setUpdateTime(new Date());
             walletRepository.updateById(walletInfo);
 
