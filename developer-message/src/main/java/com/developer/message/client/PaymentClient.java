@@ -12,11 +12,10 @@ public interface PaymentClient {
 
     /**
      * 冻结支付金额
-     * @param userId
      * @param amount
      * @return
      */
-    @PostMapping("freeze-pay-amount")
-    DeveloperResult<Boolean> freezePaymentAmount(Long userId, BigDecimal amount);
+    @PostMapping("/payment-module/api/payment/freeze-pay-amount")
+    DeveloperResult<Boolean> freezePaymentAmount(BigDecimal amount);
 
 }

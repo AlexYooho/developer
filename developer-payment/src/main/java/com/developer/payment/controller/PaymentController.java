@@ -3,6 +3,7 @@ package com.developer.payment.controller;
 import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.SendRedPacketsDTO;
+import com.developer.payment.service.WalletService;
 import com.developer.payment.service.payment.register.RedPacketsTypeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,9 @@ public class PaymentController {
 
     @Autowired
     private RedPacketsTypeRegister redPacketsTypeRegister;
+
+    @Autowired
+    private WalletService walletService;
 
     /**
      * 打开红包
@@ -44,6 +48,16 @@ public class PaymentController {
     @PostMapping("return-transfer")
     public DeveloperResult<Boolean> returnTransfer(){
         return DeveloperResult.success();
+    }
+
+    /**
+     * 冻结支付金额
+     * @param amount
+     * @return
+     */
+    @PostMapping("freeze-pay-amount")
+    public DeveloperResult<Boolean> freezePayAmount(BigDecimal amount){
+    	return walletService.freezePaymentAmount(amount);
     }
 
 }

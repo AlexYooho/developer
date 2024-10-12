@@ -101,7 +101,7 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         // 红包转账
         if(req.getMessageContentType()==MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType()==MessageContentTypeEnum.TRANSFER){
-            DeveloperResult<Boolean> freezeResult = paymentClient.freezePaymentAmount(userId, req.getRedPacketsAmount());
+            DeveloperResult<Boolean> freezeResult = paymentClient.freezePaymentAmount(req.getRedPacketsAmount());
             if(!freezeResult.getData()){
                 return DeveloperResult.error(freezeResult.getMsg());
             }

@@ -27,6 +27,14 @@ public class WalletServiceImpl implements WalletService {
     @Autowired
     private WalletTransactionRepository walletTransactionRepository;
 
+    /**
+     * 发起交易
+     * @param context
+     * @param senderId
+     * @param targetId
+     * @param amount
+     * @return
+     */
     @Override
     @TwoPhaseBusinessAction(name = "doMoneyTransaction", commitMethod = "confirmTransaction", rollbackMethod = "cancelTransaction")
     public DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context,Long senderId, Long targetId, BigDecimal amount) {
@@ -50,7 +58,7 @@ public class WalletServiceImpl implements WalletService {
 
         walletInfo.setLastTransactionTime(new Date());
         walletInfo.setUpdateTime(new Date());
-        walletInfo.setBalance(walletInfo.getBalance().subtract(amount));
+        walletInfo.setBalance(afterBalance);
         walletRepository.updateById(walletInfo);
 
         walletTransactionRepository.save(WalletTransactionPO.builder().walletId(walletInfo.getId()).userId(userId).transactionType(TransactionTypeEnum.TRANSFER).amount(amount).beforeBalance(beforeBalance).afterBalance(afterBalance)
@@ -59,20 +67,33 @@ public class WalletServiceImpl implements WalletService {
         return DeveloperResult.success();
     }
 
+    /**
+     * 确认交易
+     * @param context
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> confirmTransaction(BusinessActionContext context) {
         // Confirm阶段：确认支付并更新交易状态
         String xid = context.getXid();
         WalletTransactionPO transaction = walletTransactionRepository.findByReferenceId(xid);
+        UserWalletPO walletPO = walletRepository.getById(transaction.getWalletId());
         if (transaction != null && transaction.getStatus() == TransactionStatusEnum.PENDING) {
             transaction.setStatus(TransactionStatusEnum.SUCCESS);
             transaction.setUpdateTime(new Date());
             walletTransactionRepository.updateById(transaction);
+            walletPO.setFrozenBalance(walletPO.getFrozenBalance().subtract(transaction.getAmount()));
+            walletRepository.updateById(walletPO);
             return DeveloperResult.success();
         }
         return DeveloperResult.error("交易确认失败");
     }
 
+    /**
+     * 回滚交易
+     * @param context
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> cancelTransaction(BusinessActionContext context) {
         // Cancel阶段：撤销交易，解冻金额
@@ -82,6 +103,7 @@ public class WalletServiceImpl implements WalletService {
             // 还原余额
             UserWalletPO walletInfo = walletRepository.getById(transaction.getWalletId());
             walletInfo.setBalance(transaction.getBeforeBalance());
+            walletInfo.setFrozenBalance(walletInfo.getFrozenBalance().subtract(transaction.getAmount()));
             walletInfo.setUpdateTime(new Date());
             walletRepository.updateById(walletInfo);
 
@@ -91,5 +113,26 @@ public class WalletServiceImpl implements WalletService {
             return DeveloperResult.success();
         }
         return DeveloperResult.error("交易撤销失败");
+    }
+
+    /**
+     * 冻结支付金额
+     * @param amount
+     * @return
+     */
+    @Override
+    public DeveloperResult<Boolean> freezePaymentAmount(BigDecimal amount) {
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        UserWalletPO walletInfo = walletRepository.findByUserId(userId);
+
+        if (walletInfo.getBalance().compareTo(amount) < 0) {
+            return DeveloperResult.error("余额不足");
+        }
+
+        walletInfo.setFrozenBalance(walletInfo.getFrozenBalance().add(amount));
+        walletInfo.setUpdateTime(new Date());
+        walletRepository.updateById(walletInfo);
+
+        return DeveloperResult.success();
     }
 }

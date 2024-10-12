@@ -33,4 +33,11 @@ public interface WalletService {
      */
     DeveloperResult<Boolean> cancelTransaction(BusinessActionContext context);
 
+    /**
+     * 冻结支付金额
+     * @param amount
+     * @return
+     */
+    DeveloperResult<Boolean> freezePaymentAmount(BigDecimal amount);
+
 }
