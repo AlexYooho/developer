@@ -187,7 +187,10 @@ public class FriendServiceImpl implements FriendService {
     public DeveloperResult<Boolean> modifyFriendList(List<FriendInfoDTO> list) {
         List<FriendPO> friendPOS = BeanUtils.copyProperties(list, FriendPO.class);
         boolean isSuccess = friendRepository.updateBatchById(friendPOS);
-        return DeveloperResult.success(isSuccess);
+        if(!isSuccess){
+            return DeveloperResult.error("修改失败");
+        }
+        return DeveloperResult.success();
     }
 
     /**

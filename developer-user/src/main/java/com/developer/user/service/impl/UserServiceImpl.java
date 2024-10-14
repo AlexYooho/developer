@@ -149,8 +149,8 @@ public class UserServiceImpl implements UserService {
         user.setSignature(dto.getSignature());
         user.setHeadImage(dto.getHeadImage());
         user.setHeadImageThumb(dto.getHeadImageThumb());
-        Boolean isSuccess = this.userRepository.updateById(user);
-        return DeveloperResult.success(isSuccess);
+        this.userRepository.updateById(user);
+        return DeveloperResult.success();
     }
 
     /**

@@ -58,6 +58,11 @@ public class FriendController {
         return DeveloperResult.success();
     }
 
+    /**
+     * 批量更新好友信息
+     * @param list
+     * @return
+     */
     @PutMapping("/update/list")
     public DeveloperResult<Boolean> modifyFriendList(@RequestBody List<FriendInfoDTO> list){
         return friendService.modifyFriendList(list);
