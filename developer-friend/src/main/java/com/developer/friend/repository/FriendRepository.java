@@ -19,8 +19,4 @@ public class FriendRepository extends ServiceImpl<FriendMapper, FriendPO> {
                 .eq(FriendPO::getFriendId,friendId).one();
     }
 
-    public Boolean isFriend(Long userId1,Long userId2){
-        return this.lambdaQuery().eq(FriendPO::getUserId,userId1).eq(FriendPO::getFriendId,userId2).count()>0;
-    }
-
 }

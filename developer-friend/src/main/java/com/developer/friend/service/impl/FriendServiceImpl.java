@@ -57,16 +57,9 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public DeveloperResult<Boolean> isFriend(Long userId1, Long userId2) {
-        boolean result = friendRepository.isFriend(userId1,userId2);
-        return DeveloperResult.success(result);
-    }
-
-    @Override
-    public DeveloperResult<FriendInfoDTO> findFriend(Long friendId) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        FriendPO friend = friendRepository.findByFriendId(friendId, userId);
-        if (friend == null) {
+    public DeveloperResult<FriendInfoDTO> isFriend(Long userId1, Long userId2) {
+        FriendPO friend = friendRepository.findByFriendId(userId1,userId2);
+        if(friend==null){
             return DeveloperResult.error("对方不是你的好友");
         }
 
@@ -75,6 +68,17 @@ public class FriendServiceImpl implements FriendService {
         friendInfoDTO.setHeadImage(friend.getFriendHeadImage());
         friendInfoDTO.setNickName(friend.getFriendNickName());
         return DeveloperResult.success(friendInfoDTO);
+    }
+
+    @Override
+    public DeveloperResult<FriendInfoDTO> findFriend(Long friendId) {
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        DeveloperResult<FriendInfoDTO> friendInfo = this.isFriend(friendId, userId);
+        if (!friendInfo.getIsSuccessful()) {
+            return DeveloperResult.error(friendInfo.getMsg());
+        }
+
+        return DeveloperResult.success(friendInfo.getData());
     }
 
     @Override

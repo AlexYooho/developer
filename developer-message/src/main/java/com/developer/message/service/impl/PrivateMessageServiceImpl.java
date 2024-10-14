@@ -25,6 +25,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -88,10 +89,9 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        DeveloperResult<Boolean> friend = friendClient.isFriend(userId, req.getReceiverId());
-        boolean isFriend = friend.getData();
-        if(!isFriend){
-            return DeveloperResult.error("对方不是你好友,无法发送消息");
+        DeveloperResult<FriendInfoDTO> friend = friendClient.isFriend(userId, req.getReceiverId());
+        if(!friend.getIsSuccessful()){
+            return DeveloperResult.error(friend.getMsg());
         }
 
         // 消息入库
@@ -100,12 +100,9 @@ public class PrivateMessageServiceImpl implements MessageService {
         fetchAndModifyMessageId(userId,privateMessage.getId());
 
         // 红包转账
-        if(req.getMessageContentType()==MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType()==MessageContentTypeEnum.TRANSFER){
-            DeveloperResult<Boolean> freezeResult = paymentClient.freezePaymentAmount(req.getRedPacketsAmount());
-            if(!freezeResult.getData()){
-                return DeveloperResult.error(freezeResult.getMsg());
-            }
-            rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,SendRedPacketsDTO.builder().redPacketsAmount(req.getRedPacketsAmount()).targetId(req.getReceiverId()).totalCount(req.getTotalCount()).type(req.getType()).channel(RedPacketsChannelEnum.FRIEND).messageId(privateMessage.getId()).build());
+        DeveloperResult<Boolean> invoke = this.invokePayment(req.getMessageContentType(), req.getRedPacketsAmount(), req.getReceiverId(), req.getTotalCount(), req.getType(), privateMessage.getId());
+        if(!invoke.getIsSuccessful()){
+            return DeveloperResult.error(invoke.getMsg());
         }
 
         // 发送消息
@@ -114,6 +111,20 @@ public class PrivateMessageServiceImpl implements MessageService {
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
         return DeveloperResult.success(dto);
+    }
+
+    private DeveloperResult<Boolean> invokePayment(MessageContentTypeEnum messageContentTypeEnum, BigDecimal amount,Long targetId,Integer redPacketsTotalCount,RedPacketsTypeEnum redPacketsTypeEnum,Long messageId){
+        if(!this.isPaymentMessageType(messageContentTypeEnum)){
+            return DeveloperResult.success();
+        }
+
+        DeveloperResult<Boolean> freezeResult = paymentClient.freezePaymentAmount(amount);
+        if(!freezeResult.getData()){
+            return DeveloperResult.error(freezeResult.getMsg());
+        }
+
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,SendRedPacketsDTO.builder().redPacketsAmount(amount).targetId(targetId).totalCount(redPacketsTotalCount).type(redPacketsTypeEnum).channel(RedPacketsChannelEnum.FRIEND).messageId(messageId).build());
+        return DeveloperResult.success();
     }
 
     /**
@@ -125,10 +136,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     public DeveloperResult<Boolean> readMessage(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-//        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED.code(), IMTerminalTypeEnum.WEB,new Date());
-
         rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
-
         privateMessageRepository.updateMessageStatus(friendId,userId,MessageStatusEnum.READED.code());
         return DeveloperResult.success();
     }
@@ -282,6 +290,16 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId) {
         return messageLikeService.unLike(messageId, MessageMainTypeEnum.PRIVATE_MESSAGE);
+    }
+
+    /**
+     * 是否支付类型消息
+     * @param messageContentTypeEnum
+     * @return
+     */
+    @Override
+    public Boolean isPaymentMessageType(MessageContentTypeEnum messageContentTypeEnum) {
+        return messageContentTypeEnum == MessageContentTypeEnum.RED_PACKETS || messageContentTypeEnum == MessageContentTypeEnum.TRANSFER;
     }
 
     private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus, Long referenceId){

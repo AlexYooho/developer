@@ -15,13 +15,16 @@ public class DeveloperResult<T> {
 
     private long count;
 
+    private Boolean isSuccessful;
+
     /**返回成功 -- 集合 */
     public static <T> DeveloperResult<List<T>> success(List<T> data, long count){
         DeveloperResult<List<T>> result = new DeveloperResult<>();
         result.setCode(200);//成功
-        result.setMsg("成功");//提示语
+        result.setMsg("success");//提示语
         result.setData(data);
         result.setCount(count);
+        result.setIsSuccessful(true);
         return result;
     }
 
@@ -29,8 +32,9 @@ public class DeveloperResult<T> {
     public static <T> DeveloperResult<T> success(T object){
         DeveloperResult<T> result = new DeveloperResult<>();
         result.setCode(200);//成功
-        result.setMsg("成功");//提示语
+        result.setMsg("success");//提示语
         result.setData(object);//返回内容
+        result.setIsSuccessful(true);
         return result;
     }
 
@@ -38,7 +42,8 @@ public class DeveloperResult<T> {
     public static <T> DeveloperResult<T> success(){
         DeveloperResult<T> result = new DeveloperResult<>();
         result.setCode(200);//成功
-        result.setMsg("成功");//提示语
+        result.setMsg("success");//提示语
+        result.setIsSuccessful(true);
         return result;
     }
 
@@ -47,6 +52,7 @@ public class DeveloperResult<T> {
         DeveloperResult<T> result = new DeveloperResult<>();
         result.setCode(code);//失败
         result.setMsg(msg);//提示语
+        result.setIsSuccessful(false);
         return result;
     }
 
@@ -55,6 +61,7 @@ public class DeveloperResult<T> {
         DeveloperResult<T> result = new DeveloperResult<>();
         result.setCode(500);//失败
         result.setMsg(msg);//提示语
+        result.setIsSuccessful(false);
         return result;
     }
 
@@ -62,7 +69,8 @@ public class DeveloperResult<T> {
     public static <T> DeveloperResult<T> error(){
         DeveloperResult<T> result = new DeveloperResult<>();
         result.setCode(500);//失败
-        result.setMsg("失败");//提示语
+        result.setMsg("fail");//提示语
+        result.setIsSuccessful(false);
         return result;
     }
 }

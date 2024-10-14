@@ -22,7 +22,7 @@ public interface FriendService {
      * @param userId2
      * @return
      */
-    DeveloperResult<Boolean> isFriend(Long userId1,Long userId2);
+    DeveloperResult<FriendInfoDTO> isFriend(Long userId1,Long userId2);
 
     /**
      *  通过用户id查询好友

@@ -1,5 +1,6 @@
 package com.developer.message.service;
 
+import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.MessageInsertDTO;
 import com.developer.message.dto.SendMessageRequestDTO;
@@ -93,4 +94,11 @@ public interface MessageService {
      * @return
      */
     CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId);
+
+    /**
+     * 是否支付类型消息
+     * @param messageContentTypeEnum
+     * @return
+     */
+    Boolean isPaymentMessageType(MessageContentTypeEnum messageContentTypeEnum);
 }
