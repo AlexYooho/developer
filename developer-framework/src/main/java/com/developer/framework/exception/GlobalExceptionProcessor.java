@@ -12,7 +12,11 @@ public class GlobalExceptionProcessor {
 
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
-    public DeveloperResult<Object> processor(Exception e){
+    public DeveloperResult<String> processor(Exception e){
+        if(e instanceof RemoteInvokeException){
+            RemoteInvokeException invokeException = (RemoteInvokeException) e;
+            return DeveloperResult.error(invokeException.getCode(),invokeException.getErrMsg());
+        }
         return DeveloperResult.error("服务器出错辣~~~~,快速修复中,请耐心等待");
     }
 

@@ -1,4 +1,4 @@
-package com.developer.user.interceptor;
+package com.developer.message.interceptor;
 
 import com.developer.framework.exception.RemoteInvokeException;
 import lombok.extern.slf4j.Slf4j;
@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component;
 public class FeignExceptionInterceptor {
 
 
-    @Pointcut("execution(* com.developer.user.client..*.*(..))")
+    @Pointcut("execution(* com.developer.group.client.*(..))")
     public void client(){}
 
     @AfterThrowing(pointcut = "client()",throwing = "ex")
     public void FeignExceptionHandler(Exception ex){
-        log.error("user服务Feign调用异常,错误内容: {}",ex.getMessage());
+        log.error("message服务Feign调用异常,错误内容: {}",ex.getMessage());
         throw new RemoteInvokeException(500,"用户模块内部服务调用异常");
     }
 
