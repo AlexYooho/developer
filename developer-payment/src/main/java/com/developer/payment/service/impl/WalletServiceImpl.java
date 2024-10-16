@@ -54,7 +54,7 @@ public class WalletServiceImpl implements WalletService {
         }
 
         BigDecimal beforeBalance = walletInfo.getBalance();
-        BigDecimal afterBalance = walletInfo.getBalance().subtract(amount);
+        BigDecimal afterBalance = amount.compareTo(BigDecimal.ZERO) > 0 ? walletInfo.getBalance().add(amount): walletInfo.getBalance().subtract(amount.abs());
 
         walletInfo.setLastTransactionTime(new Date());
         walletInfo.setUpdateTime(new Date());
@@ -78,7 +78,7 @@ public class WalletServiceImpl implements WalletService {
         String xid = context.getXid();
         WalletTransactionPO transaction = walletTransactionRepository.findByReferenceId(xid);
         UserWalletPO walletPO = walletRepository.getById(transaction.getWalletId());
-        if (transaction != null && transaction.getStatus() == TransactionStatusEnum.PENDING) {
+        if (transaction.getStatus() == TransactionStatusEnum.PENDING) {
             transaction.setStatus(TransactionStatusEnum.SUCCESS);
             transaction.setUpdateTime(new Date());
             walletTransactionRepository.updateById(transaction);
