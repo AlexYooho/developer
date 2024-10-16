@@ -6,7 +6,7 @@ import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.SendRedPacketsDTO;
 import com.developer.payment.service.PaymentService;
-import com.developer.payment.service.payment.register.PaymentTypeRegister;
+import com.developer.payment.service.register.PaymentTypeRegister;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;

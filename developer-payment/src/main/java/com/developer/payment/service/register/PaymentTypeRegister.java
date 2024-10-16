@@ -1,4 +1,4 @@
-package com.developer.payment.service.payment.register;
+package com.developer.payment.service.register;
 
 import com.developer.payment.enums.PaymentTypeEnum;
 import com.developer.payment.service.PaymentService;

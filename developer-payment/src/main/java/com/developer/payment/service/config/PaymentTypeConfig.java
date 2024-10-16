@@ -1,9 +1,9 @@
-package com.developer.payment.service.payment.config;
+package com.developer.payment.service.config;
 
 import com.developer.payment.enums.PaymentTypeEnum;
 import com.developer.payment.service.payment.RedPacketsPaymentService;
 import com.developer.payment.service.payment.TransferMoneyPaymentService;
-import com.developer.payment.service.payment.register.PaymentTypeRegister;
+import com.developer.payment.service.register.PaymentTypeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

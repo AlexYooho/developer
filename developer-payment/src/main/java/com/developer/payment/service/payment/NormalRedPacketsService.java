@@ -11,6 +11,7 @@ import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.pojo.RedPacketsReceiveDetailsPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.repository.RedPacketsReceiveDetailsRepository;
+import com.developer.payment.service.RedPacketsService;
 import com.developer.payment.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-public class NormalRedPacketsService extends RedPacketsPaymentService{
+public class NormalRedPacketsService extends BaseRedPacketsService implements RedPacketsService {
 
     @Autowired
     private FriendClient friendClient;
@@ -38,7 +39,6 @@ public class NormalRedPacketsService extends RedPacketsPaymentService{
     @Autowired
     private WalletService walletService;
 
-    @Transactional
     @Override
     public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
         if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
@@ -60,7 +60,7 @@ public class NormalRedPacketsService extends RedPacketsPaymentService{
         }
 
         // 分配金额
-        List<BigDecimal> distributeAmountList = this.distributeRedPacketsAmount(dto.getRedPacketsAmount(), dto.getTotalCount()).getData();
+        List<BigDecimal> distributeAmountList = this.distributeRedPacketsAmount(dto.getRedPacketsAmount(), dto.getTotalCount());
 
         RedPacketsInfoPO redPacketsInfoPO = RedPacketsInfoPO.builder().senderUserId(userId).totalCount(dto.getTotalCount()).remainingCount(dto.getTotalCount()).type(dto.getType()).status(RedPacketsStatusEnum.PENDING)
                 .messageId(dto.getMessageId()).channel(dto.getChannel()).sendAmount(dto.getRedPacketsAmount()).remainingAmount(dto.getRedPacketsAmount()).returnAmount(BigDecimal.ZERO)
@@ -92,12 +92,4 @@ public class NormalRedPacketsService extends RedPacketsPaymentService{
         return null;
     }
 
-    public DeveloperResult<List<BigDecimal>> distributeRedPacketsAmount(BigDecimal totalAmount, int totalCount) {
-        BigDecimal avgAmount = totalAmount.divide(BigDecimal.valueOf(totalCount), 2, RoundingMode.UP);
-        List<BigDecimal> amounts = new ArrayList<>();
-        for (int i = 0; i < totalCount; i++) {
-            amounts.add(avgAmount);
-        }
-        return DeveloperResult.success(amounts);
-    }
 }
