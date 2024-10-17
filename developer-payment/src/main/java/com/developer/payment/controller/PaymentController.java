@@ -3,6 +3,7 @@ package com.developer.payment.controller;
 import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.service.WalletService;
+import com.developer.payment.service.payment.redpackets.RedPacketsProxyService;
 import com.developer.payment.service.register.RedPacketsTypeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,7 @@ import java.math.BigDecimal;
 public class PaymentController {
 
     @Autowired
-    private RedPacketsTypeRegister redPacketsTypeRegister;
+    private RedPacketsProxyService redPacketsProxyService;
 
     @Autowired
     private WalletService walletService;
@@ -28,7 +29,7 @@ public class PaymentController {
      */
     @PostMapping("red-packets/{id}/open")
     public DeveloperResult<BigDecimal> openRedPackets(@PathVariable("id") Long id){
-        return redPacketsTypeRegister.findInstance(RedPacketsTypeEnum.NORMAL).openRedPackets(0l);
+        return redPacketsProxyService.findInstance(id).openRedPackets(id);
     }
 
     /**

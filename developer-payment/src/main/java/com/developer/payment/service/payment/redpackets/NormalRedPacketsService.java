@@ -1,4 +1,4 @@
-package com.developer.payment.service.payment;
+package com.developer.payment.service.payment.redpackets;
 
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
@@ -15,6 +15,7 @@ import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.repository.RedPacketsReceiveDetailsRepository;
 import com.developer.payment.service.RedPacketsService;
 import com.developer.payment.service.WalletService;
+import com.developer.payment.service.payment.BaseRedPacketsService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,16 +93,16 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
     @Override
     public DeveloperResult<BigDecimal> openRedPackets(Long redPacketsId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        RedPacketsInfoPO redPacketsInfoPO = redPacketsInfoRepository.getById(redPacketsId);
-        if (redPacketsInfoPO == null) {
+        RedPacketsInfoPO redPacketsInfo = findRedPacketsCacheInfo(redPacketsId);
+        if (redPacketsInfo == null) {
             return DeveloperResult.error("红包不存在");
         }
 
-        if (redPacketsInfoPO.getStatus().equals(RedPacketsStatusEnum.FINISHED)) {
+        if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.FINISHED)) {
             return DeveloperResult.error("红包已领取完毕");
         }
 
-        if (redPacketsInfoPO.getStatus().equals(RedPacketsStatusEnum.EXPIRED)) {
+        if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.EXPIRED)) {
             return DeveloperResult.error("红包已过期无法领取");
         }
 

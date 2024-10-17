@@ -4,12 +4,14 @@ import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.RedPacketsChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
+import com.developer.framework.utils.RedisUtil;
 import com.developer.payment.client.FriendClient;
 import com.developer.payment.client.GroupClient;
 import com.developer.payment.dto.SelfJoinGroupInfoDTO;
 import com.developer.payment.dto.SendRedPacketsDTO;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
+import com.developer.payment.repository.RedPacketsInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class BaseRedPacketsService {
@@ -29,6 +32,12 @@ public class BaseRedPacketsService {
 
     @Autowired
     private GroupClient groupClient;
+
+    @Autowired
+    private RedPacketsInfoRepository redPacketsInfoRepository;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     /**
      * 计算红包分配金额
@@ -102,9 +111,44 @@ public class BaseRedPacketsService {
      */
     public RedPacketsInfoPO buildRedPacketsInfo(SendRedPacketsDTO dto){
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        return RedPacketsInfoPO.builder().senderUserId(userId).totalCount(dto.getTotalCount()).remainingCount(dto.getTotalCount()).type(dto.getType()).status(RedPacketsStatusEnum.PENDING)
-                .messageId(dto.getMessageId()).channel(dto.getChannel()).sendAmount(dto.getRedPacketsAmount()).remainingAmount(dto.getRedPacketsAmount()).returnAmount(BigDecimal.ZERO)
-                .sendTime(new Date()).expireTime(DateTimeUtils.addTime(24, ChronoUnit.HOURS)).createTime(new Date()).updateTime(new Date()).build();
+        return RedPacketsInfoPO.builder()
+                .senderUserId(userId)
+                .totalCount(dto.getTotalCount())
+                .remainingCount(dto.getTotalCount())
+                .type(dto.getType())
+                .status(RedPacketsStatusEnum.PENDING)
+                .messageId(dto.getMessageId())
+                .channel(dto.getChannel())
+                .sendAmount(dto.getRedPacketsAmount())
+                .remainingAmount(dto.getRedPacketsAmount())
+                .returnAmount(BigDecimal.ZERO)
+                .sendTime(new Date())
+                .expireTime(DateTimeUtils.addTime(24, ChronoUnit.HOURS))
+                .createTime(new Date())
+                .updateTime(new Date())
+                .build();
+    }
+
+    /**
+     * 获取红包缓存信息
+     * @param redPacketsId
+     * @return
+     */
+    public RedPacketsInfoPO findRedPacketsCacheInfo(Long redPacketsId){
+        String key = "redPackets:"+redPacketsId;
+        if(redisUtil.hasKey(key)){
+            return redisUtil.get(key,RedPacketsInfoPO.class);
+        }
+
+        RedPacketsInfoPO redPacketsInfoPO = redPacketsInfoRepository.getById(redPacketsId);
+        redisUtil.set(key,redPacketsInfoPO,24, TimeUnit.HOURS);
+
+        return redPacketsInfoPO;
+    }
+
+    public void updateRedPacketsCacheInfo(RedPacketsInfoPO redPacketsInfoPO){
+        String key = "redPackets:"+redPacketsInfoPO.getId();
+        redisUtil.set(key,redPacketsInfoPO,24, TimeUnit.HOURS);
     }
 
 }

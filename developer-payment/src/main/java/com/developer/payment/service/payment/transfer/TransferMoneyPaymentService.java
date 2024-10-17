@@ -1,4 +1,4 @@
-package com.developer.payment.service.payment;
+package com.developer.payment.service.payment.transfer;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.SendRedPacketsDTO;

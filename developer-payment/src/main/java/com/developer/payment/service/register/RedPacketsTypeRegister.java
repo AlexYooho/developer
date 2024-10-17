@@ -2,7 +2,6 @@ package com.developer.payment.service.register;
 
 import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.payment.service.RedPacketsService;
-import com.developer.payment.service.payment.RedPacketsPaymentService;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

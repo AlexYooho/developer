@@ -1,17 +1,23 @@
-package com.developer.payment.service.payment;
+package com.developer.payment.service.payment.redpackets;
 
+import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.RedPacketsChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.payment.client.FriendClient;
 import com.developer.payment.dto.SendRedPacketsDTO;
+import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
+import com.developer.payment.pojo.RedPacketsReceiveDetailsPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.service.RedPacketsService;
 import com.developer.payment.service.WalletService;
+import com.developer.payment.service.payment.BaseRedPacketsService;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class LuckRedPacketsService extends BaseRedPacketsService implements RedPacketsService {
@@ -31,6 +38,9 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
 
     @Autowired
     private WalletService walletService;
+
+    @Autowired
+    private RedissonClient redissonClient;
 
     @Override
     public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
@@ -64,7 +74,48 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
 
     @Override
     public DeveloperResult<BigDecimal> openRedPackets(Long redPacketsId) {
-        return null;
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        RedPacketsInfoPO redPacketsInfo = findRedPacketsCacheInfo(redPacketsId);
+        if (redPacketsInfo == null) {
+            return DeveloperResult.error("红包不存在");
+        }
+
+        if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.FINISHED)) {
+            return DeveloperResult.error("红包已领取完毕");
+        }
+
+        if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.EXPIRED)) {
+            return DeveloperResult.error("红包已过期无法领取");
+        }
+
+        BigDecimal openAmount = BigDecimal.ZERO;
+
+        // 生成分布式锁的key,基于红包Id
+        String lockKey = RedisKeyConstant.OPEN_RED_PACKETS_LOCK_KEY(redPacketsId);
+        RLock lock = redissonClient.getLock(lockKey);
+        try{
+            if(lock.tryLock(30,5, TimeUnit.SECONDS)){
+                BigDecimal amount = distributeRedPacketsAmount(redPacketsInfo.getSendAmount(), redPacketsInfo.getRemainingCount()).get(0);
+                redPacketsInfo.setRemainingAmount(redPacketsInfo.getRemainingAmount().subtract(amount));
+                redPacketsInfo.setRemainingCount(redPacketsInfo.getRemainingCount() - 1);
+                if(redPacketsInfo.getRemainingCount()==0){
+                    redPacketsInfo.setStatus(RedPacketsStatusEnum.FINISHED);
+                    redPacketsInfoRepository.updateById(redPacketsInfo);
+                }
+                updateRedPacketsCacheInfo(redPacketsInfo);
+            }else{
+                return DeveloperResult.error("领取失败请重试！");
+            }
+        }catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return DeveloperResult.error("领取失败请重试！");
+        }finally {
+            // 释放锁
+            if(lock.isHeldByCurrentThread()){
+                lock.unlock();
+            }
+        }
+        return DeveloperResult.success(openAmount);
     }
 
     @Override
