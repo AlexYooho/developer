@@ -61,4 +61,13 @@ public class RedisKeyConstant {
     public static String MESSAGE_LIKE_MESSAGE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId){
         return String.format("developer:message:like:%s:%s",messageMainTypeEnum.code(),messageId);
     }
+
+    /**
+     * 抢红包锁
+     * @param redPacketsId
+     * @return
+     */
+    public static String OPEN_RED_PACKETS_LOCK_KEY(Long redPacketsId){
+        return String.format("developer:open:red:packets:lock:%s",redPacketsId);
+    }
 }

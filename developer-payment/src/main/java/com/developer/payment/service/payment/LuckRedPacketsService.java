@@ -7,6 +7,7 @@ import com.developer.framework.utils.DateTimeUtils;
 import com.developer.payment.client.FriendClient;
 import com.developer.payment.dto.SendRedPacketsDTO;
 import com.developer.payment.enums.RedPacketsStatusEnum;
+import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.service.RedPacketsService;
@@ -56,13 +57,13 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
 
         // 处理钱包信息
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        walletService.doMoneyTransaction(null, dto.getTargetId(), dto.getRedPacketsAmount());
+        walletService.doMoneyTransaction(null, dto.getTargetId(), dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET);
 
         return DeveloperResult.success();
     }
 
     @Override
-    public DeveloperResult<BigDecimal> openRedPackets() {
+    public DeveloperResult<BigDecimal> openRedPackets(Long redPacketsId) {
         return null;
     }
 

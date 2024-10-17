@@ -30,14 +30,13 @@ public class WalletServiceImpl implements WalletService {
     /**
      * 发起交易
      * @param context
-     * @param targetId
+     * @param payeeId
      * @param amount
      * @return
      */
     @Override
     @TwoPhaseBusinessAction(name = "doMoneyTransaction", commitMethod = "confirmTransaction", rollbackMethod = "cancelTransaction")
-    public DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context, Long targetId, BigDecimal amount) {
-
+    public DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context, Long payeeId, BigDecimal amount,TransactionTypeEnum transactionType) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
         if(walletInfo==null){
@@ -60,8 +59,19 @@ public class WalletServiceImpl implements WalletService {
         walletInfo.setBalance(afterBalance);
         walletRepository.updateById(walletInfo);
 
-        walletTransactionRepository.save(WalletTransactionPO.builder().walletId(walletInfo.getId()).userId(userId).transactionType(TransactionTypeEnum.TRANSFER).amount(amount).beforeBalance(beforeBalance).afterBalance(afterBalance)
-                .relatedUserId(targetId).referenceId(context.getXid()).status(TransactionStatusEnum.PENDING).createdTime(new Date()).updateTime(new Date()).build());
+        walletTransactionRepository.save(WalletTransactionPO.builder()
+                .walletId(walletInfo.getId())
+                .userId(userId)
+                .transactionType(transactionType)
+                .amount(amount)
+                .beforeBalance(beforeBalance)
+                .afterBalance(afterBalance)
+                .relatedUserId(payeeId)
+                .referenceId(context.getXid())
+                .status(TransactionStatusEnum.PENDING)
+                .createdTime(new Date())
+                .updateTime(new Date())
+                .build());
 
         return DeveloperResult.success();
     }

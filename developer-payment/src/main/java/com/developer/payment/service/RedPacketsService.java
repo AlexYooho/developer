@@ -9,5 +9,5 @@ public interface RedPacketsService {
 
     DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto);
 
-    DeveloperResult<BigDecimal> openRedPackets();
+    DeveloperResult<BigDecimal> openRedPackets(Long redPacketsId);
 }

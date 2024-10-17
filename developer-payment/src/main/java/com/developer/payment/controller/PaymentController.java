@@ -28,7 +28,7 @@ public class PaymentController {
      */
     @PostMapping("red-packets/{id}/open")
     public DeveloperResult<BigDecimal> openRedPackets(@PathVariable("id") Long id){
-        return redPacketsTypeRegister.findInstance(RedPacketsTypeEnum.NORMAL).openRedPackets();
+        return redPacketsTypeRegister.findInstance(RedPacketsTypeEnum.NORMAL).openRedPackets(0l);
     }
 
     /**

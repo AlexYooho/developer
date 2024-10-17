@@ -1,6 +1,7 @@
 package com.developer.payment.service;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.payment.enums.TransactionTypeEnum;
 import io.seata.rm.tcc.api.BusinessActionContext;
 import io.seata.rm.tcc.api.TwoPhaseBusinessAction;
 
@@ -11,13 +12,12 @@ public interface WalletService {
     /**
      * 发起支付交易
      * @param context
-     * @param senderId
-     * @param targetId
+     * @param payeeId
      * @param amount
      * @return
      */
     @TwoPhaseBusinessAction(name = "doMoneyTransaction", commitMethod = "confirmTransaction", rollbackMethod = "cancelTransaction")
-    DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context, Long targetId, BigDecimal amount);
+    DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context, Long payeeId, BigDecimal amount, TransactionTypeEnum transactionType);
 
     /**
      * 确认支付交易
