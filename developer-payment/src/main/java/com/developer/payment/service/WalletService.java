@@ -17,7 +17,7 @@ public interface WalletService {
      * @return
      */
     @TwoPhaseBusinessAction(name = "doMoneyTransaction", commitMethod = "confirmTransaction", rollbackMethod = "cancelTransaction")
-    DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context,Long senderId, Long targetId, BigDecimal amount);
+    DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context, Long targetId, BigDecimal amount);
 
     /**
      * 确认支付交易

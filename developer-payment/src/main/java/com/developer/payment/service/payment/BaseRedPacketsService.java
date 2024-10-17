@@ -1,12 +1,41 @@
 package com.developer.payment.service.payment;
 
+import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.enums.RedPacketsChannelEnum;
+import com.developer.framework.model.DeveloperResult;
+import com.developer.framework.utils.DateTimeUtils;
+import com.developer.payment.client.FriendClient;
+import com.developer.payment.client.GroupClient;
+import com.developer.payment.dto.SelfJoinGroupInfoDTO;
+import com.developer.payment.dto.SendRedPacketsDTO;
+import com.developer.payment.enums.RedPacketsStatusEnum;
+import com.developer.payment.pojo.RedPacketsInfoPO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
+@Service
 public class BaseRedPacketsService {
 
+    @Autowired
+    private FriendClient friendClient;
+
+    @Autowired
+    private GroupClient groupClient;
+
+    /**
+     * 计算红包分配金额
+     * @param totalAmount
+     * @param totalCount
+     * @return
+     */
     public List<BigDecimal> distributeRedPacketsAmount(BigDecimal totalAmount, Integer totalCount) {
         if(totalAmount.compareTo(BigDecimal.ZERO)<=0){
             return null;
@@ -35,6 +64,47 @@ public class BaseRedPacketsService {
         }
 
         return list;
+    }
+
+    /**
+     * 判断是否可以发送红包
+     * @param channel
+     * @param targetId
+     * @return
+     */
+    public DeveloperResult<Boolean> receiveTargetProcessor(RedPacketsChannelEnum channel,Long targetId){
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        if(channel== RedPacketsChannelEnum.FRIEND) {
+            Boolean isFriend = friendClient.isFriend(targetId, userId).getData();
+            if (!isFriend) {
+                return DeveloperResult.error("对方不是您的好友，无法发送红包！");
+            }
+        }
+
+        if(channel==RedPacketsChannelEnum.GROUP){
+            List<SelfJoinGroupInfoDTO> groupList = groupClient.getSelfJoinAllGroupInfo().getData();
+            Optional<SelfJoinGroupInfoDTO> optional = groupList.stream().filter(x -> x.getGroupId().equals(targetId)).findAny();
+            if(!optional.isPresent()){
+                return DeveloperResult.error("你不在群聊中,无法发送红包！");
+            }else{
+                if(optional.get().getQuit()){
+                    return DeveloperResult.error("你不在群聊中,无法发送红包！");
+                }
+            }
+        }
+
+        return DeveloperResult.success();
+    }
+
+    /**
+     * 构建红包信息
+     * @return
+     */
+    public RedPacketsInfoPO buildRedPacketsInfo(SendRedPacketsDTO dto){
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        return RedPacketsInfoPO.builder().senderUserId(userId).totalCount(dto.getTotalCount()).remainingCount(dto.getTotalCount()).type(dto.getType()).status(RedPacketsStatusEnum.PENDING)
+                .messageId(dto.getMessageId()).channel(dto.getChannel()).sendAmount(dto.getRedPacketsAmount()).remainingAmount(dto.getRedPacketsAmount()).returnAmount(BigDecimal.ZERO)
+                .sendTime(new Date()).expireTime(DateTimeUtils.addTime(24, ChronoUnit.HOURS)).createTime(new Date()).updateTime(new Date()).build();
     }
 
 }

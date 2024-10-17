@@ -30,14 +30,13 @@ public class WalletServiceImpl implements WalletService {
     /**
      * 发起交易
      * @param context
-     * @param senderId
      * @param targetId
      * @param amount
      * @return
      */
     @Override
     @TwoPhaseBusinessAction(name = "doMoneyTransaction", commitMethod = "confirmTransaction", rollbackMethod = "cancelTransaction")
-    public DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context,Long senderId, Long targetId, BigDecimal amount) {
+    public DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context, Long targetId, BigDecimal amount) {
 
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);

@@ -298,6 +298,11 @@ public class GroupMessageServiceImpl implements MessageService {
         return messageLikeService.unLike(messageId, MessageMainTypeEnum.GROUP_MESSAGE);
     }
 
+    @Override
+    public Boolean isPaymentMessageType(MessageContentTypeEnum messageContentTypeEnum) {
+        return null;
+    }
+
     private GroupMessagePO createGroupMessageMode(Long groupId, Long sendId, String sendNickName, List<Long> atUserIds, String message, MessageContentTypeEnum messageContentType){
         GroupMessagePO groupMessage = new GroupMessagePO();
         groupMessage.setGroupId(groupId);

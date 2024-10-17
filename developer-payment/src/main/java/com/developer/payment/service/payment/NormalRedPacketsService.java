@@ -28,9 +28,6 @@ import java.util.List;
 public class NormalRedPacketsService extends BaseRedPacketsService implements RedPacketsService {
 
     @Autowired
-    private FriendClient friendClient;
-
-    @Autowired
     private RedPacketsInfoRepository redPacketsInfoRepository;
 
     @Autowired
@@ -54,18 +51,15 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         }
 
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        Boolean isFriend = friendClient.isFriend(dto.getTargetId(), userId).getData();
-        if (!isFriend) {
-            return DeveloperResult.error("对方不是您的好友，无法发送红包！");
+        DeveloperResult<Boolean> result = receiveTargetProcessor(dto.getChannel(), dto.getTargetId());
+        if(!result.getIsSuccessful()){
+            return DeveloperResult.error(result.getMsg());
         }
+
+        RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto);
 
         // 分配金额
         List<BigDecimal> distributeAmountList = this.distributeRedPacketsAmount(dto.getRedPacketsAmount(), dto.getTotalCount());
-
-        RedPacketsInfoPO redPacketsInfoPO = RedPacketsInfoPO.builder().senderUserId(userId).totalCount(dto.getTotalCount()).remainingCount(dto.getTotalCount()).type(dto.getType()).status(RedPacketsStatusEnum.PENDING)
-                .messageId(dto.getMessageId()).channel(dto.getChannel()).sendAmount(dto.getRedPacketsAmount()).remainingAmount(dto.getRedPacketsAmount()).returnAmount(BigDecimal.ZERO)
-                .sendTime(new Date()).expireTime(DateTimeUtils.addTime(24, ChronoUnit.HOURS)).createTime(new Date()).updateTime(new Date()).build();
-
         List<RedPacketsReceiveDetailsPO> list = new ArrayList<>();
         for (BigDecimal amount : distributeAmountList) {
             list.add(RedPacketsReceiveDetailsPO.builder()
@@ -82,7 +76,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         redPacketsReceiveDetailsRepository.saveBatch(list);
 
         // 处理钱包信息
-        DeveloperResult<Boolean> booleanDeveloperResult = walletService.doMoneyTransaction(null, userId, dto.getTargetId(), dto.getRedPacketsAmount());
+        walletService.doMoneyTransaction(null, dto.getTargetId(), dto.getRedPacketsAmount());
 
         return DeveloperResult.success();
     }
