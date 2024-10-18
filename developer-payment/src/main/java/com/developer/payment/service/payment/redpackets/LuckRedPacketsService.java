@@ -2,10 +2,7 @@ package com.developer.payment.service.payment.redpackets;
 
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.enums.RedPacketsChannelEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.framework.utils.DateTimeUtils;
-import com.developer.payment.client.FriendClient;
 import com.developer.payment.dto.SendRedPacketsDTO;
 import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
@@ -13,6 +10,7 @@ import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.pojo.RedPacketsReceiveDetailsPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
+import com.developer.payment.repository.RedPacketsReceiveDetailsRepository;
 import com.developer.payment.service.RedPacketsService;
 import com.developer.payment.service.WalletService;
 import com.developer.payment.service.payment.BaseRedPacketsService;
@@ -41,6 +39,9 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
 
     @Autowired
     private RedissonClient redissonClient;
+
+    @Autowired
+    private RedPacketsReceiveDetailsRepository redPacketsReceiveDetailsRepository;
 
     @Override
     public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
@@ -102,6 +103,10 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
                     redPacketsInfo.setStatus(RedPacketsStatusEnum.FINISHED);
                     redPacketsInfoRepository.updateById(redPacketsInfo);
                 }
+
+                RedPacketsReceiveDetailsPO receiveDetailsPO = RedPacketsReceiveDetailsPO.builder().redPacketsId(redPacketsId).receiveUserId(userId).receiveAmount(amount).receiveTime(new Date())
+                        .status(RedPacketsReceiveStatusEnum.SUCCESS).build();
+                redPacketsReceiveDetailsRepository.save(receiveDetailsPO);
                 updateRedPacketsCacheInfo(redPacketsInfo);
             }else{
                 return DeveloperResult.error("领取失败请重试！");
