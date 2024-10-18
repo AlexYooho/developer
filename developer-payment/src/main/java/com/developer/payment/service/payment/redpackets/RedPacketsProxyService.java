@@ -17,17 +17,17 @@ public class RedPacketsProxyService {
     @Autowired
     private RedPacketsTypeRegister redPacketsTypeRegister;
 
-    public RedPacketsService findInstance(Object id) {
-        if(id instanceof Long) {
-            Long redPacketsId = (Long) id;
-            RedPacketsInfoPO po = redPacketsInfoRepository.getById(redPacketsId);
-            if (po != null) {
-                return redPacketsTypeRegister.findInstance(po.getType());
+    public RedPacketsService findInstance(Object args) {
+        if(args instanceof Long) {
+            RedPacketsInfoPO po = redPacketsInfoRepository.getById((Long) args);
+            if (po == null) {
+                return null;
             }
+            return redPacketsTypeRegister.findInstance(po.getType());
         }
 
-        if(id instanceof RedPacketsTypeEnum){
-            return redPacketsTypeRegister.findInstance((RedPacketsTypeEnum) id);
+        if(args instanceof RedPacketsTypeEnum){
+            return redPacketsTypeRegister.findInstance((RedPacketsTypeEnum) args);
         }
 
         return null;
