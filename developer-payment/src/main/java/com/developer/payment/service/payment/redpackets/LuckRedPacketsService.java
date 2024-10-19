@@ -2,6 +2,7 @@ package com.developer.payment.service.payment.redpackets;
 
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.SendRedPacketsDTO;
 import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
@@ -44,7 +45,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
     private RedPacketsReceiveDetailsRepository redPacketsReceiveDetailsRepository;
 
     @Override
-    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
+    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel) {
         if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return DeveloperResult.error("红包金额必须大于0");
         }
@@ -57,12 +58,12 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
             return DeveloperResult.error("请选择红包发送渠道！");
         }
 
-        DeveloperResult<Boolean> result = receiveTargetProcessor(dto.getChannel(), dto.getTargetId());
+        DeveloperResult<Boolean> result = receiveTargetProcessor(paymentChannel, dto.getTargetId());
         if(!result.getIsSuccessful()){
             return DeveloperResult.error(result.getMsg());
         }
 
-        RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto);
+        RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto,paymentChannel);
 
         redPacketsInfoRepository.save(redPacketsInfoPO);
 

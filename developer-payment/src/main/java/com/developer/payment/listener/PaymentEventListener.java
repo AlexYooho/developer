@@ -4,7 +4,7 @@ package com.developer.payment.listener;
 import com.alibaba.fastjson.JSON;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.payment.dto.SendRedPacketsDTO;
+import com.developer.payment.dto.PaymentInfoDTO;
 import com.developer.payment.service.PaymentService;
 import com.developer.payment.service.register.PaymentTypeRegister;
 import com.rabbitmq.client.Channel;
@@ -29,7 +29,7 @@ public class PaymentEventListener {
     private PaymentTypeRegister paymentTypeRegister;
 
     @RabbitHandler
-    public void messageSubscribe(SendRedPacketsDTO dto, Channel channel, Message message) throws IOException {
+    public void messageSubscribe(PaymentInfoDTO dto, Channel channel, Message message) throws IOException {
         try {
             LocalDateTime begin = LocalDateTime.now();
             PaymentService paymentTypeInstance = paymentTypeRegister.findPaymentTypeInstance(dto.getPaymentTypeEnum());

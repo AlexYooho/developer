@@ -1,6 +1,6 @@
 package com.developer.message.dto;
 
-import com.developer.framework.enums.RedPacketsChannelEnum;
+import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.enums.RedPacketsTypeEnum;
 import lombok.Builder;
 import lombok.Data;
@@ -32,9 +32,9 @@ public class SendRedPacketsDTO {
     private RedPacketsTypeEnum type;
 
     /**
-     * 红包渠道
+     * 支付渠道
      */
-    private RedPacketsChannelEnum channel;
+    private PaymentChannelEnum channel;
 
     /**
      * 消息id

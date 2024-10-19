@@ -3,7 +3,7 @@ package com.developer.framework.enums;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum RedPacketsChannelEnum {
+public enum PaymentChannelEnum {
 
     FRIEND(0,"好友"),
 
@@ -17,8 +17,8 @@ public enum RedPacketsChannelEnum {
         return this.code;
     }
 
-    public static RedPacketsChannelEnum fromCode(Integer code){
-        for (RedPacketsChannelEnum typeEnum:values()) {
+    public static PaymentChannelEnum fromCode(Integer code){
+        for (PaymentChannelEnum typeEnum:values()) {
             if (typeEnum.code.equals(code)) {
                 return typeEnum;
             }

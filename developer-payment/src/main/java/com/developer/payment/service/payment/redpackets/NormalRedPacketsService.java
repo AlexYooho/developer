@@ -2,6 +2,7 @@ package com.developer.payment.service.payment.redpackets;
 
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.payment.client.FriendClient;
@@ -46,7 +47,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
     private RedissonClient redissonClient;
 
     @Override
-    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
+    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel) {
         if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return DeveloperResult.error("红包金额必须大于0");
         }
@@ -60,12 +61,12 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         }
 
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        DeveloperResult<Boolean> result = receiveTargetProcessor(dto.getChannel(), dto.getTargetId());
+        DeveloperResult<Boolean> result = receiveTargetProcessor(paymentChannel, dto.getTargetId());
         if(!result.getIsSuccessful()){
             return DeveloperResult.error(result.getMsg());
         }
 
-        RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto);
+        RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto,paymentChannel);
 
         // 分配金额
         List<BigDecimal> distributeAmountList = this.distributeRedPacketsAmount(dto.getRedPacketsAmount(), dto.getTotalCount());

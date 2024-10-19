@@ -123,7 +123,7 @@ public class PrivateMessageServiceImpl implements MessageService {
             return DeveloperResult.error(freezeResult.getMsg());
         }
 
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,SendRedPacketsDTO.builder().redPacketsAmount(amount).targetId(targetId).totalCount(redPacketsTotalCount).type(redPacketsTypeEnum).channel(RedPacketsChannelEnum.FRIEND).messageId(messageId).build());
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,SendRedPacketsDTO.builder().redPacketsAmount(amount).targetId(targetId).totalCount(redPacketsTotalCount).type(redPacketsTypeEnum).channel(PaymentChannelEnum.FRIEND).messageId(messageId).build());
         return DeveloperResult.success();
     }
 

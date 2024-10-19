@@ -1,7 +1,7 @@
 package com.developer.payment.service.payment;
 
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.enums.RedPacketsChannelEnum;
+import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
@@ -81,16 +81,16 @@ public class BaseRedPacketsService {
      * @param targetId
      * @return
      */
-    public DeveloperResult<Boolean> receiveTargetProcessor(RedPacketsChannelEnum channel,Long targetId){
+    public DeveloperResult<Boolean> receiveTargetProcessor(PaymentChannelEnum channel, Long targetId){
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        if(channel== RedPacketsChannelEnum.FRIEND) {
+        if(channel== PaymentChannelEnum.FRIEND) {
             Boolean isFriend = friendClient.isFriend(targetId, userId).getData();
             if (!isFriend) {
                 return DeveloperResult.error("对方不是您的好友，无法发送红包！");
             }
         }
 
-        if(channel==RedPacketsChannelEnum.GROUP){
+        if(channel== PaymentChannelEnum.GROUP){
             List<SelfJoinGroupInfoDTO> groupList = groupClient.getSelfJoinAllGroupInfo().getData();
             Optional<SelfJoinGroupInfoDTO> optional = groupList.stream().filter(x -> x.getGroupId().equals(targetId)).findAny();
             if(!optional.isPresent()){
@@ -109,7 +109,7 @@ public class BaseRedPacketsService {
      * 构建红包信息
      * @return
      */
-    public RedPacketsInfoPO buildRedPacketsInfo(SendRedPacketsDTO dto){
+    public RedPacketsInfoPO buildRedPacketsInfo(SendRedPacketsDTO dto,PaymentChannelEnum paymentChannel){
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         return RedPacketsInfoPO.builder()
                 .senderUserId(userId)
@@ -118,7 +118,7 @@ public class BaseRedPacketsService {
                 .type(dto.getType())
                 .status(RedPacketsStatusEnum.PENDING)
                 .messageId(dto.getMessageId())
-                .channel(dto.getChannel())
+                .channel(paymentChannel)
                 .sendAmount(dto.getRedPacketsAmount())
                 .remainingAmount(dto.getRedPacketsAmount())
                 .returnAmount(BigDecimal.ZERO)
