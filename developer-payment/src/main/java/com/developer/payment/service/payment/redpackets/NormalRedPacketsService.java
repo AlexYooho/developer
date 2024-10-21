@@ -86,7 +86,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         redPacketsReceiveDetailsRepository.saveBatch(list);
 
         // 处理钱包信息
-        walletService.doMoneyTransaction(null, dto.getTargetId(), dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET);
+        walletService.doMoneyTransaction(dto.getTargetId(), dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET);
 
         return DeveloperResult.success();
     }

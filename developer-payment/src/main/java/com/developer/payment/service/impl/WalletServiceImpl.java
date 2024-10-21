@@ -6,12 +6,10 @@ import com.developer.payment.enums.TransactionStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.enums.WalletStatusEnum;
 import com.developer.payment.pojo.UserWalletPO;
-import com.developer.payment.pojo.WalletTransactionPO;
+import com.developer.payment.pojo.WalletTransactionRecordPO;
 import com.developer.payment.repository.UserWalletRepository;
-import com.developer.payment.repository.WalletTransactionRepository;
+import com.developer.payment.repository.WalletTransactionRecordRepository;
 import com.developer.payment.service.WalletService;
-import io.seata.rm.tcc.api.BusinessActionContext;
-import io.seata.rm.tcc.api.TwoPhaseBusinessAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,18 +23,16 @@ public class WalletServiceImpl implements WalletService {
     private UserWalletRepository walletRepository;
 
     @Autowired
-    private WalletTransactionRepository walletTransactionRepository;
+    private WalletTransactionRecordRepository walletTransactionRepository;
 
     /**
      * 发起交易
-     * @param context
      * @param payeeId
      * @param amount
      * @return
      */
     @Override
-    @TwoPhaseBusinessAction(name = "doMoneyTransaction", commitMethod = "confirmTransaction", rollbackMethod = "cancelTransaction")
-    public DeveloperResult<Boolean> doMoneyTransaction(BusinessActionContext context, Long payeeId, BigDecimal amount,TransactionTypeEnum transactionType) {
+    public DeveloperResult<Boolean> doMoneyTransaction(Long payeeId, BigDecimal amount,TransactionTypeEnum transactionType) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
         if(walletInfo==null){
@@ -59,7 +55,7 @@ public class WalletServiceImpl implements WalletService {
         walletInfo.setBalance(afterBalance);
         walletRepository.updateById(walletInfo);
 
-        walletTransactionRepository.save(WalletTransactionPO.builder()
+        walletTransactionRepository.save(WalletTransactionRecordPO.builder()
                 .walletId(walletInfo.getId())
                 .userId(userId)
                 .transactionType(transactionType)
@@ -67,61 +63,13 @@ public class WalletServiceImpl implements WalletService {
                 .beforeBalance(beforeBalance)
                 .afterBalance(afterBalance)
                 .relatedUserId(payeeId)
-                .referenceId(context.getXid())
+                .referenceId("")
                 .status(TransactionStatusEnum.PENDING)
                 .createdTime(new Date())
                 .updateTime(new Date())
                 .build());
 
         return DeveloperResult.success();
-    }
-
-    /**
-     * 确认交易
-     * @param context
-     * @return
-     */
-    @Override
-    public DeveloperResult<Boolean> confirmTransaction(BusinessActionContext context) {
-        // Confirm阶段：确认支付并更新交易状态
-        String xid = context.getXid();
-        WalletTransactionPO transaction = walletTransactionRepository.findByReferenceId(xid);
-        UserWalletPO walletPO = walletRepository.getById(transaction.getWalletId());
-        if (transaction.getStatus() == TransactionStatusEnum.PENDING) {
-            transaction.setStatus(TransactionStatusEnum.SUCCESS);
-            transaction.setUpdateTime(new Date());
-            walletTransactionRepository.updateById(transaction);
-            walletPO.setFrozenBalance(walletPO.getFrozenBalance().subtract(transaction.getAmount()));
-            walletRepository.updateById(walletPO);
-            return DeveloperResult.success();
-        }
-        return DeveloperResult.error("交易确认失败");
-    }
-
-    /**
-     * 回滚交易
-     * @param context
-     * @return
-     */
-    @Override
-    public DeveloperResult<Boolean> cancelTransaction(BusinessActionContext context) {
-        // Cancel阶段：撤销交易，解冻金额
-        String xid = context.getXid();
-        WalletTransactionPO transaction = walletTransactionRepository.findByReferenceId(xid);
-        if (transaction != null && transaction.getStatus() == TransactionStatusEnum.PENDING) {
-            // 还原余额
-            UserWalletPO walletInfo = walletRepository.getById(transaction.getWalletId());
-            walletInfo.setBalance(transaction.getBeforeBalance());
-            walletInfo.setFrozenBalance(walletInfo.getFrozenBalance().subtract(transaction.getAmount()));
-            walletInfo.setUpdateTime(new Date());
-            walletRepository.updateById(walletInfo);
-
-            transaction.setStatus(TransactionStatusEnum.FAILED);
-            transaction.setUpdateTime(new Date());
-            walletTransactionRepository.updateById(transaction);
-            return DeveloperResult.success();
-        }
-        return DeveloperResult.error("交易撤销失败");
     }
 
     /**

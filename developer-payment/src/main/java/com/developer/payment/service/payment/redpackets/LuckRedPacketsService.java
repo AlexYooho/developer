@@ -69,7 +69,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
 
         // 处理钱包信息
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        walletService.doMoneyTransaction(null, dto.getTargetId(), dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET);
+        walletService.doMoneyTransaction(dto.getTargetId(), dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET);
 
         return DeveloperResult.success();
     }

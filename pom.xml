@@ -83,6 +83,8 @@
                 <scope>import</scope>
             </dependency>
 
+
+
             <!-- MySQL -->
             <dependency>
                 <groupId>mysql</groupId>
@@ -208,12 +210,7 @@
                 <version>${log4j.vsrsion}</version>
             </dependency>
 
-            <!--单元测试 -->
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-            </dependency>
+
 
             <!--druid连接池依赖 -->
             <dependency>
@@ -233,17 +230,6 @@
                 <artifactId>spring-boot-starter-oauth2-client</artifactId>
             </dependency>
 
-            <!--Seata依赖 -->
-            <dependency>
-                <groupId>io.seata</groupId>
-                <artifactId>seata-all</artifactId>
-                <version>${seata.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.seata</groupId>
-                <artifactId>seata-spring-boot-starter</artifactId>
-                <version>${seata.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

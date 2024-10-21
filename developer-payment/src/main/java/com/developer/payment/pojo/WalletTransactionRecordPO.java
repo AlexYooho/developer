@@ -17,8 +17,8 @@ import java.util.Date;
  */
 @Data
 @Builder
-@TableName("wallet_transaction")
-public class WalletTransactionPO {
+@TableName("wallet_transaction_record")
+public class WalletTransactionRecordPO {
 
     /**
      * id
