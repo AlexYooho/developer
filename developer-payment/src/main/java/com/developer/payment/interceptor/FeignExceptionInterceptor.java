@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class FeignExceptionInterceptor {
 
 
-    @Pointcut("execution(* com.developer.payment.client.*(..))")
+    @Pointcut("execution(* com.developer.payment.client..*.*(..))")
     public void client(){}
 
     @AfterThrowing(pointcut = "client()",throwing = "ex")
