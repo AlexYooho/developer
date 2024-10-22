@@ -3,6 +3,7 @@ package com.developer.payment.pojo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ import java.util.Date;
  */
 @Data
 @Builder
+@TableName("red_packets_receive_detail")
 public class RedPacketsReceiveDetailsPO {
 
     /**

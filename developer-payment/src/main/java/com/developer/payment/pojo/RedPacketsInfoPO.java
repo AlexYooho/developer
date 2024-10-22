@@ -3,6 +3,7 @@ package com.developer.payment.pojo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.framework.enums.RedPacketsTypeEnum;
@@ -19,6 +20,7 @@ import java.util.Date;
  */
 @Data
 @Builder
+@TableName("red_packets_info")
 public class RedPacketsInfoPO {
 
     /**
@@ -30,7 +32,7 @@ public class RedPacketsInfoPO {
     /**
      * 发送者id
      */
-    @TableField("sender_user_id")
+    @TableField("sender_id")
     private Long senderUserId;
 
     /**
