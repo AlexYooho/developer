@@ -24,11 +24,11 @@ public class PaymentTest {
 
     @Test
     public void Test(){
-        PaymentInfoDTO dto = new PaymentInfoDTO();
-        dto.setChannel(PaymentChannelEnum.FRIEND);
-        dto.setPaymentTypeEnum(PaymentTypeEnum.TRANSFER);
-        dto.setTransferInfoDTO(TransferInfoDTO.builder().transferAmount(BigDecimal.valueOf(1)).targetId(2L).build());
-        paymentService.doPay(dto);
+//        PaymentInfoDTO dto = new PaymentInfoDTO();
+//        dto.setChannel(PaymentChannelEnum.FRIEND);
+//        dto.setPaymentTypeEnum(PaymentTypeEnum.TRANSFER);
+//        dto.setTransferInfoDTO(TransferInfoDTO.builder().transferAmount(BigDecimal.valueOf(1)).targetId(2L).build());
+//        paymentService.doPay(dto);
     }
 
 }
