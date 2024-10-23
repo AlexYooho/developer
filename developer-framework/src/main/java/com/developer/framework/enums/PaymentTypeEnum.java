@@ -1,4 +1,4 @@
-package com.developer.payment.enums;
+package com.developer.framework.enums;
 
 import lombok.AllArgsConstructor;
 

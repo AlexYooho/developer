@@ -1,13 +1,14 @@
-package com.developer.payment.dto;
+package com.developer.framework.dto;
 
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
 @Builder
-public class TransferInfoDTO {
+public class TransferInfoDTO implements Serializable {
 
     /**
      * 转账金额

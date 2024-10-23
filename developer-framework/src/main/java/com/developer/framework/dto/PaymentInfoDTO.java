@@ -1,11 +1,15 @@
-package com.developer.payment.dto;
+package com.developer.framework.dto;
 
 import com.developer.framework.enums.PaymentChannelEnum;
-import com.developer.payment.enums.PaymentTypeEnum;
+import com.developer.framework.enums.PaymentTypeEnum;
+import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class PaymentInfoDTO {
+@Builder
+public class PaymentInfoDTO implements Serializable {
 
     /**
      * 红包信息
@@ -26,4 +30,9 @@ public class PaymentInfoDTO {
      * 支付渠道
      */
     private PaymentChannelEnum channel;
+
+    /**
+     * 用户id
+     */
+    private Long userId;
 }

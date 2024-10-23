@@ -1,13 +1,12 @@
 package com.developer.payment.service.register;
 
-import com.developer.payment.enums.PaymentTypeEnum;
+import com.developer.framework.enums.PaymentTypeEnum;
 import com.developer.payment.service.PaymentService;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Service
 public class PaymentTypeRegister {
 
     private final Map<PaymentTypeEnum, PaymentService> map = new HashMap<>();

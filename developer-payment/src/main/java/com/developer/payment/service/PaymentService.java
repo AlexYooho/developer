@@ -2,7 +2,7 @@ package com.developer.payment.service;
 
 
 import com.developer.framework.model.DeveloperResult;
-import com.developer.payment.dto.PaymentInfoDTO;
+import com.developer.framework.dto.PaymentInfoDTO;
 
 public interface PaymentService {
 

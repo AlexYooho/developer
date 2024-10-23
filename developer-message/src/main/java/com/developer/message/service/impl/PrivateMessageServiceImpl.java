@@ -5,8 +5,7 @@ import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.dto.MQMessageDTO;
-import com.developer.framework.dto.MessageDTO;
+import com.developer.framework.dto.*;
 import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
@@ -118,12 +117,26 @@ public class PrivateMessageServiceImpl implements MessageService {
             return DeveloperResult.success();
         }
 
-        DeveloperResult<Boolean> freezeResult = paymentClient.freezePaymentAmount(amount);
+        /*DeveloperResult<Boolean> freezeResult = paymentClient.freezePaymentAmount(amount);
         if(!freezeResult.getData()){
             return DeveloperResult.error(freezeResult.getMsg());
-        }
+        }*/
 
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,SendRedPacketsDTO.builder().redPacketsAmount(amount).targetId(targetId).totalCount(redPacketsTotalCount).type(redPacketsTypeEnum).channel(PaymentChannelEnum.FRIEND).messageId(messageId).build());
+        SendRedPacketsDTO dto = SendRedPacketsDTO.builder()
+                .redPacketsAmount(amount)
+                .targetId(targetId)
+                .totalCount(redPacketsTotalCount)
+                .type(redPacketsTypeEnum)
+                .messageId(messageId)
+                .build();
+        PaymentInfoDTO dto1 = PaymentInfoDTO.builder()
+                .sendRedPacketsDTO(dto)
+                .transferInfoDTO(TransferInfoDTO.builder().build())
+                .paymentTypeEnum(PaymentTypeEnum.RED_PACKETS)
+                .channel(PaymentChannelEnum.FRIEND)
+                .userId(SelfUserInfoContext.selfUserInfo().getUserId())
+                .build();
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,dto1);
         return DeveloperResult.success();
     }
 

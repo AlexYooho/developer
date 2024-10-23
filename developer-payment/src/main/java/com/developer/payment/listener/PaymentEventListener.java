@@ -4,7 +4,7 @@ package com.developer.payment.listener;
 import com.alibaba.fastjson.JSON;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.payment.dto.PaymentInfoDTO;
+import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.payment.service.PaymentService;
 import com.developer.payment.service.register.PaymentTypeRegister;
 import com.rabbitmq.client.Channel;

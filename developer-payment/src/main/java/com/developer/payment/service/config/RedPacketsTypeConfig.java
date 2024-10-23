@@ -5,18 +5,17 @@ import com.developer.payment.service.payment.redpackets.LuckRedPacketsService;
 import com.developer.payment.service.payment.redpackets.NormalRedPacketsService;
 import com.developer.payment.service.register.RedPacketsTypeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
-@Component
+@Configuration
 public class RedPacketsTypeConfig {
 
-    @Autowired
-    private NormalRedPacketsService normalRedPacketsService;
-
-    @Autowired
-    private LuckRedPacketsService luckRedPacketsService;
-
-    public RedPacketsTypeRegister register(){
+    @Bean
+    public RedPacketsTypeRegister registerRedPacketsTypeInstance(
+            NormalRedPacketsService normalRedPacketsService,
+            LuckRedPacketsService luckRedPacketsService){
         RedPacketsTypeRegister typeRegister = new RedPacketsTypeRegister();
         typeRegister.registerInstance(RedPacketsTypeEnum.NORMAL, normalRedPacketsService);
         typeRegister.registerInstance(RedPacketsTypeEnum.LUCKY, luckRedPacketsService);

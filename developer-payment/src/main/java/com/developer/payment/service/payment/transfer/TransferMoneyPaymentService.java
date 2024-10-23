@@ -2,7 +2,7 @@ package com.developer.payment.service.payment.transfer;
 
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.payment.dto.PaymentInfoDTO;
+import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.enums.TransferStatusEnum;
 import com.developer.payment.pojo.TransferInfoPO;

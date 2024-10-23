@@ -4,7 +4,7 @@ import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.payment.dto.SendRedPacketsDTO;
+import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -45,7 +44,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
     private RedPacketsReceiveDetailsRepository redPacketsReceiveDetailsRepository;
 
     @Override
-    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel) {
+    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel,Long userId) {
         if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return DeveloperResult.error("红包金额必须大于0");
         }
@@ -58,7 +57,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
             return DeveloperResult.error("请选择红包发送渠道！");
         }
 
-        DeveloperResult<Boolean> result = receiveTargetProcessor(paymentChannel, dto.getTargetId());
+        DeveloperResult<Boolean> result = receiveTargetProcessor(paymentChannel, dto.getTargetId(),userId);
         if(!result.getIsSuccessful()){
             return DeveloperResult.error(result.getMsg());
         }
@@ -68,7 +67,6 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
         redPacketsInfoRepository.save(redPacketsInfoPO);
 
         // 处理钱包信息
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         walletService.doMoneyTransaction(dto.getTargetId(), dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET);
 
         return DeveloperResult.success();

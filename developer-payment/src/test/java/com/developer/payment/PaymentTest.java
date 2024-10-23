@@ -1,9 +1,9 @@
 package com.developer.payment;
 
 import com.developer.framework.enums.PaymentChannelEnum;
-import com.developer.payment.dto.PaymentInfoDTO;
-import com.developer.payment.dto.TransferInfoDTO;
-import com.developer.payment.enums.PaymentTypeEnum;
+import com.developer.framework.dto.PaymentInfoDTO;
+import com.developer.framework.dto.TransferInfoDTO;
+import com.developer.framework.enums.PaymentTypeEnum;
 import com.developer.payment.service.PaymentService;
 import org.junit.Test;
 import org.junit.runner.RunWith;

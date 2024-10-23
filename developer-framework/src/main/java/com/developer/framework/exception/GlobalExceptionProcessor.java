@@ -17,6 +17,7 @@ public class GlobalExceptionProcessor {
             RemoteInvokeException invokeException = (RemoteInvokeException) e;
             return DeveloperResult.error(invokeException.getCode(),invokeException.getErrMsg());
         }
+        log.error(e.toString());
         return DeveloperResult.error("服务器出错辣~~~~,快速修复中,请耐心等待");
     }
 

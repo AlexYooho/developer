@@ -1,15 +1,15 @@
-package com.developer.message.dto;
+package com.developer.framework.dto;
 
-import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.enums.RedPacketsTypeEnum;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-@Builder
 @Data
-public class SendRedPacketsDTO {
+@Builder
+public class SendRedPacketsDTO implements Serializable {
 
     /**
      * 红包金额
@@ -32,13 +32,7 @@ public class SendRedPacketsDTO {
     private RedPacketsTypeEnum type;
 
     /**
-     * 支付渠道
-     */
-    private PaymentChannelEnum channel;
-
-    /**
      * 消息id
      */
     private Long messageId;
-
 }

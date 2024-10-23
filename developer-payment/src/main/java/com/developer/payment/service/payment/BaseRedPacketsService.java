@@ -8,7 +8,7 @@ import com.developer.framework.utils.RedisUtil;
 import com.developer.payment.client.FriendClient;
 import com.developer.payment.client.GroupClient;
 import com.developer.payment.dto.SelfJoinGroupInfoDTO;
-import com.developer.payment.dto.SendRedPacketsDTO;
+import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
@@ -81,8 +81,7 @@ public class BaseRedPacketsService {
      * @param targetId
      * @return
      */
-    public DeveloperResult<Boolean> receiveTargetProcessor(PaymentChannelEnum channel, Long targetId){
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+    public DeveloperResult<Boolean> receiveTargetProcessor(PaymentChannelEnum channel, Long targetId,Long userId){
         if(channel== PaymentChannelEnum.FRIEND) {
             Boolean isFriend = friendClient.isFriend(targetId, userId).getData();
             if (!isFriend) {

@@ -4,9 +4,7 @@ import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.framework.utils.DateTimeUtils;
-import com.developer.payment.client.FriendClient;
-import com.developer.payment.dto.SendRedPacketsDTO;
+import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
@@ -21,11 +19,8 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,7 +42,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
     private RedissonClient redissonClient;
 
     @Override
-    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel) {
+    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel,Long userId) {
         if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return DeveloperResult.error("红包金额必须大于0");
         }
@@ -60,8 +55,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
             return DeveloperResult.error("请指定红包接收人！");
         }
 
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        DeveloperResult<Boolean> result = receiveTargetProcessor(paymentChannel, dto.getTargetId());
+        DeveloperResult<Boolean> result = receiveTargetProcessor(paymentChannel, dto.getTargetId(),userId);
         if(!result.getIsSuccessful()){
             return DeveloperResult.error(result.getMsg());
         }
