@@ -7,12 +7,14 @@ import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.payment.client.FriendClient;
 import com.developer.payment.client.GroupClient;
+import com.developer.payment.dto.FriendInfoDTO;
 import com.developer.payment.dto.SelfJoinGroupInfoDTO;
 import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -83,8 +85,8 @@ public class BaseRedPacketsService {
      */
     public DeveloperResult<Boolean> receiveTargetProcessor(PaymentChannelEnum channel, Long targetId,Long userId){
         if(channel== PaymentChannelEnum.FRIEND) {
-            Boolean isFriend = friendClient.isFriend(targetId, userId).getData();
-            if (!isFriend) {
+            FriendInfoDTO isFriend = friendClient.isFriend(targetId, userId).getData();
+            if (isFriend==null) {
                 return DeveloperResult.error("对方不是您的好友，无法发送红包！");
             }
         }

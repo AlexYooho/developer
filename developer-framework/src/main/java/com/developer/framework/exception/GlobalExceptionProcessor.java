@@ -18,7 +18,8 @@ public class GlobalExceptionProcessor {
             return DeveloperResult.error(invokeException.getCode(),invokeException.getErrMsg());
         }
         log.error(e.toString());
-        return DeveloperResult.error("服务器出错辣~~~~,快速修复中,请耐心等待");
+        throw new RuntimeException(e);
+        //return DeveloperResult.error("服务器出错辣~~~~,快速修复中,请耐心等待");
     }
 
 }

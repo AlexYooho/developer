@@ -26,6 +26,9 @@ public class AccessTokenConvertor extends DefaultAccessTokenConverter {
     public Map<String, ?> convertAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
         Map<String, String> stringMap = (Map<String, String>) super.convertAccessToken(token, authentication);
         // 需要查询相关用户信息放在jwt中
+        if(authentication.getUserAuthentication()==null){
+            return stringMap;
+        }
         HashMap<String, String> details = (HashMap<String, String>) authentication.getUserAuthentication().getDetails();
 
         UserPO userInfo = userRepository.findByAccount(details.get("username"));

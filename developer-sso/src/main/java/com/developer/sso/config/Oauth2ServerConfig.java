@@ -78,8 +78,8 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
         clients.inMemory()
                 .withClient("client_dev")
                 .secret("dev")
-                .resourceIds("developer_friend","developer_group","developer_im","developer_message","developer_oss","developer_sso","developer_user")
-                .authorizedGrantTypes("password","refresh_token")
+                .resourceIds("developer_friend","developer_group","developer_im","developer_message","developer_oss","developer_sso","developer_user","developer_payment")
+                .authorizedGrantTypes("password","refresh_token","client_credentials")
                 .scopes("all");
     }
 
@@ -115,8 +115,8 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
         DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
         defaultTokenServices.setSupportRefreshToken(true);
         defaultTokenServices.setTokenStore(tokenStore());
-        defaultTokenServices.setAccessTokenValiditySeconds(60*60*2);
-        defaultTokenServices.setRefreshTokenValiditySeconds(60*60*24);
+        defaultTokenServices.setAccessTokenValiditySeconds(60*60*24);
+        defaultTokenServices.setRefreshTokenValiditySeconds(60*60*24*7);
         defaultTokenServices.setTokenEnhancer(jwtAccessTokenConverter());
         return defaultTokenServices;
     }

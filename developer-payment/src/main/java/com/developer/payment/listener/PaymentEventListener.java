@@ -42,7 +42,8 @@ public class PaymentEventListener {
             channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
             log.info("【支付服务】消息内容：{},处理时间:{},处理结果:{}",dto, Duration.between(begin,LocalDateTime.now()).getSeconds(), JSON.toJSON(result));
         } catch (Exception e){
-            channel.basicNack(message.getMessageProperties().getDeliveryTag(),false,true);
+            //channel.basicNack(message.getMessageProperties().getDeliveryTag(),false,true);
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
             log.info("【支付服务】异常内容:{},消息内容:{}", Arrays.toString(e.getStackTrace()),dto);
         }
     }
