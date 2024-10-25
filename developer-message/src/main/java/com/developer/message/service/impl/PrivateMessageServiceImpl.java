@@ -10,6 +10,7 @@ import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
+import com.developer.framework.utils.TokenUtil;
 import com.developer.message.client.FriendClient;
 import com.developer.message.client.PaymentClient;
 import com.developer.message.dto.*;
@@ -136,7 +137,12 @@ public class PrivateMessageServiceImpl implements MessageService {
                 .channel(PaymentChannelEnum.FRIEND)
                 .userId(SelfUserInfoContext.selfUserInfo().getUserId())
                 .build();
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,dto1);
+        MessageBodyDTO<PaymentInfoDTO> ddd = MessageBodyDTO.<PaymentInfoDTO>builder()
+                .serialNo(UUID.randomUUID().toString())
+                .type(MQMessageTypeConstant.SENDMESSAGE)
+                .token(TokenUtil.getToken())
+                        .data(dto1).build();
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,ddd);
         return DeveloperResult.success();
     }
 
@@ -373,10 +379,11 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @param sendTime
      * @return
      */
-    private MQMessageDTO<MessageDTO> builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime){
-        return MQMessageDTO.<MessageDTO>builder()
+    private MessageBodyDTO<MessageDTO> builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime){
+        return MessageBodyDTO.<MessageDTO>builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
+                .token(TokenUtil.getToken())
                 .data(MessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
                         .messageContentTypeEnum(messageContentTypeEnum)
                         .messageId(messageId)

@@ -1,7 +1,7 @@
 package com.developer.im.listener;
 
 import com.developer.framework.constant.DeveloperMQConstant;
-import com.developer.framework.dto.MQMessageDTO;
+import com.developer.framework.dto.MessageBodyDTO;
 import com.developer.framework.dto.MessageDTO;
 import com.developer.im.service.AbstractMessageTypeService;
 import com.developer.im.service.MessageServiceRegister;
@@ -27,7 +27,7 @@ public class MessageListener {
     private MessageServiceRegister messageServiceRegister;
 
     @RabbitHandler
-    public void messageSubscribe(MQMessageDTO dto, Channel channel, Message message) throws IOException {
+    public void messageSubscribe(MessageBodyDTO dto, Channel channel, Message message) throws IOException {
         try {
             LocalDateTime begin = LocalDateTime.now();
             MessageDTO messageDTO = (MessageDTO) dto.getData();

@@ -7,11 +7,13 @@ import java.io.Serializable;
 
 @Data
 @Builder
-public class MQMessageDTO<T> implements Serializable {
+public class MessageBodyDTO<T> implements Serializable {
 
     public String serialNo;
 
     public String type;
 
     public T data;
+
+    public String token;
 }

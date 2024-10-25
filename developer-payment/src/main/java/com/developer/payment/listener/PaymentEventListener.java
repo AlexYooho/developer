@@ -3,6 +3,7 @@ package com.developer.payment.listener;
 
 import com.alibaba.fastjson.JSON;
 import com.developer.framework.constant.DeveloperMQConstant;
+import com.developer.framework.dto.MessageBodyDTO;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.payment.service.PaymentService;
@@ -13,6 +14,11 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -29,16 +35,17 @@ public class PaymentEventListener {
     private PaymentTypeRegister paymentTypeRegister;
 
     @RabbitHandler
-    public void messageSubscribe(PaymentInfoDTO dto, Channel channel, Message message) throws IOException {
+    public void messageSubscribe(MessageBodyDTO<PaymentInfoDTO> dto, Channel channel, Message message) throws IOException {
         try {
+
             LocalDateTime begin = LocalDateTime.now();
-            PaymentService paymentTypeInstance = paymentTypeRegister.findPaymentTypeInstance(dto.getPaymentTypeEnum());
+            PaymentService paymentTypeInstance = paymentTypeRegister.findPaymentTypeInstance(dto.getData().getPaymentTypeEnum());
             if(paymentTypeInstance==null){
                 log.info("【支付服务】消息内容:{},没有对应的消息处理器",dto);
                 return;
             }
 
-            DeveloperResult<Boolean> result = paymentTypeInstance.doPay(dto);
+            DeveloperResult<Boolean> result = paymentTypeInstance.doPay(dto.getData());
             channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
             log.info("【支付服务】消息内容：{},处理时间:{},处理结果:{}",dto, Duration.between(begin,LocalDateTime.now()).getSeconds(), JSON.toJSON(result));
         } catch (Exception e){
