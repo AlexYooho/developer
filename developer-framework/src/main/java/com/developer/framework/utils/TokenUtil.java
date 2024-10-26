@@ -17,13 +17,6 @@ public class TokenUtil {
      * @return
      */
     public static String getToken(){
-//        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-//        ServletRequestAttributes attr = (ServletRequestAttributes) requestAttributes;
-//        if(attr==null){
-//            return "";
-//        }
-//        HttpServletRequest request = attr.getRequest();
-//        return request.getHeader("Authorization");//网关传过来的 token
         String token = "";
         if(Objects.equals(SecurityContextHolder.getContext().getAuthentication().getCredentials(), "")){
             token = "Bearer "+((OAuth2AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails()).getTokenValue();
