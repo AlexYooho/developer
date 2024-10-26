@@ -1,5 +1,6 @@
 package com.developer.payment.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -11,6 +12,7 @@ public enum RedPacketsReceiveStatusEnum {
 
     FAILED(2,"失败");
 
+    @EnumValue
     private final Integer code;
 
     private final String desc;
@@ -27,5 +29,4 @@ public enum RedPacketsReceiveStatusEnum {
         }
         return null;
     }
-
 }

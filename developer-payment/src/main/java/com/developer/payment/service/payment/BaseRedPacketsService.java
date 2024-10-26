@@ -89,9 +89,7 @@ public class BaseRedPacketsService {
             if (isFriend==null) {
                 return DeveloperResult.error("对方不是您的好友，无法发送红包！");
             }
-        }
-
-        if(channel== PaymentChannelEnum.GROUP){
+        } else if(channel== PaymentChannelEnum.GROUP){
             List<SelfJoinGroupInfoDTO> groupList = groupClient.getSelfJoinAllGroupInfo().getData();
             Optional<SelfJoinGroupInfoDTO> optional = groupList.stream().filter(x -> x.getGroupId().equals(targetId)).findAny();
             if(!optional.isPresent()){

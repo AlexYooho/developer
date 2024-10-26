@@ -1,5 +1,6 @@
 package com.developer.oss.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -11,7 +12,7 @@ public enum FileTypeEnum {
     AUDIO(3,"audio");
 
 
-
+    @EnumValue
     private final Integer code;
 
     private final String desc;

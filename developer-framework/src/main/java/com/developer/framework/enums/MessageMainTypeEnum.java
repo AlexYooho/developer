@@ -1,5 +1,6 @@
 package com.developer.framework.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -13,6 +14,7 @@ public enum MessageMainTypeEnum {
 
     SUBSCRIBE_MESSAGE(3,"订阅消息");
 
+    @EnumValue
     private final Integer code;
 
     private final String desc;

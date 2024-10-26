@@ -1,5 +1,7 @@
 package com.developer.payment.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.baomidou.mybatisplus.annotation.IEnum;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -11,6 +13,7 @@ public enum TransactionStatusEnum {
 
     FAILED(2,"失败");
 
+    @EnumValue
     private final Integer code;
 
     private final String desc;
@@ -27,5 +30,4 @@ public enum TransactionStatusEnum {
         }
         return null;
     }
-
 }

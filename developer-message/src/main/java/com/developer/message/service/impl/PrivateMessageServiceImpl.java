@@ -132,7 +132,6 @@ public class PrivateMessageServiceImpl implements MessageService {
                 .build();
         PaymentInfoDTO dto1 = PaymentInfoDTO.builder()
                 .sendRedPacketsDTO(dto)
-                .transferInfoDTO(TransferInfoDTO.builder().build())
                 .paymentTypeEnum(PaymentTypeEnum.RED_PACKETS)
                 .channel(PaymentChannelEnum.FRIEND)
                 .build();

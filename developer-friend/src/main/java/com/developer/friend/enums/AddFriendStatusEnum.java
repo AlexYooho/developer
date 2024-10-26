@@ -1,5 +1,6 @@
 package com.developer.friend.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 /**
@@ -12,8 +13,7 @@ public enum AddFriendStatusEnum {
     AGREED(2,"已同意"),
     REJECTED(3,"已拒绝");
 
-
-
+    @EnumValue
     private final Integer code;
 
     private final String desc;

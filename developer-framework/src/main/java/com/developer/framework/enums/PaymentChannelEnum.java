@@ -1,14 +1,17 @@
 package com.developer.framework.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.baomidou.mybatisplus.annotation.IEnum;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum PaymentChannelEnum {
+public enum PaymentChannelEnum{
 
     FRIEND(0,"好友"),
 
     GROUP(1,"群组");
 
+    @EnumValue
     private final Integer code;
 
     private final String desc;
@@ -25,5 +28,4 @@ public enum PaymentChannelEnum {
         }
         return null;
     }
-
 }

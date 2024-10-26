@@ -1,5 +1,6 @@
 package com.developer.framework.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -10,6 +11,7 @@ public enum MessageStatusEnum {
     RECALL(2,"撤回"),
     READED(3,"已读");
 
+    @EnumValue
     private final Integer code;
 
     private final String desc;

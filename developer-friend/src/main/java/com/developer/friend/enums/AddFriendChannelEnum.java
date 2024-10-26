@@ -1,5 +1,6 @@
 package com.developer.friend.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -8,6 +9,7 @@ public enum AddFriendChannelEnum {
     SHARE(1,"分享"),
     GROUP(2,"群添加");
 
+    @EnumValue
     private final Integer code;
 
     private final String desc;

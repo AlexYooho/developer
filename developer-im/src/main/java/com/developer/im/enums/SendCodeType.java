@@ -1,5 +1,6 @@
 package com.developer.im.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -10,6 +11,7 @@ public enum SendCodeType {
     NOT_FIND_CHANNEL(2,"未找到对方的channel"),
     UNKONW_ERROR(9999,"未知异常");
 
+    @EnumValue
     private Integer code;
     private String desc;
 

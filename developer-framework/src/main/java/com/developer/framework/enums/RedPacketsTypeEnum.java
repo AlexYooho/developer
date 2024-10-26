@@ -1,5 +1,7 @@
 package com.developer.framework.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.baomidou.mybatisplus.annotation.IEnum;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -9,6 +11,7 @@ public enum RedPacketsTypeEnum {
 
     LUCKY(1,"拼手气红包");
 
+    @EnumValue
     private final Integer code;
 
     private final String desc;
@@ -25,5 +28,4 @@ public enum RedPacketsTypeEnum {
         }
         return null;
     }
-
 }

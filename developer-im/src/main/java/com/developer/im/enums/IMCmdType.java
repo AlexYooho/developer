@@ -1,5 +1,6 @@
 package com.developer.im.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -19,7 +20,7 @@ public enum IMCmdType {
 
     SUBSCRIBE_MESSAGE(6,"订阅消息");
 
-
+    @EnumValue
     private Integer code;
 
     private String desc;

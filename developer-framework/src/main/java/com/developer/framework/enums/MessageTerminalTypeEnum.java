@@ -1,5 +1,6 @@
 package com.developer.framework.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 import java.util.Arrays;
@@ -12,6 +13,7 @@ public enum MessageTerminalTypeEnum {
     WEB(0,"web"),
     APP(1,"app");
 
+    @EnumValue
     private Integer code;
 
     private String desc;

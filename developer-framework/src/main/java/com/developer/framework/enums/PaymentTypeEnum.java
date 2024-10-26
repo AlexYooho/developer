@@ -1,5 +1,6 @@
 package com.developer.framework.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -9,6 +10,7 @@ public enum PaymentTypeEnum {
 
     TRANSFER(1,"转账");
 
+    @EnumValue
     private final Integer code;
 
     private final String desc;
