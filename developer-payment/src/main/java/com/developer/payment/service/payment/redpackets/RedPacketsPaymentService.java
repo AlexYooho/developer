@@ -14,6 +14,6 @@ public class RedPacketsPaymentService implements PaymentService {
     private RedPacketsTypeRegister redPacketsTypeRegister;
 
     public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto){
-        return redPacketsTypeRegister.findInstance(dto.getSendRedPacketsDTO().getType()).sendRedPackets(dto.getSendRedPacketsDTO(),dto.getChannel());
+        return redPacketsTypeRegister.findInstance(dto.getSendRedPacketsDTO().getType()).sendRedPackets(dto.getSendRedPacketsDTO());
     }
 }

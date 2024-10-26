@@ -1,10 +1,14 @@
 package com.developer.payment.service.payment;
 
+import com.developer.framework.constant.DeveloperMQConstant;
+import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.dto.MessageBodyDTO;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
+import com.developer.framework.utils.TokenUtil;
 import com.developer.payment.client.FriendClient;
 import com.developer.payment.client.GroupClient;
 import com.developer.payment.dto.FriendInfoDTO;
@@ -13,17 +17,14 @@ import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -40,6 +41,9 @@ public class BaseRedPacketsService {
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 计算红包分配金额
@@ -108,7 +112,7 @@ public class BaseRedPacketsService {
      * 构建红包信息
      * @return
      */
-    public RedPacketsInfoPO buildRedPacketsInfo(SendRedPacketsDTO dto,PaymentChannelEnum paymentChannel){
+    public RedPacketsInfoPO buildRedPacketsInfo(SendRedPacketsDTO dto){
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         return RedPacketsInfoPO.builder()
                 .senderUserId(userId)
@@ -117,7 +121,7 @@ public class BaseRedPacketsService {
                 .type(dto.getType())
                 .status(RedPacketsStatusEnum.PENDING)
                 .messageId(dto.getMessageId())
-                .channel(paymentChannel)
+                .channel(dto.getPaymentChannel())
                 .sendAmount(dto.getRedPacketsAmount())
                 .remainingAmount(dto.getRedPacketsAmount())
                 .returnAmount(BigDecimal.ZERO)
@@ -148,6 +152,16 @@ public class BaseRedPacketsService {
     public void updateRedPacketsCacheInfo(RedPacketsInfoPO redPacketsInfoPO){
         String key = "redPackets:"+redPacketsInfoPO.getId();
         redisUtil.set(key,redPacketsInfoPO,24, TimeUnit.HOURS);
+    }
+
+    public void pushSendRedPacketsMessage(){
+        MessageBodyDTO<Object> dto = MessageBodyDTO.<Object>builder()
+                .serialNo(UUID.randomUUID().toString())
+                .type(MQMessageTypeConstant.SENDMESSAGE)
+                .token(TokenUtil.getToken())
+                .data(null)
+                .build();
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY,dto);
     }
 
 }

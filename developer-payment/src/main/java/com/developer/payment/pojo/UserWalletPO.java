@@ -44,7 +44,7 @@ public class UserWalletPO {
     private BigDecimal frozenBalance;
 
     /**
-     * 累计重置金额
+     * 累计充值金额
      */
     @TableField("total_recharge")
     private BigDecimal totalRecharge;

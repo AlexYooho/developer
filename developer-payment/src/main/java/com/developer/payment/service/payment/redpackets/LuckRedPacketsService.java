@@ -44,7 +44,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
     private RedPacketsReceiveDetailsRepository redPacketsReceiveDetailsRepository;
 
     @Override
-    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel) {
+    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return DeveloperResult.error("红包金额必须大于0");
@@ -58,17 +58,22 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
             return DeveloperResult.error("请选择红包发送渠道！");
         }
 
-        DeveloperResult<Boolean> result = receiveTargetProcessor(paymentChannel, dto.getTargetId(),userId);
+        DeveloperResult<Boolean> result = receiveTargetProcessor(dto.getPaymentChannel(), dto.getTargetId(),userId);
         if(!result.getIsSuccessful()){
             return DeveloperResult.error(result.getMsg());
         }
 
-        RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto,paymentChannel);
+        RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto);
 
         redPacketsInfoRepository.save(redPacketsInfoPO);
 
         // 处理钱包信息
-        walletService.doMoneyTransaction(dto.getTargetId(), dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET);
+        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(dto.getTargetId(), dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET);
+        if(!walletResult.getIsSuccessful()){
+            return walletResult;
+        }
+
+        // 发送消息事件
 
         return DeveloperResult.success();
     }

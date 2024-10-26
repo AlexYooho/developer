@@ -1,10 +1,9 @@
 package com.developer.payment.controller;
 
-import com.developer.framework.enums.RedPacketsTypeEnum;
+import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.service.WalletService;
 import com.developer.payment.service.payment.redpackets.RedPacketsProxyService;
-import com.developer.payment.service.register.RedPacketsTypeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +21,11 @@ public class PaymentController {
 
     @Autowired
     private WalletService walletService;
+
+    @PostMapping("red-packets/send")
+    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto){
+        return redPacketsProxyService.findInstance(dto.getType()).sendRedPackets(dto);
+    }
 
     /**
      * 打开红包

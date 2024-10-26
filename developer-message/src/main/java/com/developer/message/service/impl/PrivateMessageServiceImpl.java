@@ -100,13 +100,13 @@ public class PrivateMessageServiceImpl implements MessageService {
         fetchAndModifyMessageId(userId,privateMessage.getId());
 
         // 红包转账
-        DeveloperResult<Boolean> invoke = this.invokePayment(req.getMessageContentType(), req.getRedPacketsAmount(), req.getReceiverId(), req.getTotalCount(), req.getType(), privateMessage.getId());
-        if(!invoke.getIsSuccessful()){
-            return DeveloperResult.error(invoke.getMsg());
-        }
+//        DeveloperResult<Boolean> invoke = this.invokePayment(req.getMessageContentType(), req.getRedPacketsAmount(), req.getReceiverId(), req.getTotalCount(), req.getType(), privateMessage.getId());
+//        if(!invoke.getIsSuccessful()){
+//            return DeveloperResult.error(invoke.getMsg());
+//        }
 
         // 发送消息
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, SelfUserInfoContext.selfUserInfo().getNickName(), req.getMessageContent(), Collections.singletonList(req.getReceiverId()),new ArrayList<>(), MessageStatusEnum.fromCode(privateMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,privateMessage.getSendTime()));
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, SelfUserInfoContext.selfUserInfo().getNickName(), req.getMessageContent(), Collections.singletonList(req.getReceiverId()),new ArrayList<>(), MessageStatusEnum.fromCode(privateMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,privateMessage.getSendTime()));
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
@@ -122,26 +122,26 @@ public class PrivateMessageServiceImpl implements MessageService {
         if(!freezeResult.getData()){
             return DeveloperResult.error(freezeResult.getMsg());
         }*/
-
-        SendRedPacketsDTO dto = SendRedPacketsDTO.builder()
-                .redPacketsAmount(amount)
-                .targetId(targetId)
-                .totalCount(redPacketsTotalCount)
-                .type(redPacketsTypeEnum)
-                .messageId(messageId)
-                .build();
-        PaymentInfoDTO dto1 = PaymentInfoDTO.builder()
-                .sendRedPacketsDTO(dto)
-                .paymentTypeEnum(PaymentTypeEnum.RED_PACKETS)
-                .channel(PaymentChannelEnum.FRIEND)
-                .build();
-        MessageBodyDTO<PaymentInfoDTO> ddd = MessageBodyDTO.<PaymentInfoDTO>builder()
-                .serialNo(UUID.randomUUID().toString())
-                .type(MQMessageTypeConstant.SENDMESSAGE)
-                .token(TokenUtil.getToken())
-                .data(dto1)
-                .build();
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,ddd);
+//
+//        SendRedPacketsDTO dto = SendRedPacketsDTO.builder()
+//                .redPacketsAmount(amount)
+//                .targetId(targetId)
+//                .totalCount(redPacketsTotalCount)
+//                .type(redPacketsTypeEnum)
+//                .messageId(messageId)
+//                .build();
+//        PaymentInfoDTO dto1 = PaymentInfoDTO.builder()
+//                .sendRedPacketsDTO(dto)
+//                .paymentTypeEnum(PaymentTypeEnum.RED_PACKETS)
+//                .channel(PaymentChannelEnum.FRIEND)
+//                .build();
+//        MessageBodyDTO<PaymentInfoDTO> ddd = MessageBodyDTO.<PaymentInfoDTO>builder()
+//                .serialNo(UUID.randomUUID().toString())
+//                .type(MQMessageTypeConstant.SENDMESSAGE)
+//                .token(TokenUtil.getToken())
+//                .data(dto1)
+//                .build();
+//        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,ddd);
         return DeveloperResult.success();
     }
 
@@ -154,7 +154,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     public DeveloperResult<Boolean> readMessage(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
         privateMessageRepository.updateMessageStatus(friendId,userId,MessageStatusEnum.READED.code());
         return DeveloperResult.success();
     }
@@ -185,7 +185,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         privateMessageRepository.updateById(privateMessage);
 
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName,"对方撤回了一条消息", Collections.singletonList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL, MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName,"对方撤回了一条消息", Collections.singletonList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL, MessageTerminalTypeEnum.WEB,new Date()));
 
         return DeveloperResult.success();
     }

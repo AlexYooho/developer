@@ -106,7 +106,7 @@ public class FriendServiceImpl implements FriendService {
         }
 
         // 发送添加请求
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
         return DeveloperResult.success(true);
     }
 
@@ -143,7 +143,7 @@ public class FriendServiceImpl implements FriendService {
         friendApplicationRecordPORepository.updateStatus(userId, req.getFriendId(), status.code());
 
         if (ObjectUtil.isNotEmpty(message)) {
-            rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+            rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
         }
 
         return DeveloperResult.success();

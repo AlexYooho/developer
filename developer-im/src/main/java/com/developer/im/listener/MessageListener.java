@@ -20,7 +20,7 @@ import java.util.Arrays;
 
 @Component
 @Slf4j
-@RabbitListener(queues = {DeveloperMQConstant.MESSAGE_QUEUE})
+@RabbitListener(queues = {DeveloperMQConstant.MESSAGE_IM_QUEUE})
 public class MessageListener {
 
     @Autowired

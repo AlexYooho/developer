@@ -150,7 +150,7 @@ public class GroupMessageServiceImpl implements MessageService {
 
 //        rabbitMQUtil.pushMQMessage(req.getMessageMainType(),req.getMessageContentType(),message.getId(),message.getGroupId(),userId,nickName,req.getMessageContent(),receiverIds,req.getAtUserIds(),message.getMessageStatus(),IMTerminalTypeEnum.WEB,message.getSendTime());
 
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(),message.getId(),message.getGroupId(),userId,nickName,req.getMessageContent(),receiverIds,req.getAtUserIds(),MessageStatusEnum.fromCode(message.getMessageStatus()), MessageTerminalTypeEnum.WEB,message.getSendTime()));
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(),message.getId(),message.getGroupId(),userId,nickName,req.getMessageContent(),receiverIds,req.getAtUserIds(),MessageStatusEnum.fromCode(message.getMessageStatus()), MessageTerminalTypeEnum.WEB,message.getSendTime()));
 
 
         GroupMessageDTO data = new GroupMessageDTO();
@@ -176,7 +176,7 @@ public class GroupMessageServiceImpl implements MessageService {
             // 通知前端
 //            rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.GROUP_MESSAGE,MessageContentTypeEnum.TEXT, x.getMessageId(), groupId, userId, nickName,"", Collections.singletonList(x.getSendId()), new ArrayList<>(), 3, IMTerminalTypeEnum.WEB,new Date());
 
-            rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE,MessageContentTypeEnum.TEXT, x.getMessageId(), groupId, userId, nickName,"", Collections.singletonList(x.getSendId()), new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
+            rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE,MessageContentTypeEnum.TEXT, x.getMessageId(), groupId, userId, nickName,"", Collections.singletonList(x.getSendId()), new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
 
             x.setStatus(MessageStatusEnum.READED.code());
             groupMessageMemberReceiveRecordRepository.updateById(x);
@@ -215,7 +215,7 @@ public class GroupMessageServiceImpl implements MessageService {
         String message = String.format("%s 撤回了一条消息",selfJoinGroupInfoDTO.getAliasName());
 
 //        rabbitMQUtil.pushMQMessage(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(),groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), groupMessage.getMessageStatus(), IMTerminalTypeEnum.WEB,new Date());
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.CHAT_MESSAGE_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(),groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), MessageStatusEnum.fromCode(groupMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(),groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), MessageStatusEnum.fromCode(groupMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,new Date()));
 
 
         return DeveloperResult.success();
