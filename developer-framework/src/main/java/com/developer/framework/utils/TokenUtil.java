@@ -7,6 +7,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 public class TokenUtil {
 
@@ -23,7 +24,13 @@ public class TokenUtil {
 //        }
 //        HttpServletRequest request = attr.getRequest();
 //        return request.getHeader("Authorization");//网关传过来的 token
-        return "Bearer "+((OAuth2AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails()).getTokenValue();
+        String token = "";
+        if(Objects.equals(SecurityContextHolder.getContext().getAuthentication().getCredentials(), "")){
+            token = "Bearer "+((OAuth2AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails()).getTokenValue();
+        }else {
+            token = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        }
+      return token;
     }
 
 

@@ -3,6 +3,7 @@ package com.developer.payment.listener;
 
 import com.alibaba.fastjson.JSON;
 import com.developer.framework.constant.DeveloperMQConstant;
+import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.MessageBodyDTO;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
@@ -14,11 +15,6 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -37,7 +33,6 @@ public class PaymentEventListener {
     @RabbitHandler
     public void messageSubscribe(MessageBodyDTO<PaymentInfoDTO> dto, Channel channel, Message message) throws IOException {
         try {
-
             LocalDateTime begin = LocalDateTime.now();
             PaymentService paymentTypeInstance = paymentTypeRegister.findPaymentTypeInstance(dto.getData().getPaymentTypeEnum());
             if(paymentTypeInstance==null){

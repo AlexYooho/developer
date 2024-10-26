@@ -30,9 +30,4 @@ public class PaymentInfoDTO implements Serializable {
      * 支付渠道
      */
     private PaymentChannelEnum channel;
-
-    /**
-     * 用户id
-     */
-    private Long userId;
 }

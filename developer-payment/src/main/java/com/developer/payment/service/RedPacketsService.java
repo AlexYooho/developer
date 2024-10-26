@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 public interface RedPacketsService {
 
-    DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel,Long userId);
+    DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel);
 
     DeveloperResult<BigDecimal> openRedPackets(Long redPacketsId);
 }

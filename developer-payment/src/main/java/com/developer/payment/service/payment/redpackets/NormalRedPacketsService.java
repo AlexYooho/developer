@@ -42,7 +42,8 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
     private RedissonClient redissonClient;
 
     @Override
-    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel,Long userId) {
+    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto, PaymentChannelEnum paymentChannel) {
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return DeveloperResult.error("红包金额必须大于0");
         }

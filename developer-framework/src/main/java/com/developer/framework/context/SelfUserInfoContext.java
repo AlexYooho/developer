@@ -12,9 +12,14 @@ public class SelfUserInfoContext {
 
     public static SelfUserInfoModel selfUserInfo(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails)authentication.getDetails();
-        HashMap<String, String> decodedDetails = (HashMap<String, String>) details.getDecodedDetails();
-        String selfUserInfoContext = decodedDetails.get("selfUserInfoKey");
+        String selfUserInfoContext = "";
+        if(authentication.getDetails() instanceof String){
+            selfUserInfoContext = (String) authentication.getDetails();
+        }else{
+            OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails)authentication.getDetails();
+            HashMap<String, String> decodedDetails = (HashMap<String, String>) details.getDecodedDetails();
+            selfUserInfoContext = decodedDetails.get("selfUserInfoKey");
+        }
         return JSON.parseObject(selfUserInfoContext, SelfUserInfoModel.class);
     }
 

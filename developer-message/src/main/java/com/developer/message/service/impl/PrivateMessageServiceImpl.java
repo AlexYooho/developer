@@ -135,13 +135,13 @@ public class PrivateMessageServiceImpl implements MessageService {
                 .transferInfoDTO(TransferInfoDTO.builder().build())
                 .paymentTypeEnum(PaymentTypeEnum.RED_PACKETS)
                 .channel(PaymentChannelEnum.FRIEND)
-                .userId(SelfUserInfoContext.selfUserInfo().getUserId())
                 .build();
         MessageBodyDTO<PaymentInfoDTO> ddd = MessageBodyDTO.<PaymentInfoDTO>builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
                 .token(TokenUtil.getToken())
-                        .data(dto1).build();
+                .data(dto1)
+                .build();
         rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,ddd);
         return DeveloperResult.success();
     }
