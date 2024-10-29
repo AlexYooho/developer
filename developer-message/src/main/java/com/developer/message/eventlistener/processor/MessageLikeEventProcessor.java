@@ -1,24 +1,25 @@
-package com.developer.message.eventlistener;
+package com.developer.message.eventlistener.processor;
 
-import com.developer.framework.constant.DeveloperMQConstant;
+import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.RabbitMQEventTypeEnum;
+import com.developer.framework.model.DeveloperResult;
+import com.developer.framework.processor.IMessageProcessor;
 import com.developer.message.dto.MessageLikeEventDTO;
 import com.developer.message.enums.MessageLikeEnum;
 import com.developer.message.pojo.GroupMessagePO;
 import com.developer.message.pojo.MessageLikeRecordPO;
 import com.developer.message.repository.GroupMessageRepository;
 import com.developer.message.repository.MessageLikeRecordRepository;
-import org.springframework.amqp.rabbit.annotation.RabbitHandler;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
 @Component
-@RabbitListener(queues = {DeveloperMQConstant.MESSAGE_LIKE_QUEUE})
-public class MessageLikeEvent {
+@Slf4j
+public class MessageLikeEventProcessor implements IMessageProcessor {
 
     @Autowired
     private MessageLikeRecordRepository messageLikeRecordRepository;
@@ -26,9 +27,14 @@ public class MessageLikeEvent {
     @Autowired
     private GroupMessageRepository groupMessageRepository;
 
-    @Transactional
-    @RabbitHandler
-    public void handleLikeEvent(MessageLikeEventDTO event) {
+    @Override
+    public RabbitMQEventTypeEnum eventType() {
+        return RabbitMQEventTypeEnum.MESSAGE_LIKE;
+    }
+
+    @Override
+    public DeveloperResult<Boolean> processor(RabbitMQMessageBodyDTO dto) {
+        MessageLikeEventDTO event = dto.parseData(MessageLikeEventDTO.class);
         Long messageId = event.getMessageId();
         Long userId = event.getUserId();
 
@@ -55,6 +61,6 @@ public class MessageLikeEvent {
                 groupMessageRepository.updateById(message);
             }
         }
+        return DeveloperResult.success();
     }
-
 }

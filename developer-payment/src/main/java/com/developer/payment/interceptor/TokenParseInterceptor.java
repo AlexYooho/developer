@@ -1,13 +1,11 @@
 package com.developer.payment.interceptor;
 
-import com.developer.framework.dto.MessageBodyDTO;
+import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.dto.PaymentInfoDTO;
-import com.developer.framework.exception.RemoteInvokeException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
@@ -28,7 +26,7 @@ public class TokenParseInterceptor {
     @Before("client()")
     public void FeignExceptionHandler(JoinPoint joinPoint){
         Object[] args = joinPoint.getArgs();
-        MessageBodyDTO<PaymentInfoDTO> dto = (MessageBodyDTO<PaymentInfoDTO>) args[0];
+        RabbitMQMessageBodyDTO dto = (RabbitMQMessageBodyDTO) args[0];
         Claims claims = Jwts.parser()
                 .setSigningKey("developer".getBytes(StandardCharsets.UTF_8))
                 .parseClaimsJws(dto.getToken().replace("Bearer ",""))

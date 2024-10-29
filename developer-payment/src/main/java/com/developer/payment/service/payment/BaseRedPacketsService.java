@@ -3,7 +3,7 @@ package com.developer.payment.service.payment;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.dto.MessageBodyDTO;
+import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
@@ -155,7 +155,7 @@ public class BaseRedPacketsService {
     }
 
     public void pushSendRedPacketsMessage(){
-        MessageBodyDTO<Object> dto = MessageBodyDTO.<Object>builder()
+        RabbitMQMessageBodyDTO dto = RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
                 .token(TokenUtil.getToken())

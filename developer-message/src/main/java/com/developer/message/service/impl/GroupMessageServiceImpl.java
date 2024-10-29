@@ -5,7 +5,7 @@ import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.dto.MessageBodyDTO;
+import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.dto.MessageDTO;
 import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.enums.MessageContentTypeEnum;
@@ -318,8 +318,8 @@ public class GroupMessageServiceImpl implements MessageService {
         return groupMessage;
     }
 
-    private MessageBodyDTO<MessageDTO> builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime){
-        return MessageBodyDTO.<MessageDTO>builder()
+    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime){
+        return RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
                 .data(MessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
