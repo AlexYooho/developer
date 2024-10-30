@@ -33,7 +33,7 @@ public class RabbitMQEventListener {
     public void messageSubscribe(RabbitMQMessageBodyDTO dto, Channel channel, Message message) throws IOException {
         try {
             LocalDateTime begin = LocalDateTime.now();
-            IMessageProcessor instance = messageProcessorFactory.getInstance(RabbitMQEventTypeEnum.PAYMENT);
+            IMessageProcessor instance = messageProcessorFactory.getInstance(RabbitMQEventTypeEnum.MESSAGE);
             if(instance==null){
                 log.info("【message服务】消息内容:{},没有对应的消息处理器",dto);
                 return;
@@ -43,6 +43,7 @@ public class RabbitMQEventListener {
             log.info("【message服务】消息内容：{},处理时间:{},处理结果:{}",dto, Duration.between(begin, LocalDateTime.now()).getSeconds(), result);
             channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
         } catch (Exception e){
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
             channel.basicNack(message.getMessageProperties().getDeliveryTag(),false,true);
         }
     }

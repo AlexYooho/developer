@@ -5,9 +5,11 @@ import com.developer.framework.enums.MessageMainTypeEnum;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
 @Builder
-public class SendChatMessageDTO {
+public class SendChatMessageDTO implements Serializable {
 
     /**
      * 接收人

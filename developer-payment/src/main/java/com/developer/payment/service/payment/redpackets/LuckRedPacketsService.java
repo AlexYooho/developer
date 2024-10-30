@@ -63,15 +63,15 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
             return DeveloperResult.error(result.getMsg());
         }
 
-        RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto);
-
-        redPacketsInfoRepository.save(redPacketsInfoPO);
-
         // 处理钱包信息
         DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(dto.getTargetId(), dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET);
         if(!walletResult.getIsSuccessful()){
             return walletResult;
         }
+
+        RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto);
+
+        redPacketsInfoRepository.save(redPacketsInfoPO);
 
         // 发送消息事件
         sendRedPacketsMessage(dto.getTargetId(),dto.getPaymentChannel());

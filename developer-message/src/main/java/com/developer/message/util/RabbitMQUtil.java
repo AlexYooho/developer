@@ -1,5 +1,6 @@
 package com.developer.message.util;
 
+import com.alibaba.fastjson.JSON;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
@@ -27,7 +28,7 @@ public class RabbitMQUtil {
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
                 .token(TokenUtil.getToken())
-                .data(content)
+                .data(JSON.toJSON(content))
                 .build();
         rabbitTemplate.convertAndSend(exchange, routingKey,dto);
     }

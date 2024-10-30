@@ -48,7 +48,7 @@ public class WalletServiceImpl implements WalletService {
         }
 
         BigDecimal beforeBalance = walletInfo.getBalance();
-        BigDecimal afterBalance = amount.compareTo(BigDecimal.ZERO) > 0 ? walletInfo.getBalance().add(amount): walletInfo.getBalance().subtract(amount.abs());
+        BigDecimal afterBalance = walletInfo.getBalance().subtract(amount.abs());
 
         walletInfo.setLastTransactionTime(new Date());
         walletInfo.setUpdateTime(new Date());

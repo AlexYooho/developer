@@ -5,10 +5,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.service.WalletService;
 import com.developer.payment.service.payment.redpackets.RedPacketsProxyService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 
@@ -23,7 +20,7 @@ public class PaymentController {
     private WalletService walletService;
 
     @PostMapping("red-packets/send")
-    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto){
+    public DeveloperResult<Boolean> sendRedPackets(@RequestBody SendRedPacketsDTO dto){
         return redPacketsProxyService.findInstance(dto.getType()).sendRedPackets(dto);
     }
 
