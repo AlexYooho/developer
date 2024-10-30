@@ -74,6 +74,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
         }
 
         // 发送消息事件
+        sendRedPacketsMessage(dto.getTargetId(),dto.getPaymentChannel());
 
         return DeveloperResult.success();
     }

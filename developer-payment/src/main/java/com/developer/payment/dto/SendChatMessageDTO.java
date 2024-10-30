@@ -1,21 +1,13 @@
-package com.developer.message.dto;
+package com.developer.payment.dto;
 
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
-import com.developer.framework.enums.RedPacketsTypeEnum;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class SendMessageRequestDTO {
+public class SendChatMessageDTO {
 
     /**
      * 接收人
@@ -41,15 +33,5 @@ public class SendMessageRequestDTO {
      * 群id
      */
     private Long groupId;
-
-    /**
-     * @ 用户id
-     */
-    private List<Long> atUserIds;
-
-    /**
-     * 引用消息id
-     */
-    private Long referenceId;
 
 }

@@ -87,6 +87,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         }
 
         // 发送消息事件
+        sendRedPacketsMessage(dto.getTargetId(),dto.getPaymentChannel());
 
         return DeveloperResult.success();
     }

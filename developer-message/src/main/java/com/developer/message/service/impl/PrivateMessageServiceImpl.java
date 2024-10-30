@@ -12,20 +12,18 @@ import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.TokenUtil;
 import com.developer.message.client.FriendClient;
-import com.developer.message.client.PaymentClient;
 import com.developer.message.dto.*;
 import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.PrivateMessageRepository;
 import com.developer.message.service.MessageLikeService;
 import com.developer.message.service.MessageService;
+import com.developer.message.util.RabbitMQUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -42,16 +40,13 @@ public class PrivateMessageServiceImpl implements MessageService {
     private PrivateMessageRepository privateMessageRepository;
 
     @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private RabbitMQUtil rabbitMQUtil;
 
     @Autowired
     private RedisUtil redisUtil;
 
     @Autowired
     private MessageLikeService messageLikeService;
-
-    @Autowired
-    private PaymentClient paymentClient;
 
     /**
      * 拉取最新消息
@@ -99,50 +94,12 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         fetchAndModifyMessageId(userId,privateMessage.getId());
 
-        // 红包转账
-//        DeveloperResult<Boolean> invoke = this.invokePayment(req.getMessageContentType(), req.getRedPacketsAmount(), req.getReceiverId(), req.getTotalCount(), req.getType(), privateMessage.getId());
-//        if(!invoke.getIsSuccessful()){
-//            return DeveloperResult.error(invoke.getMsg());
-//        }
-
         // 发送消息
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, SelfUserInfoContext.selfUserInfo().getNickName(), req.getMessageContent(), Collections.singletonList(req.getReceiverId()),new ArrayList<>(), MessageStatusEnum.fromCode(privateMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,privateMessage.getSendTime()));
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, SelfUserInfoContext.selfUserInfo().getNickName(), req.getMessageContent(), Collections.singletonList(req.getReceiverId()),new ArrayList<>(), MessageStatusEnum.fromCode(privateMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,privateMessage.getSendTime()));
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
         return DeveloperResult.success(dto);
-    }
-
-    private DeveloperResult<Boolean> invokePayment(MessageContentTypeEnum messageContentTypeEnum, BigDecimal amount,Long targetId,Integer redPacketsTotalCount,RedPacketsTypeEnum redPacketsTypeEnum,Long messageId){
-        if(!this.isPaymentMessageType(messageContentTypeEnum)){
-            return DeveloperResult.success();
-        }
-
-        /*DeveloperResult<Boolean> freezeResult = paymentClient.freezePaymentAmount(amount);
-        if(!freezeResult.getData()){
-            return DeveloperResult.error(freezeResult.getMsg());
-        }*/
-//
-//        SendRedPacketsDTO dto = SendRedPacketsDTO.builder()
-//                .redPacketsAmount(amount)
-//                .targetId(targetId)
-//                .totalCount(redPacketsTotalCount)
-//                .type(redPacketsTypeEnum)
-//                .messageId(messageId)
-//                .build();
-//        PaymentInfoDTO dto1 = PaymentInfoDTO.builder()
-//                .sendRedPacketsDTO(dto)
-//                .paymentTypeEnum(PaymentTypeEnum.RED_PACKETS)
-//                .channel(PaymentChannelEnum.FRIEND)
-//                .build();
-//        MessageBodyDTO<PaymentInfoDTO> ddd = MessageBodyDTO.<PaymentInfoDTO>builder()
-//                .serialNo(UUID.randomUUID().toString())
-//                .type(MQMessageTypeConstant.SENDMESSAGE)
-//                .token(TokenUtil.getToken())
-//                .data(dto1)
-//                .build();
-//        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,ddd);
-        return DeveloperResult.success();
     }
 
     /**
@@ -154,7 +111,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     public DeveloperResult<Boolean> readMessage(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
         privateMessageRepository.updateMessageStatus(friendId,userId,MessageStatusEnum.READED.code());
         return DeveloperResult.success();
     }
@@ -185,7 +142,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         privateMessageRepository.updateById(privateMessage);
 
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName,"对方撤回了一条消息", Collections.singletonList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL, MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName,"对方撤回了一条消息", Collections.singletonList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL, MessageTerminalTypeEnum.WEB,new Date()));
 
         return DeveloperResult.success();
     }

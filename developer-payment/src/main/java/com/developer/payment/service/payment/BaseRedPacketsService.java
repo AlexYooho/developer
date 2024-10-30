@@ -4,6 +4,8 @@ import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
+import com.developer.framework.enums.MessageContentTypeEnum;
+import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
@@ -14,10 +16,11 @@ import com.developer.payment.client.GroupClient;
 import com.developer.payment.dto.FriendInfoDTO;
 import com.developer.payment.dto.SelfJoinGroupInfoDTO;
 import com.developer.framework.dto.SendRedPacketsDTO;
+import com.developer.payment.dto.SendChatMessageDTO;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import com.developer.payment.utils.RabbitMQUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +46,7 @@ public class BaseRedPacketsService {
     private RedisUtil redisUtil;
 
     @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private RabbitMQUtil rabbitMQUtil;
 
     /**
      * 计算红包分配金额
@@ -149,19 +152,25 @@ public class BaseRedPacketsService {
         return redPacketsInfoPO;
     }
 
+    /**
+     * 更新红包缓存信息
+     * @param redPacketsInfoPO
+     */
     public void updateRedPacketsCacheInfo(RedPacketsInfoPO redPacketsInfoPO){
         String key = "redPackets:"+redPacketsInfoPO.getId();
         redisUtil.set(key,redPacketsInfoPO,24, TimeUnit.HOURS);
     }
 
-    public void pushSendRedPacketsMessage(){
-        RabbitMQMessageBodyDTO dto = RabbitMQMessageBodyDTO.builder()
-                .serialNo(UUID.randomUUID().toString())
-                .type(MQMessageTypeConstant.SENDMESSAGE)
-                .token(TokenUtil.getToken())
-                .data(null)
+    public void sendRedPacketsMessage(Long targetId,PaymentChannelEnum channelEnum){
+        MessageMainTypeEnum messageMainType = channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE;
+        SendChatMessageDTO dto = SendChatMessageDTO.builder()
+                .receiverId(targetId)
+                .messageContent("红包来啦")
+                .messageMainType(messageMainType)
+                .messageContentType(MessageContentTypeEnum.RED_PACKETS)
+                .groupId(targetId)
                 .build();
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY,dto);
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY,dto);
     }
 
 }

@@ -10,7 +10,9 @@ public enum RabbitMQEventTypeEnum {
 
     IM(1,"IM"),
 
-    MESSAGE_LIKE(2,"MESSAGE_LIKE");
+    MESSAGE_LIKE(2,"MESSAGE_LIKE"),
+
+    MESSAGE(3,"MESSAGE");
 
     @EnumValue
     private final Integer code;

@@ -20,7 +20,7 @@ import com.developer.friend.pojo.FriendPO;
 import com.developer.friend.repository.FriendApplicationRecordPORepository;
 import com.developer.friend.repository.FriendRepository;
 import com.developer.friend.service.FriendService;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import com.developer.friend.util.RabbitMQUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +40,7 @@ public class FriendServiceImpl implements FriendService {
     private MessageClient messageClient;
 
     @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private RabbitMQUtil rabbitMQUtil;
 
     @Override
     public DeveloperResult<List<FriendInfoDTO>> findFriendList() {
@@ -106,7 +106,7 @@ public class FriendServiceImpl implements FriendService {
         }
 
         // 发送添加请求
-        rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
         return DeveloperResult.success(true);
     }
 
@@ -143,7 +143,7 @@ public class FriendServiceImpl implements FriendService {
         friendApplicationRecordPORepository.updateStatus(userId, req.getFriendId(), status.code());
 
         if (ObjectUtil.isNotEmpty(message)) {
-            rabbitTemplate.convertAndSend(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+            rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
         }
 
         return DeveloperResult.success();
