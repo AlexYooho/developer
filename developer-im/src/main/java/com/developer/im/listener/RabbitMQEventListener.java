@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
  */
 @Component
 @Slf4j
-@RabbitListener(queues = {DeveloperMQConstant.MESSAGE_PAYMENT_QUEUE})
+@RabbitListener(queues = {DeveloperMQConstant.MESSAGE_IM_QUEUE})
 public class RabbitMQEventListener {
 
     @Autowired

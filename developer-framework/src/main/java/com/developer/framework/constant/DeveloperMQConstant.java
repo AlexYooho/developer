@@ -13,10 +13,6 @@ public class DeveloperMQConstant {
     // 交换机
     public static final String MESSAGE_IM_EXCHANGE = "message-im-exchange";
 
-    public static final String MESSAGE_LIKE_EXCHANGE = "message-like-exchange";
-
-    public static final String MESSAGE_DELAYED_EXCHANGE = "message-delayed-exchange";
-
     public static final String MESSAGE_PAYMENT_EXCHANGE = "message-payment-exchange";
 
     public static final String MESSAGE_CHAT_EXCHANGE = "message-chat-exchange";
@@ -24,22 +20,14 @@ public class DeveloperMQConstant {
     // 路由键
     public static final String MESSAGE_IM_ROUTING_KEY ="message.im";
 
-    public static final String MESSAGE_LIKE_ROUTING_KEY = "message.like";
-
     public static final String MESSAGE_PAYMENT_ROUTING_KEY = "message.payment";
-
-    public static final String MESSAGE_DELAYED_ROUTING_KEY = "message.delayed";
 
     public static final String MESSAGE_CHAT_ROUTING_KEY ="message.chat";
 
     // 队列
     public static final String MESSAGE_IM_QUEUE="message-im-queue";
 
-    public static final String MESSAGE_LIKE_QUEUE = "message-like-queue";
-
     public static final String MESSAGE_PAYMENT_QUEUE = "message-payment-queue";
-
-    public static final String MESSAGE_DELAYED_QUEUE = "message-delayed-queue";
 
     public static final String MESSAGE_CHAT_QUEUE="message-chat-queue";
 
