@@ -1,4 +1,4 @@
-package com.developer.payment.interceptor;
+package com.developer.message.interceptor;
 
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import io.jsonwebtoken.Claims;
@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class TokenParseInterceptor {
 
-    @Pointcut("execution(* com.developer.payment.listener.RabbitMQEventListener.messageSubscribe(..))")
+    @Pointcut("execution(* com.developer.message.eventlistener.RabbitMQEventListener.messageSubscribe(..))")
     public void client(){}
 
     @Before("client()")
