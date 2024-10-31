@@ -62,6 +62,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         }
 
         RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto);
+        redPacketsInfoRepository.save(redPacketsInfoPO);
 
         // 分配金额
         List<BigDecimal> distributeAmountList = this.distributeRedPacketsAmount(dto.getRedPacketsAmount(), dto.getTotalCount());
@@ -77,7 +78,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
                     .updateTime(new Date()).build());
         }
 
-        redPacketsInfoRepository.save(redPacketsInfoPO);
+
         redPacketsReceiveDetailsRepository.saveBatch(list);
 
         // 处理钱包信息

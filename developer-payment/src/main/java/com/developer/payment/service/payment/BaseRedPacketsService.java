@@ -176,7 +176,7 @@ public class BaseRedPacketsService {
                 .messageContentType(MessageContentTypeEnum.RED_PACKETS)
                 .groupId(targetId)
                 .build();
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, RabbitMQEventTypeEnum.PAYMENT,dto);
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, RabbitMQEventTypeEnum.MESSAGE,dto);
     }
 
     /**
