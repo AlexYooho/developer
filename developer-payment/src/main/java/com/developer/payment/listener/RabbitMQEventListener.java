@@ -2,7 +2,6 @@ package com.developer.payment.listener;
 
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.RabbitMQEventTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
 import com.developer.framework.processor.MessageProcessorFactory;
@@ -33,7 +32,7 @@ public class RabbitMQEventListener {
     public void messageSubscribe(RabbitMQMessageBodyDTO dto, Channel channel, Message message) throws IOException {
         try {
             LocalDateTime begin = LocalDateTime.now();
-            IMessageProcessor instance = messageProcessorFactory.getInstance(RabbitMQEventTypeEnum.PAYMENT);
+            IMessageProcessor instance = messageProcessorFactory.getInstance(dto.getMessageType());
             if(instance==null){
                 log.info("【payment服务】消息内容:{},没有对应的消息处理器",dto);
                 return;

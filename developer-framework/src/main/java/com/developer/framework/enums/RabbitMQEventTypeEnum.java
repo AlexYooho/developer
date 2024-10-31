@@ -12,7 +12,9 @@ public enum RabbitMQEventTypeEnum {
 
     MESSAGE_LIKE(2,"MESSAGE_LIKE"),
 
-    MESSAGE(3,"MESSAGE");
+    MESSAGE(3,"MESSAGE"),
+
+    RED_PACKETS_RECOVERY(4,"RED_PACKETS_RECOVERY");
 
     @EnumValue
     private final Integer code;

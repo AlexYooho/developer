@@ -1,6 +1,7 @@
 package com.developer.framework.dto;
 
 import com.alibaba.fastjson.JSON;
+import com.developer.framework.enums.RabbitMQEventTypeEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,8 @@ public class RabbitMQMessageBodyDTO implements Serializable {
     public Object data;
 
     public String token;
+
+    public RabbitMQEventTypeEnum messageType;
 
     public <T> T parseData(Class<T> clazz){
         if(data==null || "".equals(data)){

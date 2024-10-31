@@ -7,6 +7,7 @@ import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.enums.PaymentChannelEnum;
+import com.developer.framework.enums.RabbitMQEventTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
@@ -102,7 +103,7 @@ public class BaseRedPacketsService {
             if(!optional.isPresent()){
                 return DeveloperResult.error("你不在群聊中,无法发送红包！");
             }else{
-                if(optional.get().getQuit()){
+                if(!optional.get().getQuit()){
                     return DeveloperResult.error("你不在群聊中,无法发送红包！");
                 }
             }
@@ -161,6 +162,11 @@ public class BaseRedPacketsService {
         redisUtil.set(key,redPacketsInfoPO,24, TimeUnit.HOURS);
     }
 
+    /**
+     * 发送红包即时消息
+     * @param targetId
+     * @param channelEnum
+     */
     public void sendRedPacketsMessage(Long targetId,PaymentChannelEnum channelEnum){
         MessageMainTypeEnum messageMainType = channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE;
         SendChatMessageDTO dto = SendChatMessageDTO.builder()
@@ -170,7 +176,15 @@ public class BaseRedPacketsService {
                 .messageContentType(MessageContentTypeEnum.RED_PACKETS)
                 .groupId(targetId)
                 .build();
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY,dto);
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, RabbitMQEventTypeEnum.PAYMENT,dto);
     }
 
+    /**
+     * 红包回收事件
+     * @param redPacketsId
+     * @param delayRecoveryTime
+     */
+    public void redPacketsRecoveryEvent(Long redPacketsId,Integer delayRecoveryTime){
+        rabbitMQUtil.sendDelayMessage(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,RabbitMQEventTypeEnum.RED_PACKETS_RECOVERY,redPacketsId,delayRecoveryTime);
+    }
 }
