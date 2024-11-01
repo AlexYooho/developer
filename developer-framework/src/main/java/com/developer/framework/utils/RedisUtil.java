@@ -37,6 +37,8 @@ public class RedisUtil {
             return clazz.cast(Double.parseDouble(value.toString()));
         } else if (clazz == Boolean.class) {
             return clazz.cast(Boolean.parseBoolean(value.toString()));
+        } else if(clazz == Object.class) {
+            return clazz.cast(value);
         } else {
             throw new IllegalArgumentException("Unsupported type: " + clazz.getName());
         }

@@ -2,6 +2,7 @@ package com.developer.payment.service.payment;
 
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.MQMessageTypeConstant;
+import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.MessageContentTypeEnum;
@@ -91,8 +92,12 @@ public class BaseRedPacketsService {
      * @param targetId
      * @return
      */
-    public DeveloperResult<Boolean> receiveTargetProcessor(PaymentChannelEnum channel, Long targetId,Long userId){
+    public DeveloperResult<Boolean> receiveTargetProcessor(PaymentChannelEnum channel, Long targetId,Long userId,Integer redPacketsCount){
         if(channel== PaymentChannelEnum.FRIEND) {
+            if(redPacketsCount>1){
+                return DeveloperResult.error("好友红包一次只能发一个");
+            }
+
             FriendInfoDTO isFriend = friendClient.isFriend(targetId, userId).getData();
             if (isFriend==null) {
                 return DeveloperResult.error("对方不是您的好友，无法发送红包！");
@@ -142,7 +147,7 @@ public class BaseRedPacketsService {
      * @return
      */
     public RedPacketsInfoPO findRedPacketsCacheInfo(Long redPacketsId){
-        String key = "redPackets:"+redPacketsId;
+        String key = RedisKeyConstant.RED_PACKETS_INFO_KEY(redPacketsId);
         if(redisUtil.hasKey(key)){
             return redisUtil.get(key,RedPacketsInfoPO.class);
         }

@@ -58,7 +58,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
             return DeveloperResult.error("请选择红包发送渠道！");
         }
 
-        DeveloperResult<Boolean> result = receiveTargetProcessor(dto.getPaymentChannel(), dto.getTargetId(),userId);
+        DeveloperResult<Boolean> result = receiveTargetProcessor(dto.getPaymentChannel(), dto.getTargetId(),userId,dto.getTotalCount());
         if(!result.getIsSuccessful()){
             return DeveloperResult.error(result.getMsg());
         }

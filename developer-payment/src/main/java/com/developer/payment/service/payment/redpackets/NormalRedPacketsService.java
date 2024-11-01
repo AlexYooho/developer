@@ -41,6 +41,11 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
     @Autowired
     private RedissonClient redissonClient;
 
+    /**
+     * 发红包
+     * @param dto
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -56,7 +61,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
             return DeveloperResult.error("请指定红包接收人！");
         }
 
-        DeveloperResult<Boolean> result = receiveTargetProcessor(dto.getPaymentChannel(), dto.getTargetId(),userId);
+        DeveloperResult<Boolean> result = receiveTargetProcessor(dto.getPaymentChannel(), dto.getTargetId(),userId,dto.getTotalCount());
         if(!result.getIsSuccessful()){
             return DeveloperResult.error(result.getMsg());
         }
@@ -70,7 +75,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         for (BigDecimal amount : distributeAmountList) {
             list.add(RedPacketsReceiveDetailsPO.builder()
                     .redPacketsId(redPacketsInfoPO.getId())
-                    .receiveUserId(0L)
+                    .receiveUserId(dto.getPaymentChannel()==PaymentChannelEnum.FRIEND?dto.getTargetId():0)
                     .receiveAmount(amount)
                     .receiveTime(null)
                     .status(RedPacketsReceiveStatusEnum.PENDING)
@@ -93,9 +98,13 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         return DeveloperResult.success();
     }
 
+    /**
+     * 抢红包--要区分私发和群发
+     * @param redPacketsId
+     * @return
+     */
     @Override
     public DeveloperResult<BigDecimal> openRedPackets(Long redPacketsId) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         RedPacketsInfoPO redPacketsInfo = findRedPacketsCacheInfo(redPacketsId);
         if (redPacketsInfo == null) {
             return DeveloperResult.error("红包不存在");
@@ -111,33 +120,42 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
 
         BigDecimal openAmount = BigDecimal.ZERO;
 
-        // 生成分布式锁的key,基于红包Id
-        String lockKey = RedisKeyConstant.OPEN_RED_PACKETS_LOCK_KEY(redPacketsId);
-        RLock lock = redissonClient.getLock(lockKey);
-        try{
-            if(lock.tryLock(30,5, TimeUnit.SECONDS)){
-                List<RedPacketsReceiveDetailsPO> receiveDetailsList = redPacketsReceiveDetailsRepository.findList(redPacketsId);
-                if(!receiveDetailsList.isEmpty()){
-                    RedPacketsReceiveDetailsPO receiveDetails = receiveDetailsList.get(0);
-                    receiveDetails.setReceiveUserId(userId);
-                    receiveDetails.setReceiveTime(new Date());
-                    receiveDetails.setStatus(RedPacketsReceiveStatusEnum.SUCCESS);
-                    redPacketsReceiveDetailsRepository.updateById(receiveDetails);
+        if(redPacketsInfo.getChannel()==PaymentChannelEnum.FRIEND){
+            // todo 私发红包
 
-                    openAmount = receiveDetails.getReceiveAmount();
+
+        }else if(redPacketsInfo.getChannel()==PaymentChannelEnum.GROUP){
+            // 生成分布式锁的key,基于红包Id
+            String lockKey = RedisKeyConstant.OPEN_RED_PACKETS_LOCK_KEY(redPacketsId);
+            RLock lock = redissonClient.getLock(lockKey);
+            try{
+                if(lock.tryLock(30,5, TimeUnit.SECONDS)){
+                    List<RedPacketsReceiveDetailsPO> receiveDetailsList = redPacketsReceiveDetailsRepository.findList(redPacketsId);
+                    if(!receiveDetailsList.isEmpty()){
+                        RedPacketsReceiveDetailsPO receiveDetails = receiveDetailsList.get(0);
+                        receiveDetails.setReceiveUserId(SelfUserInfoContext.selfUserInfo().getUserId());
+                        receiveDetails.setReceiveTime(new Date());
+                        receiveDetails.setStatus(RedPacketsReceiveStatusEnum.SUCCESS);
+                        redPacketsReceiveDetailsRepository.updateById(receiveDetails);
+                        openAmount = receiveDetails.getReceiveAmount();
+                    }else{
+                        return DeveloperResult.error("红包抢光啦！");
+                    }
+                }else{
+                    return DeveloperResult.error("领取失败请重试！");
                 }
-            }else{
+            }catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
                 return DeveloperResult.error("领取失败请重试！");
-            }
-        }catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            return DeveloperResult.error("领取失败请重试！");
-        }finally {
-            // 释放锁
-            if(lock.isHeldByCurrentThread()){
-                lock.unlock();
+            }finally {
+                // 释放锁
+                if(lock.isHeldByCurrentThread()){
+                    lock.unlock();
+                }
             }
         }
+
+
         return DeveloperResult.success(openAmount);
     }
 

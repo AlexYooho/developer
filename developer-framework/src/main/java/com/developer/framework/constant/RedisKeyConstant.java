@@ -54,10 +54,23 @@ public class RedisKeyConstant {
         return String.format("developer:message:like:%s:%s:%s",messageMainTypeEnum.code(),messageId,userId);
     }
 
+    /**
+     * 用户点赞记录key
+     * @param messageMainTypeEnum
+     * @param messageId
+     * @param userId
+     * @return
+     */
     public static String MESSAGE_LIKE_USER_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId, Long userId){
         return String.format("developer:message:like:%s:%s:user:%s",messageMainTypeEnum.code(),messageId,userId);
     }
 
+    /**
+     * 消息点赞key
+     * @param messageMainTypeEnum
+     * @param messageId
+     * @return
+     */
     public static String MESSAGE_LIKE_MESSAGE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId){
         return String.format("developer:message:like:%s:%s",messageMainTypeEnum.code(),messageId);
     }
@@ -68,6 +81,15 @@ public class RedisKeyConstant {
      * @return
      */
     public static String OPEN_RED_PACKETS_LOCK_KEY(Long redPacketsId){
-        return String.format("developer:open:red:packets:lock:%s",redPacketsId);
+        return String.format("developer:payment:red:packets:open:lock:%s",redPacketsId);
+    }
+
+    /**
+     * 红包信息key
+     * @param redPacketsId
+     * @return
+     */
+    public static String RED_PACKETS_INFO_KEY(Long redPacketsId){
+    	return String.format("developer:payment:red:packets:info:%s",redPacketsId);
     }
 }

@@ -66,7 +66,7 @@ public class RedPacketsInfoPO {
     private Long messageId;
 
     /**
-     * 红包来源渠道
+     * 红包支付渠道
      */
     @TableField("channel")
     private PaymentChannelEnum channel;
