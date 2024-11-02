@@ -4,6 +4,7 @@ import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.enums.TransactionStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
+import com.developer.payment.enums.WalletOperationTypeEnum;
 import com.developer.payment.enums.WalletStatusEnum;
 import com.developer.payment.pojo.UserWalletPO;
 import com.developer.payment.pojo.WalletTransactionRecordPO;
@@ -27,19 +28,18 @@ public class WalletServiceImpl implements WalletService {
 
     /**
      * 发起交易
-     * @param payeeId
      * @param amount
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> doMoneyTransaction(Long payeeId, BigDecimal amount,TransactionTypeEnum transactionType) {
+    public DeveloperResult<Boolean> doMoneyTransaction(BigDecimal amount,TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
         if(walletInfo==null){
             return DeveloperResult.error("用户未开通钱包");
         }
 
-        if (walletInfo.getBalance().compareTo(amount) < 0) {
+        if (operationType==WalletOperationTypeEnum.EXPENDITURE && walletInfo.getBalance().compareTo(amount) < 0) {
             return DeveloperResult.error("余额不足");
         }
 
@@ -48,7 +48,8 @@ public class WalletServiceImpl implements WalletService {
         }
 
         BigDecimal beforeBalance = walletInfo.getBalance();
-        BigDecimal afterBalance = walletInfo.getBalance().subtract(amount.abs());
+        BigDecimal afterBalance = operationType==WalletOperationTypeEnum.EXPENDITURE ?
+                walletInfo.getBalance().subtract(amount.abs()) : walletInfo.getBalance().add(amount.abs());
 
         walletInfo.setLastTransactionTime(new Date());
         walletInfo.setUpdateTime(new Date());
@@ -62,7 +63,7 @@ public class WalletServiceImpl implements WalletService {
                 .amount(amount)
                 .beforeBalance(beforeBalance)
                 .afterBalance(afterBalance)
-                .relatedUserId(payeeId)
+                .relatedUserId(userId)
                 .referenceId("")
                 .status(TransactionStatusEnum.PENDING)
                 .createdTime(new Date())

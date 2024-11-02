@@ -5,6 +5,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.enums.TransferStatusEnum;
+import com.developer.payment.enums.WalletOperationTypeEnum;
 import com.developer.payment.pojo.TransferInfoPO;
 import com.developer.payment.repository.TransferInfoRepository;
 import com.developer.payment.service.PaymentService;
@@ -35,7 +36,7 @@ public class TransferMoneyPaymentService implements PaymentService {
             return DeveloperResult.error("请指定转账对象");
         }
 
-        walletService.doMoneyTransaction(dto.getTransferInfoDTO().getTargetId(),dto.getTransferInfoDTO().getTransferAmount(), TransactionTypeEnum.TRANSFER);
+        walletService.doMoneyTransaction(dto.getTransferInfoDTO().getTargetId(),dto.getTransferInfoDTO().getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.EXPENDITURE);
 
         TransferInfoPO transferInfoPO = TransferInfoPO.builder().TransferAmount(dto.getTransferInfoDTO().getTransferAmount()).userId(SelfUserInfoContext.selfUserInfo().getUserId())
                 .receiverUserId(dto.getTransferInfoDTO().getTargetId()).transferStatus(TransferStatusEnum.PENDING)

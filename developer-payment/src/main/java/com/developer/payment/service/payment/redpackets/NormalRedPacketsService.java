@@ -8,6 +8,7 @@ import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
+import com.developer.payment.enums.WalletOperationTypeEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.pojo.RedPacketsReceiveDetailsPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
@@ -87,7 +88,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         redPacketsReceiveDetailsRepository.saveBatch(list);
 
         // 处理钱包信息
-        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(dto.getTargetId(), dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET);
+        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
         if(!walletResult.getIsSuccessful()){
             return walletResult;
         }
@@ -127,6 +128,10 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
             }
 
             // todo 增加钱包余额
+            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(openResult.getData(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
+            if(!walletResult.getIsSuccessful()){
+                return DeveloperResult.error(walletResult.getMsg());
+            }
 
             // 红包过期退回金额
             this.redPacketsRecoveryEvent(redPacketsId,60*60*24);

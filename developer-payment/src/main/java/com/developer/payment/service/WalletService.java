@@ -2,6 +2,7 @@ package com.developer.payment.service;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.enums.TransactionTypeEnum;
+import com.developer.payment.enums.WalletOperationTypeEnum;
 
 import java.math.BigDecimal;
 
@@ -9,11 +10,12 @@ public interface WalletService {
 
     /**
      * 发起支付交易
-     * @param payeeId
      * @param amount
+     * @param transactionType
+     * @param operationType
      * @return
      */
-    DeveloperResult<Boolean> doMoneyTransaction(Long payeeId, BigDecimal amount, TransactionTypeEnum transactionType);
+    DeveloperResult<Boolean> doMoneyTransaction(BigDecimal amount, TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType);
 
     /**
      * 冻结支付金额
