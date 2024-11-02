@@ -118,43 +118,52 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
             return DeveloperResult.error("红包已过期无法领取");
         }
 
-        BigDecimal openAmount = BigDecimal.ZERO;
+
 
         if(redPacketsInfo.getChannel()==PaymentChannelEnum.FRIEND){
-            // todo 私发红包
+            DeveloperResult<BigDecimal> openResult = this.openPrivateChatRedPackets(redPacketsInfo);
+            if(!openResult.getIsSuccessful()){
+                return openResult;
+            }
 
+            // todo 增加钱包余额
 
-        }else if(redPacketsInfo.getChannel()==PaymentChannelEnum.GROUP){
-            // 生成分布式锁的key,基于红包Id
-            String lockKey = RedisKeyConstant.OPEN_RED_PACKETS_LOCK_KEY(redPacketsId);
-            RLock lock = redissonClient.getLock(lockKey);
-            try{
-                if(lock.tryLock(30,5, TimeUnit.SECONDS)){
-                    List<RedPacketsReceiveDetailsPO> receiveDetailsList = redPacketsReceiveDetailsRepository.findList(redPacketsId);
-                    if(!receiveDetailsList.isEmpty()){
-                        RedPacketsReceiveDetailsPO receiveDetails = receiveDetailsList.get(0);
-                        receiveDetails.setReceiveUserId(SelfUserInfoContext.selfUserInfo().getUserId());
-                        receiveDetails.setReceiveTime(new Date());
-                        receiveDetails.setStatus(RedPacketsReceiveStatusEnum.SUCCESS);
-                        redPacketsReceiveDetailsRepository.updateById(receiveDetails);
-                        openAmount = receiveDetails.getReceiveAmount();
-                    }else{
-                        return DeveloperResult.error("红包抢光啦！");
-                    }
+            // 红包过期退回金额
+            this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
+            return openResult;
+        }
+
+        BigDecimal openAmount;
+        // 生成分布式锁的key,基于红包Id
+        String lockKey = RedisKeyConstant.OPEN_RED_PACKETS_LOCK_KEY(redPacketsId);
+        RLock lock = redissonClient.getLock(lockKey);
+        try{
+            if(lock.tryLock(30,5, TimeUnit.SECONDS)){
+                List<RedPacketsReceiveDetailsPO> receiveDetailsList = redPacketsReceiveDetailsRepository.findList(redPacketsId);
+                if(!receiveDetailsList.isEmpty()){
+                    RedPacketsReceiveDetailsPO receiveDetails = receiveDetailsList.get(0);
+                    receiveDetails.setReceiveUserId(SelfUserInfoContext.selfUserInfo().getUserId());
+                    receiveDetails.setReceiveTime(new Date());
+                    receiveDetails.setStatus(RedPacketsReceiveStatusEnum.SUCCESS);
+                    redPacketsReceiveDetailsRepository.updateById(receiveDetails);
+                    openAmount = receiveDetails.getReceiveAmount();
                 }else{
-                    return DeveloperResult.error("领取失败请重试！");
+                    return DeveloperResult.error("红包抢光啦！");
                 }
-            }catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
+            }else{
                 return DeveloperResult.error("领取失败请重试！");
-            }finally {
-                // 释放锁
-                if(lock.isHeldByCurrentThread()){
-                    lock.unlock();
-                }
+            }
+        }catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return DeveloperResult.error("领取失败请重试！");
+        }finally {
+            // 释放锁
+            if(lock.isHeldByCurrentThread()){
+                lock.unlock();
             }
         }
 
+        this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
 
         return DeveloperResult.success(openAmount);
     }

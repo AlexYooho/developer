@@ -192,4 +192,13 @@ public class BaseRedPacketsService {
     public void redPacketsRecoveryEvent(Long redPacketsId,Integer delayRecoveryTime){
         rabbitMQUtil.sendDelayMessage(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,RabbitMQEventTypeEnum.RED_PACKETS_RECOVERY,redPacketsId,delayRecoveryTime);
     }
+
+    /**
+     * 打开私聊红包
+     * @param redPacketsInfo
+     * @return
+     */
+    public DeveloperResult<BigDecimal> openPrivateChatRedPackets(RedPacketsInfoPO redPacketsInfo){
+        return DeveloperResult.success();
+    }
 }

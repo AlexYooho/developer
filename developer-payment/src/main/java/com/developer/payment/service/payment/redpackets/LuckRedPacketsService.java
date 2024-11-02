@@ -95,8 +95,21 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
             return DeveloperResult.error("红包已过期无法领取");
         }
 
-        BigDecimal openAmount = BigDecimal.ZERO;
 
+        if(redPacketsInfo.getChannel()==PaymentChannelEnum.FRIEND){
+            DeveloperResult<BigDecimal> openResult = this.openPrivateChatRedPackets(redPacketsInfo);
+            if(!openResult.getIsSuccessful()){
+                return openResult;
+            }
+
+            // todo 增加钱包余额
+
+            // 红包过期退回金额
+            this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
+            return openResult;
+        }
+
+        BigDecimal openAmount;
         // 生成分布式锁的key,基于红包Id
         String lockKey = RedisKeyConstant.OPEN_RED_PACKETS_LOCK_KEY(redPacketsId);
         RLock lock = redissonClient.getLock(lockKey);
@@ -114,6 +127,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
                         .status(RedPacketsReceiveStatusEnum.SUCCESS).build();
                 redPacketsReceiveDetailsRepository.save(receiveDetailsPO);
                 updateRedPacketsCacheInfo(redPacketsInfo);
+                openAmount = amount;
             }else{
                 return DeveloperResult.error("领取失败请重试！");
             }
@@ -126,6 +140,9 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
                 lock.unlock();
             }
         }
+
+        this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
+
         return DeveloperResult.success(openAmount);
     }
 
