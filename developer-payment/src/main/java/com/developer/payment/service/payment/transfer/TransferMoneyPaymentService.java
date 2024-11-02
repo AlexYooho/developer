@@ -36,7 +36,7 @@ public class TransferMoneyPaymentService implements PaymentService {
             return DeveloperResult.error("请指定转账对象");
         }
 
-        walletService.doMoneyTransaction(dto.getTransferInfoDTO().getTargetId(),dto.getTransferInfoDTO().getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.EXPENDITURE);
+        walletService.doMoneyTransaction(dto.getTransferInfoDTO().getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.EXPENDITURE);
 
         TransferInfoPO transferInfoPO = TransferInfoPO.builder().TransferAmount(dto.getTransferInfoDTO().getTransferAmount()).userId(SelfUserInfoContext.selfUserInfo().getUserId())
                 .receiverUserId(dto.getTransferInfoDTO().getTargetId()).transferStatus(TransferStatusEnum.PENDING)
