@@ -19,6 +19,11 @@ public class PaymentController {
     @Autowired
     private WalletService walletService;
 
+    /**
+     * 发红包
+     * @param dto
+     * @return
+     */
     @PostMapping("red-packets/send")
     public DeveloperResult<Boolean> sendRedPackets(@RequestBody SendRedPacketsDTO dto){
         return redPacketsProxyService.findInstance(dto.getType()).sendRedPackets(dto);

@@ -24,4 +24,10 @@ public interface WalletService {
      */
     DeveloperResult<Boolean> freezePaymentAmount(BigDecimal amount);
 
+    /**
+     * 创建钱包
+     * @return
+     */
+    DeveloperResult<Boolean> CreateWallet();
+
 }

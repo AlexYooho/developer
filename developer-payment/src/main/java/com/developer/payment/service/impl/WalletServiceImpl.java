@@ -93,4 +93,29 @@ public class WalletServiceImpl implements WalletService {
 
         return DeveloperResult.success();
     }
+
+    /**
+     * 创建钱包
+     * @return
+     */
+    @Override
+    public DeveloperResult<Boolean> CreateWallet() {
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        UserWalletPO walletInfo = walletRepository.findByUserId(userId);
+        if(walletInfo!=null){
+            return DeveloperResult.error("用户已开通钱包");
+        }
+
+        walletRepository.save(UserWalletPO.builder()
+                .userId(userId)
+                .balance(BigDecimal.ZERO)
+                .frozenBalance(BigDecimal.ZERO)
+                .totalRecharge(BigDecimal.ZERO)
+                .totalWithdraw(BigDecimal.ZERO)
+                .currency("CNY")
+                .lastTransactionTime(new Date())
+                .status(WalletStatusEnum.NORMAL).build()
+        );
+        return DeveloperResult.success();
+    }
 }
