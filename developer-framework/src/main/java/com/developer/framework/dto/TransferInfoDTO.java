@@ -1,5 +1,6 @@
 package com.developer.framework.dto;
 
+import com.developer.framework.enums.PaymentChannelEnum;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,8 +17,17 @@ public class TransferInfoDTO implements Serializable {
     private BigDecimal transferAmount;
 
     /**
-     * 转账目标用户id
+     * 转账对象id
      */
-    private Long targetId;
+    private Long toUserId;
 
+    /**
+     * 转账对象群组id
+     */
+    private Long toGroupId;
+
+    /**
+     * 支付渠道
+     */
+    private PaymentChannelEnum paymentChannel;
 }

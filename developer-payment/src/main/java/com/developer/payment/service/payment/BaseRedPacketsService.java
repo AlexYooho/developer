@@ -5,10 +5,7 @@ import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.MessageContentTypeEnum;
-import com.developer.framework.enums.MessageMainTypeEnum;
-import com.developer.framework.enums.PaymentChannelEnum;
-import com.developer.framework.enums.RabbitMQEventTypeEnum;
+import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
@@ -19,9 +16,12 @@ import com.developer.payment.dto.FriendInfoDTO;
 import com.developer.payment.dto.SelfJoinGroupInfoDTO;
 import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.payment.dto.SendChatMessageDTO;
+import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
+import com.developer.payment.pojo.RedPacketsReceiveDetailsPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
+import com.developer.payment.repository.RedPacketsReceiveDetailsRepository;
 import com.developer.payment.utils.RabbitMQUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +43,9 @@ public class BaseRedPacketsService {
 
     @Autowired
     private RedPacketsInfoRepository redPacketsInfoRepository;
+
+    @Autowired
+    private RedPacketsReceiveDetailsRepository redPacketsReceiveDetailsRepository;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -199,6 +202,35 @@ public class BaseRedPacketsService {
      * @return
      */
     public DeveloperResult<BigDecimal> openPrivateChatRedPackets(RedPacketsInfoPO redPacketsInfo){
+        RedPacketsReceiveDetailsPO detailsPO;
+        List<RedPacketsReceiveDetailsPO> list = redPacketsReceiveDetailsRepository.findList(redPacketsInfo.getId());
+        if(list.isEmpty()){
+            // 手气红包
+            detailsPO = RedPacketsReceiveDetailsPO.builder()
+                    .createTime(new Date())
+                    .redPacketsId(redPacketsInfo.getId())
+                    .receiveTime(new Date())
+                    .status(RedPacketsReceiveStatusEnum.SUCCESS)
+                    .receiveAmount(redPacketsInfo.getRemainingAmount())
+                    .updateTime(new Date())
+                    .receiveUserId(SelfUserInfoContext.selfUserInfo().getUserId())
+                    .build();
+            redPacketsReceiveDetailsRepository.save(detailsPO);
+        }else{
+            detailsPO = list.get(0);
+            detailsPO.setReceiveUserId(SelfUserInfoContext.selfUserInfo().getUserId());
+            detailsPO.setReceiveTime(new Date());
+            detailsPO.setReceiveAmount(redPacketsInfo.getRemainingAmount());
+            detailsPO.setStatus(RedPacketsReceiveStatusEnum.SUCCESS);
+            redPacketsReceiveDetailsRepository.updateById(detailsPO);
+        }
         return DeveloperResult.success();
+    }
+
+    /**
+     * 红包领取通知消息
+     */
+    public void redPacketsReceiveNotifyMessage(){
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, RabbitMQEventTypeEnum.IM, null);
     }
 }

@@ -12,8 +12,7 @@ import java.util.List;
 public class RedPacketsReceiveDetailsRepository extends ServiceImpl<RedPacketsReceiveDetailsMapper, RedPacketsReceiveDetailsPO> {
 
     public List<RedPacketsReceiveDetailsPO> findList(Long redPacketsId){
-        return this.lambdaQuery().eq(RedPacketsReceiveDetailsPO::getRedPacketsId,redPacketsId)
-                .eq(RedPacketsReceiveDetailsPO::getStatus, RedPacketsReceiveStatusEnum.PENDING).list();
+        return this.lambdaQuery().eq(RedPacketsReceiveDetailsPO::getRedPacketsId,redPacketsId).list();
     }
 
 }

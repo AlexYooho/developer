@@ -111,6 +111,10 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
 
             // 红包过期退回金额
             this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
+
+            // todo 发送红包领取提示事件给发红包发送人
+            redPacketsReceiveNotifyMessage();
+
             return openResult;
         }
 
@@ -147,6 +151,9 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
         }
 
         this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
+
+        // todo 发送红包领取提示事件给发红包发送人
+        redPacketsReceiveNotifyMessage();
 
         return DeveloperResult.success(openAmount);
     }

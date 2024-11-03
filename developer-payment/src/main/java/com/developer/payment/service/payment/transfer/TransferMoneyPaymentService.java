@@ -1,6 +1,7 @@
 package com.developer.payment.service.payment.transfer;
 
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.payment.enums.TransactionTypeEnum;
@@ -32,14 +33,22 @@ public class TransferMoneyPaymentService implements PaymentService {
             return DeveloperResult.error("转账金额必须大于0");
         }
 
-        if(dto.getTransferInfoDTO().getTargetId()<=0){
+
+        if(dto.getTransferInfoDTO().getPaymentChannel()== PaymentChannelEnum.FRIEND && dto.getTransferInfoDTO().getToUserId()==null){
             return DeveloperResult.error("请指定转账对象");
         }
 
-        walletService.doMoneyTransaction(dto.getTransferInfoDTO().getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.EXPENDITURE);
+        if(dto.getTransferInfoDTO().getPaymentChannel()== PaymentChannelEnum.GROUP && (dto.getTransferInfoDTO().getToGroupId()==null || dto.getTransferInfoDTO().getToUserId()==null)) {
+            return DeveloperResult.error("请指定转账群组和对象");
+        }
+
+        DeveloperResult<Boolean> transactionResult = walletService.doMoneyTransaction(dto.getTransferInfoDTO().getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.EXPENDITURE);
+        if(!transactionResult.getIsSuccessful()){
+            return DeveloperResult.error(transactionResult.getMsg());
+        }
 
         TransferInfoPO transferInfoPO = TransferInfoPO.builder().TransferAmount(dto.getTransferInfoDTO().getTransferAmount()).userId(SelfUserInfoContext.selfUserInfo().getUserId())
-                .receiverUserId(dto.getTransferInfoDTO().getTargetId()).transferStatus(TransferStatusEnum.PENDING)
+                .receiverUserId(dto.getTransferInfoDTO().getToUserId()).transferStatus(TransferStatusEnum.PENDING)
                 .createdTime(new Date()).updateTime(new Date()).build();
         transferInfoRepository.save(transferInfoPO);
 

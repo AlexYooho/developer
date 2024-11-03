@@ -17,20 +17,12 @@ public class RedPacketsProxyService {
     @Autowired
     private RedPacketsTypeRegister redPacketsTypeRegister;
 
-    public RedPacketsService findInstance(Object args) {
-        if(args instanceof Long) {
-            RedPacketsInfoPO po = redPacketsInfoRepository.getById((Long) args);
-            if (po == null) {
-                return null;
-            }
-            return redPacketsTypeRegister.findInstance(po.getType());
+    public RedPacketsService findInstance(Long id) {
+        RedPacketsInfoPO po = redPacketsInfoRepository.getById(id);
+        if (po == null) {
+            return null;
         }
-
-        if(args instanceof RedPacketsTypeEnum){
-            return redPacketsTypeRegister.findInstance((RedPacketsTypeEnum) args);
-        }
-
-        return null;
+        return redPacketsTypeRegister.findInstance(po.getType());
     }
 
 

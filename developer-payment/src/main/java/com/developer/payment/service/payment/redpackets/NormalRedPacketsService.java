@@ -119,8 +119,6 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
             return DeveloperResult.error("红包已过期无法领取");
         }
 
-
-
         if(redPacketsInfo.getChannel()==PaymentChannelEnum.FRIEND){
             DeveloperResult<BigDecimal> openResult = this.openPrivateChatRedPackets(redPacketsInfo);
             if(!openResult.getIsSuccessful()){
@@ -135,6 +133,10 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
 
             // 红包过期退回金额
             this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
+
+            // todo 发送红包领取提示事件给发红包发送人
+            redPacketsReceiveNotifyMessage();
+
             return openResult;
         }
 
@@ -169,6 +171,9 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         }
 
         this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
+
+        // todo 发送红包领取提示事件给发红包发送人
+        redPacketsReceiveNotifyMessage();
 
         return DeveloperResult.success(openAmount);
     }
