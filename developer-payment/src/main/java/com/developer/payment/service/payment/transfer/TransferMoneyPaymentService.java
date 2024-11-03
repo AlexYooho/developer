@@ -47,10 +47,9 @@ public class TransferMoneyPaymentService implements PaymentService {
             return DeveloperResult.error(transactionResult.getMsg());
         }
 
-        TransferInfoPO transferInfoPO = TransferInfoPO.builder().TransferAmount(dto.getTransferInfoDTO().getTransferAmount()).userId(SelfUserInfoContext.selfUserInfo().getUserId())
+        transferInfoRepository.save(TransferInfoPO.builder().TransferAmount(dto.getTransferInfoDTO().getTransferAmount()).userId(SelfUserInfoContext.selfUserInfo().getUserId())
                 .receiverUserId(dto.getTransferInfoDTO().getToUserId()).transferStatus(TransferStatusEnum.PENDING)
-                .createdTime(new Date()).updateTime(new Date()).build();
-        transferInfoRepository.save(transferInfoPO);
+                .createdTime(new Date()).updateTime(new Date()).build());
 
         return DeveloperResult.success();
     }
