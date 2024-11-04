@@ -11,7 +11,9 @@ public enum RedPacketsStatusEnum {
 
     FINISHED(1,"领取完"),
 
-    EXPIRED(2,"过期");
+    EXPIRED(2,"过期"),
+
+    REFUND(3,"退回");
 
     @EnumValue
     private final Integer code;

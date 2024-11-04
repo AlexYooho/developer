@@ -65,7 +65,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
         }
 
         // 处理钱包信息
-        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
+        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(userId,dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
         if(!walletResult.getIsSuccessful()){
             return walletResult;
         }
@@ -104,7 +104,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
             }
 
             // todo 增加钱包余额
-            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(openResult.getData(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
+            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(userId,openResult.getData(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
             if(!walletResult.getIsSuccessful()){
                 return DeveloperResult.error(walletResult.getMsg());
             }

@@ -10,7 +10,9 @@ public enum TransferStatusEnum {
 
     SUCCESS(1,"成功"),
 
-    FAILED(2,"失败");
+    FAILED(2,"失败"),
+
+    REFUND(3,"退回");
 
     @EnumValue
     private final Integer code;

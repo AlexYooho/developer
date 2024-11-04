@@ -224,6 +224,14 @@ public class BaseRedPacketsService {
             detailsPO.setStatus(RedPacketsReceiveStatusEnum.SUCCESS);
             redPacketsReceiveDetailsRepository.updateById(detailsPO);
         }
+
+        // 处理红包主表
+        redPacketsInfo.setUpdateTime(new Date());
+        redPacketsInfo.setReturnAmount(BigDecimal.ZERO);
+        redPacketsInfo.setRemainingAmount(BigDecimal.ZERO);
+        redPacketsInfo.setStatus(RedPacketsStatusEnum.FINISHED);
+        redPacketsInfo.setRemainingCount(0);
+        redPacketsInfoRepository.updateById(redPacketsInfo);
         return DeveloperResult.success();
     }
 

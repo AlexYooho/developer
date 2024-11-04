@@ -4,6 +4,7 @@ import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
+import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.service.PaymentService;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Service
 public class RedPacketsPaymentService implements PaymentService {
@@ -50,6 +52,20 @@ public class RedPacketsPaymentService implements PaymentService {
      */
     @Override
     public DeveloperResult<Boolean> amountRefunded(Long id) {
-        return null;
+        RedPacketsInfoPO redPacketsInfo = redPacketsInfoRepository.getById(id);
+        if (redPacketsInfo == null) {
+            return DeveloperResult.error("红包不存在");
+        }
+
+        if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.FINISHED)) {
+            return DeveloperResult.error("红包已领取,无法退回");
+        }
+
+        redPacketsInfo.setStatus(RedPacketsStatusEnum.REFUND);
+        redPacketsInfo.setReturnAmount(redPacketsInfo.getRemainingAmount());
+        redPacketsInfo.setUpdateTime(new Date());
+        redPacketsInfoRepository.updateById(redPacketsInfo);
+
+        return DeveloperResult.success();
     }
 }
