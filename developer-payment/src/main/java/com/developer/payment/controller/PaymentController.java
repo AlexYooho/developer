@@ -5,11 +5,6 @@ import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.framework.dto.TransferInfoDTO;
 import com.developer.framework.enums.PaymentTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.payment.dto.TransferDTO;
-import com.developer.payment.service.PaymentService;
-import com.developer.payment.service.RedPacketsService;
-import com.developer.payment.service.WalletService;
-import com.developer.payment.service.payment.redpackets.RedPacketsProxyService;
 import com.developer.payment.service.register.PaymentTypeRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +14,6 @@ import java.math.BigDecimal;
 @RestController
 @RequestMapping("payment")
 public class PaymentController {
-
-    @Autowired
-    private RedPacketsProxyService redPacketsProxyService;
-
-    @Autowired
-    private WalletService walletService;
 
     @Autowired
     private PaymentTypeRegister paymentTypeRegister;
@@ -45,11 +34,7 @@ public class PaymentController {
      */
     @PostMapping("red-packets/{id}/open")
     public DeveloperResult<BigDecimal> openRedPackets(@PathVariable("id") Long id){
-        RedPacketsService instance = redPacketsProxyService.findInstance(id);
-        if(instance == null){
-            return DeveloperResult.error("红包不存在");
-        }
-        return instance.openRedPackets(id);
+        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.RED_PACKETS).confirmReceipt(id);
     }
 
     /**
@@ -65,28 +50,20 @@ public class PaymentController {
      * 确认收款转账金额
      * @return
      */
-    @PostMapping("confirm-receipt-transfer")
-    public DeveloperResult<Boolean> confirmReceiptTransfer(){
-        return DeveloperResult.success();
+    @PostMapping("confirm-receipt-transfer/{id}")
+    public DeveloperResult<BigDecimal> confirmReceiptTransfer(@PathVariable("id") Long id){
+        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.TRANSFER).confirmReceipt(id);
     }
 
     /**
      * 退回转账
      * @return
      */
-    @PostMapping("return-transfer")
-    public DeveloperResult<Boolean> returnTransfer(){
-        return DeveloperResult.success();
+    @PostMapping("return-transfer/{id}")
+    public DeveloperResult<Boolean> returnTransfer(@PathVariable("id") Long id){
+        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.TRANSFER).amountRefunded(id);
     }
 
-    /**
-     * 冻结支付金额
-     * @param amount
-     * @return
-     */
-    @PostMapping("freeze-pay-amount")
-    public DeveloperResult<Boolean> freezePayAmount(BigDecimal amount){
-    	return walletService.freezePaymentAmount(amount);
-    }
+
 
 }

@@ -26,6 +26,11 @@ public class TransferMoneyPaymentService implements PaymentService {
     @Autowired
     private TransferInfoRepository transferInfoRepository;
 
+    /**
+     * 发起转账
+     * @param dto
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto) {
 
@@ -52,5 +57,25 @@ public class TransferMoneyPaymentService implements PaymentService {
                 .createdTime(new Date()).updateTime(new Date()).build());
 
         return DeveloperResult.success();
+    }
+
+    /**
+     * 确认收款
+     * @param id
+     * @return
+     */
+    @Override
+    public DeveloperResult<BigDecimal> confirmReceipt(Long id) {
+        return null;
+    }
+
+    /**
+     * 退回金额
+     * @param id
+     * @return
+     */
+    @Override
+    public DeveloperResult<Boolean> amountRefunded(Long id) {
+        return null;
     }
 }
