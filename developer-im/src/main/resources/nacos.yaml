@@ -1,0 +1,22 @@
+server:
+  port: 9003
+websocket:
+  enable: true
+  port: 8867
+spring:
+  redis:
+    host: 42.193.251.7
+    port: 6379
+    database: 1
+    password: 123456
+  rabbitmq:
+    host: 42.193.251.7
+    port: 5672
+    virtual-host: /developer
+    username: developer
+    password: Sunny6998
+    publisher-returns: true
+    publisher-confirm-type: correlated
+    listener:
+      simple:
+        acknowledge-mode: manual

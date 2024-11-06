@@ -1,0 +1,12 @@
+server:
+  port: 9005
+spring:
+  application:
+    name: developer-oss
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 42.193.251.7:8848
+        username: nacos
+        password: nacos
+        namespace: 7f2951bc-a576-422a-83bf-89b1cc9c9337

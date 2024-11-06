@@ -1,0 +1,29 @@
+server:
+  port: 9001
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://42.193.251.7:3306/developer_friend?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: Sunny6998...
+  redis:
+    host: 42.193.251.7
+    port: 6379
+    database: 1
+    password: 123456
+  rabbitmq:
+    host: 42.193.251.7
+    port: 5672
+    virtual-host: /developer
+    username: developer
+    password: Sunny6998
+    publisher-returns: true
+    publisher-confirm-type: correlated
+    listener:
+      simple:
+        acknowledge-mode: manual
+mybatis-plus:
+  mapper-locations: classpath:mappers/*.xml
+  type-aliases-package: com.developer
+  configuration:
+    map-underscore-to-camel-case: true
