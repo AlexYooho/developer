@@ -34,7 +34,7 @@ public class PaymentController {
      */
     @PostMapping("red-packets/{id}/open")
     public DeveloperResult<BigDecimal> openRedPackets(@PathVariable("id") Long id){
-        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.RED_PACKETS).confirmReceipt(id);
+        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.RED_PACKETS).amountCharged(id);
     }
 
     /**
@@ -52,7 +52,7 @@ public class PaymentController {
      */
     @PostMapping("confirm-receipt-transfer/{id}")
     public DeveloperResult<BigDecimal> confirmReceiptTransfer(@PathVariable("id") Long id){
-        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.TRANSFER).confirmReceipt(id);
+        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.TRANSFER).amountCharged(id);
     }
 
     /**

@@ -10,7 +10,7 @@ public interface PaymentService {
 
     DeveloperResult<Boolean> doPay(PaymentInfoDTO dto);
 
-    DeveloperResult<BigDecimal> confirmReceipt(Long id);
+    DeveloperResult<BigDecimal> amountCharged(Long id);
 
     DeveloperResult<Boolean> amountRefunded(Long id);
 }

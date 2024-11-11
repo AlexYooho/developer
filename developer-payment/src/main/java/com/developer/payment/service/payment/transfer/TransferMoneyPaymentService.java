@@ -65,7 +65,7 @@ public class TransferMoneyPaymentService implements PaymentService {
      * @return
      */
     @Override
-    public DeveloperResult<BigDecimal> confirmReceipt(Long id) {
+    public DeveloperResult<BigDecimal> amountCharged(Long id) {
         TransferInfoPO transferInfo = transferInfoRepository.getById(id);
         if(transferInfo==null){
             return DeveloperResult.error("转账记录不存在");

@@ -37,7 +37,7 @@ public class RedPacketsPaymentService implements PaymentService {
      * @param id
      */
     @Override
-    public DeveloperResult<BigDecimal> confirmReceipt(Long id) {
+    public DeveloperResult<BigDecimal> amountCharged(Long id) {
         RedPacketsInfoPO po = redPacketsInfoRepository.getById(id);
         if (po == null) {
             return DeveloperResult.error("红包不存在");
