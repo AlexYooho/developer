@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("wallet")
 public class WalletController {
@@ -23,5 +25,14 @@ public class WalletController {
         return walletService.CreateWallet();
     }
 
+    /**
+     * 冻结支付金额
+     * @param amount
+     * @return
+     */
+    @PostMapping("freeze-pay-amount")
+    public DeveloperResult<Boolean> freezePayAmount(BigDecimal amount){
+        return walletService.freezePaymentAmount(amount);
+    }
 
 }

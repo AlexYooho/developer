@@ -15,7 +15,7 @@ public interface WalletService {
      * @param operationType
      * @return
      */
-    DeveloperResult<Boolean> doMoneyTransaction(BigDecimal amount, TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType);
+    DeveloperResult<Boolean> doMoneyTransaction(Long userId,BigDecimal amount, TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType);
 
     /**
      * 冻结支付金额

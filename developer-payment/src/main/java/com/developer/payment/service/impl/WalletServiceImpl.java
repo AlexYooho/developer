@@ -32,8 +32,7 @@ public class WalletServiceImpl implements WalletService {
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> doMoneyTransaction(BigDecimal amount,TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+    public DeveloperResult<Boolean> doMoneyTransaction(Long userId,BigDecimal amount,TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType) {
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
         if(walletInfo==null){
             return DeveloperResult.error("用户未开通钱包");

@@ -1,17 +1,15 @@
 package com.developer.payment.service.payment;
 
 import com.developer.framework.constant.DeveloperMQConstant;
-import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
-import com.developer.framework.utils.TokenUtil;
 import com.developer.payment.client.FriendClient;
 import com.developer.payment.client.GroupClient;
+import com.developer.payment.client.MessageClient;
 import com.developer.payment.dto.FriendInfoDTO;
 import com.developer.payment.dto.SelfJoinGroupInfoDTO;
 import com.developer.framework.dto.SendRedPacketsDTO;
@@ -52,6 +50,9 @@ public class BaseRedPacketsService {
 
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
+
+    @Autowired
+    private MessageClient messageClient;
 
     /**
      * 计算红包分配金额
@@ -224,13 +225,28 @@ public class BaseRedPacketsService {
             detailsPO.setStatus(RedPacketsReceiveStatusEnum.SUCCESS);
             redPacketsReceiveDetailsRepository.updateById(detailsPO);
         }
+
+        // 处理红包主表
+        redPacketsInfo.setUpdateTime(new Date());
+        redPacketsInfo.setReturnAmount(BigDecimal.ZERO);
+        redPacketsInfo.setRemainingAmount(BigDecimal.ZERO);
+        redPacketsInfo.setStatus(RedPacketsStatusEnum.FINISHED);
+        redPacketsInfo.setRemainingCount(0);
+        redPacketsInfoRepository.updateById(redPacketsInfo);
         return DeveloperResult.success();
     }
 
     /**
      * 红包领取通知消息
      */
-    public void redPacketsReceiveNotifyMessage(){
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, RabbitMQEventTypeEnum.IM, null);
+    public void redPacketsReceiveNotifyMessage(Long targetId,PaymentChannelEnum channelEnum){
+        SendChatMessageDTO dto = SendChatMessageDTO.builder()
+                .receiverId(targetId)
+                .messageContent(SelfUserInfoContext.selfUserInfo().getNickName()+"领取了你的红包")
+                .messageMainType(channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE)
+                .messageContentType(MessageContentTypeEnum.RED_PACKETS)
+                .groupId(targetId)
+                .build();
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, RabbitMQEventTypeEnum.MESSAGE,dto);
     }
 }

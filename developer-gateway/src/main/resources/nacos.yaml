@@ -1,0 +1,68 @@
+server:
+  port: 9000
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: friend_route
+          uri: http://localhost:9001
+          predicates:
+            - Path=/friend-module/api/**
+          filters:
+            - StripPrefix=2
+        - id: group_route
+          uri: http://localhost:9002
+          predicates:
+            - Path=/group-module/api/**
+          filters:
+            - StripPrefix=2
+        - id: im_route
+          uri: http://localhost:9003
+          predicates:
+            - Path=/im-module/api/**
+          filters:
+            - StripPrefix=2
+        - id: message_route
+          uri: http://localhost:9004
+          predicates:
+            - Path=/message-module/api/**
+          filters:
+            - StripPrefix=2
+        - id: oss_route
+          uri: http://localhost:9005
+          predicates:
+            - Path=/oss-module/api/**
+          filters:
+            - StripPrefix=2
+        - id: sso_route
+          uri: http://localhost:9006
+          predicates:
+            - Path=/sso-module/api/**
+          filters:
+            - StripPrefix=2
+        - id: user_route
+          uri: http://localhost:9007
+          predicates:
+            - Path=/user-module/api/**
+          filters:
+            - StripPrefix=2
+        - id: payment_route
+          uri: http://localhost:9008
+          predicates:
+            - Path=/payment-module/api/**
+          filters:
+            - StripPrefix=2
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns: '*'
+            allowedMethods:
+              - "GET"
+              - "POST"
+              - "DELETE"
+              - "PUT"
+              - "OPTIONS"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 360000

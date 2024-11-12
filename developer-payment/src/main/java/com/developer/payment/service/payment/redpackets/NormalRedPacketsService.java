@@ -88,7 +88,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         redPacketsReceiveDetailsRepository.saveBatch(list);
 
         // 处理钱包信息
-        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
+        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(userId,dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
         if(!walletResult.getIsSuccessful()){
             return walletResult;
         }
@@ -126,7 +126,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
             }
 
             // todo 增加钱包余额
-            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(openResult.getData(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
+            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(SelfUserInfoContext.selfUserInfo().getUserId(), openResult.getData(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
             if(!walletResult.getIsSuccessful()){
                 return DeveloperResult.error(walletResult.getMsg());
             }
@@ -135,7 +135,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
             this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
 
             // todo 发送红包领取提示事件给发红包发送人
-            redPacketsReceiveNotifyMessage();
+            redPacketsReceiveNotifyMessage(redPacketsInfo.getSenderUserId(),redPacketsInfo.getChannel());
 
             return openResult;
         }
@@ -173,7 +173,7 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
 
         // todo 发送红包领取提示事件给发红包发送人
-        redPacketsReceiveNotifyMessage();
+        redPacketsReceiveNotifyMessage(redPacketsInfo.getSenderUserId(),redPacketsInfo.getChannel());
 
         return DeveloperResult.success(openAmount);
     }
