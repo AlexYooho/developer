@@ -44,6 +44,11 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
     @Autowired
     private RedPacketsReceiveDetailsRepository redPacketsReceiveDetailsRepository;
 
+    /**
+     * 发红包
+     * @param dto
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -80,6 +85,11 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
         return DeveloperResult.success();
     }
 
+    /**
+     * 打开红包
+     * @param redPacketsId
+     * @return
+     */
     @Override
     public DeveloperResult<BigDecimal> openRedPackets(Long redPacketsId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -158,6 +168,12 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
         return DeveloperResult.success(openAmount);
     }
 
+    /**
+     * 计算红包分配金额
+     * @param totalAmount
+     * @param totalCount
+     * @return
+     */
     @Override
     public List<BigDecimal> distributeRedPacketsAmount(BigDecimal totalAmount, Integer totalCount) {
         if (totalCount <= 0) {
