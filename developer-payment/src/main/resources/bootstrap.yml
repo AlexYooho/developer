@@ -3,7 +3,7 @@ nacos:
   passowrd: nacos
   group: DEVELOPER
   server-addr: 127.0.0.1:8848
-  namespace: 7f2951bc-a576-422a-83bf-89b1cc9c9337
+  namespace: 6db82f00-c9e0-46dd-8129-8355041ad3bd
   file-extension: yaml
 spring:
   application:
