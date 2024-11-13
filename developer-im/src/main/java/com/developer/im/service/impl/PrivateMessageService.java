@@ -20,16 +20,17 @@ public class PrivateMessageService extends AbstractMessageTypeService {
     @Override
     public void handler(MessageDTO dto) {
         PrivateMessageDTO privateMessageDTO = BeanUtils.copyProperties(dto, PrivateMessageDTO.class);
-        assert privateMessageDTO != null;
         privateMessageDTO.setReceiverId(dto.getReceiverIds().get(0));
         privateMessageDTO.setId(dto.getMessageId());
         privateMessageDTO.setMessageContentType(dto.getMessageContentTypeEnum().code());
+
         IMPrivateMessageModel<PrivateMessageDTO> sendMessage = new IMPrivateMessageModel<>();
         sendMessage.setSender(new IMUserInfoModel(dto.getSendId(),dto.getTerminalType()));
         sendMessage.setReceiverId(dto.getReceiverIds().get(0));
         sendMessage.setData(privateMessageDTO);
         sendMessage.setSendToSelf(false);
         sendMessage.setSendResult(false);
+
         imClients.sendPrivateMessage(sendMessage, IMCmdType.PRIVATE_MESSAGE);
     }
 }
