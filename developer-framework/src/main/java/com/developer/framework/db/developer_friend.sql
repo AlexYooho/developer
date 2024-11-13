@@ -1,5 +1,5 @@
-create datebase developer_friend;
-
+create database developer_friend;
+use developer_friend;
 create table friend
 (
     id                bigint auto_increment comment 'id'

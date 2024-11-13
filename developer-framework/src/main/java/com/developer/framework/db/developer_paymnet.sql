@@ -1,5 +1,5 @@
-create datebase developer_paymnet;
-
+create database developer_paymnet;
+use developer_paymnet;
 create table red_packets_info
 (
     id               bigint auto_increment comment 'id'

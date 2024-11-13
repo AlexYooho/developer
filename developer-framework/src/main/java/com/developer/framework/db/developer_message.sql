@@ -1,5 +1,5 @@
-create datebase developer_message;
-
+create database developer_message;
+use developer_message;
 create table group_message
 (
     id             bigint auto_increment comment 'id'

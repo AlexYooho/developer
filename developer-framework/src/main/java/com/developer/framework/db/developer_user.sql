@@ -1,5 +1,5 @@
 create database developer_user;
-
+use developer_user;
 create table user
 (
     id               bigint auto_increment comment 'id'

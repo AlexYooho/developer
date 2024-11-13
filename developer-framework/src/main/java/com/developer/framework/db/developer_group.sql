@@ -1,5 +1,5 @@
-create datebase developer_group;
-
+create database developer_group;
+use developer_friend;
 create table group_info
 (
     id               bigint auto_increment comment 'id'
