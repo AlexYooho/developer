@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.annotation.Resource;
 
 @Configuration
-public class MinIOBean {
+public class MinIOClientConfig {
 
     @Resource
     private MinioConfig minioProp;
