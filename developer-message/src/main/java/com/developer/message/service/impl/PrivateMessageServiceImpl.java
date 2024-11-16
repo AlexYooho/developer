@@ -335,23 +335,18 @@ public class PrivateMessageServiceImpl implements MessageService {
      * @param sendTime
      * @return
      */
-    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime){
-        return RabbitMQMessageBodyDTO.builder()
-                .serialNo(UUID.randomUUID().toString())
-                .type(MQMessageTypeConstant.SENDMESSAGE)
-                .token(TokenUtil.getToken())
-                .data(MessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
-                        .messageContentTypeEnum(messageContentTypeEnum)
-                        .messageId(messageId)
-                        .groupId(groupId)
-                        .sendId(sendId)
-                        .sendNickName(sendNickName)
-                        .messageContent(messageContent)
-                        .receiverIds(receiverIds)
-                        .atUserIds(atUserIds)
-                        .messageStatus(messageStatus.code())
-                        .terminalType(terminalType)
-                        .sendTime(sendTime).build())
-                .build();
+    private MessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime){
+        return MessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
+                .messageContentTypeEnum(messageContentTypeEnum)
+                .messageId(messageId)
+                .groupId(groupId)
+                .sendId(sendId)
+                .sendNickName(sendNickName)
+                .messageContent(messageContent)
+                .receiverIds(receiverIds)
+                .atUserIds(atUserIds)
+                .messageStatus(messageStatus.code())
+                .terminalType(terminalType)
+                .sendTime(sendTime).build();
     }
 }
