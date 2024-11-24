@@ -16,14 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Slf4j
-@Component
 public class IMChannelHandler extends SimpleChannelInboundHandler<IMSendMessageInfoModel> {
-
-
-    @Autowired
-    RedisTemplate<String,Object> redisTemplate;
-
 
     /**
      * 接收消息
@@ -65,18 +61,8 @@ public class IMChannelHandler extends SimpleChannelInboundHandler<IMSendMessageI
      */
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        AttributeKey<Long> userIdAttr = AttributeKey.valueOf(ChannelAttrKey.USER_ID);
-        Long userId = ctx.channel().attr(userIdAttr).get();
-        AttributeKey<Integer> terminalAttr = AttributeKey.valueOf(ChannelAttrKey.TERMINAL_TYPE);
-        Integer terminal = ctx.channel().attr(terminalAttr).get();
-        ChannelHandlerContext context = UserChannelCtxMap.getChannelCtx(userId, terminal);
-
-        if(context!=null && ctx.channel().id().equals(context.channel().id())){
-            UserChannelCtxMap.removeChannelCtx(userId,terminal);
-            String key = String.join(":", RedisKeyConstant.IM_MAX_SERVER_ID,userId.toString(),terminal.toString());
-            redisTemplate.delete(key);
-            log.info("断开链接,userid:{},终端类型：{}",userId,terminal);
-        }
+        AbstractMessageProcessor processor = ProcessorFactory.getHandler(IMCmdType.LOGOUT);
+        processor.handler(ctx, Optional.ofNullable(null));
     }
 
     /**

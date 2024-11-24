@@ -58,9 +58,9 @@ public class PrivateMessageServiceImpl implements MessageService {
         List<SendMessageResultDTO> list = new ArrayList<>();
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         Long maxMessageId = fetchAndModifyMessageId(userId,minId);
-        if(minId<=maxMessageId){
-            return DeveloperResult.success(list);
-        }
+//        if(minId<=maxMessageId){
+//            return DeveloperResult.success(list);
+//        }
 
         List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(minId, userId);
         List<Long> ids = messages.stream().filter(x -> !x.getSendId().equals(userId) && x.getMessageStatus().equals(MessageStatusEnum.UNSEND.code()))

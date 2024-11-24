@@ -22,6 +22,8 @@ public class ProcessorFactory {
             case GROUP_MESSAGE:
                 handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(GroupMessageProcessor.class);
                 break;
+            case LOGOUT:
+                handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(LogoutProcessor.class);
             default:
                 break;
         }

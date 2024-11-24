@@ -36,4 +36,8 @@ public enum MessageTerminalTypeEnum {
         return this.code;
     }
 
+    public String desc(){
+        return this.desc;
+    }
+
 }

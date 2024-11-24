@@ -10,7 +10,7 @@ public enum IMCmdType {
 
     HEART_BEAT(1,"心跳"),
 
-    FORCE_LOGUT(2,"强制下线"),
+    FORCE_LOGOUT(2,"强制下线"),
 
     PRIVATE_MESSAGE(3,"私聊消息"),
 
@@ -18,7 +18,9 @@ public enum IMCmdType {
 
     SYSTEM_MESSAGE(5,"系统消息"),
 
-    SUBSCRIBE_MESSAGE(6,"订阅消息");
+    SUBSCRIBE_MESSAGE(6,"订阅消息"),
+
+    LOGOUT(7,"离线");
 
     @EnumValue
     private Integer code;

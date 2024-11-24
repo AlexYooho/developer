@@ -35,7 +35,7 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
 
         OAuth2AccessToken oAuth2AccessToken = null;
         IMSendMessageInfoModel sendMessageInfo = new IMSendMessageInfoModel();
-        sendMessageInfo.setCmd(IMCmdType.FORCE_LOGUT.code());
+        sendMessageInfo.setCmd(IMCmdType.FORCE_LOGOUT.code());
         try {
             oAuth2AccessToken = ResourceServerConfiger.resourceServerSecurityConfigurer.getTokenStore().readAccessToken(loginInfo.getAccessToken());
             Date now = new Date();

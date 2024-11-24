@@ -55,8 +55,8 @@ public class MessageController {
      * @return
      */
     @PostMapping("/{type}/readed")
-    public DeveloperResult<Boolean> readedMessage(@PathVariable("type") Integer type,@RequestParam Long groupId){
-        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).readMessage(groupId);
+    public DeveloperResult<Boolean> readedMessage(@PathVariable("type") Integer type,@RequestParam Long targetId){
+        return messageServiceRegister.getMessageService(MessageMainTypeEnum.fromCode(type)).readMessage(targetId);
     }
 
     /**

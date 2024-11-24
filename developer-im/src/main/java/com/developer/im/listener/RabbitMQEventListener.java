@@ -43,7 +43,8 @@ public class RabbitMQEventListener {
             log.info("【IM消息服务】消息内容：{},处理时间:{},处理结果:{}",dto, Duration.between(begin, LocalDateTime.now()).getSeconds(), result);
             channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
         } catch (Exception e){
-            channel.basicNack(message.getMessageProperties().getDeliveryTag(),false,true);
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+            //channel.basicNack(message.getMessageProperties().getDeliveryTag(),false,true);
         }
     }
 
