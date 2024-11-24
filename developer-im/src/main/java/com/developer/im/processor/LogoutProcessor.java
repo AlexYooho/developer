@@ -30,7 +30,7 @@ public class LogoutProcessor  extends AbstractMessageProcessor<Object>{
             UserChannelCtxMap.removeChannelCtx(userId,terminal);
             String key = String.join(":", RedisKeyConstant.IM_MAX_SERVER_ID,userId.toString(),terminal.toString());
             redisTemplate.delete(key);
-            log.info("断开链接,userid:{},终端类型：{}",userId, MessageTerminalTypeEnum.fromCode(terminal).desc());
+            log.info("用户断开链接,userid:{},终端类型：{}",userId, MessageTerminalTypeEnum.fromCode(terminal).desc());
         }
     }
 }
