@@ -1,6 +1,7 @@
 package com.developer.payment.service.impl;
 
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.enums.CurrencyEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.enums.TransactionStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
@@ -111,10 +112,9 @@ public class WalletServiceImpl implements WalletService {
                 .frozenBalance(BigDecimal.ZERO)
                 .totalRecharge(BigDecimal.ZERO)
                 .totalWithdraw(BigDecimal.ZERO)
-                .currency("CNY")
+                .currency(CurrencyEnum.CNY)
                 .lastTransactionTime(new Date())
-                .status(WalletStatusEnum.NORMAL).build()
-        );
+                .status(WalletStatusEnum.NORMAL).build());
         return DeveloperResult.success();
     }
 }
