@@ -1,8 +1,11 @@
 package com.developer.framework.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.concurrent.TimeUnit;
 
@@ -12,6 +15,9 @@ public class RedisUtil {
     @Autowired
     private RedisTemplate<String,Object> redisTemplate;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     /**
      * 获取 Redis 中的值并转换为指定类型,针对string
      *
@@ -20,27 +26,73 @@ public class RedisUtil {
      * @param <T> 泛型类型
      * @return 转换后的对象
      */
-    public <T> T get(String key, Class<T> clazz) {
+//    public <T> T get(String key, Class<T> clazz) {
+//        Object value = redisTemplate.opsForValue().get(key);
+//        if (value == null) {
+//            return null;
+//        }
+//        if (clazz.isInstance(value)) {
+//            return clazz.cast(value);
+//        } else if (clazz == String.class) {
+//            return clazz.cast(value.toString());
+//        } else if (clazz == Integer.class) {
+//            return clazz.cast(Integer.parseInt(value.toString()));
+//        } else if (clazz == Long.class) {
+//            return clazz.cast(Long.parseLong(value.toString()));
+//        } else if (clazz == Double.class) {
+//            return clazz.cast(Double.parseDouble(value.toString()));
+//        } else if (clazz == Boolean.class) {
+//            return clazz.cast(Boolean.parseBoolean(value.toString()));
+//        } else if(clazz == Object.class) {
+//            return clazz.cast(value);
+//        } else {
+//            throw new IllegalArgumentException("Unsupported type: " + clazz.getName());
+//        }
+//    }
+
+    /**
+     * 获取任意简单对象
+     * @param key
+     * @param clazz
+     * @return
+     * @param <T>
+     */
+    public <T> T get(String key,Class<T> clazz){
         Object value = redisTemplate.opsForValue().get(key);
         if (value == null) {
             return null;
         }
+
         if (clazz.isInstance(value)) {
             return clazz.cast(value);
-        } else if (clazz == String.class) {
-            return clazz.cast(value.toString());
-        } else if (clazz == Integer.class) {
-            return clazz.cast(Integer.parseInt(value.toString()));
-        } else if (clazz == Long.class) {
-            return clazz.cast(Long.parseLong(value.toString()));
-        } else if (clazz == Double.class) {
-            return clazz.cast(Double.parseDouble(value.toString()));
-        } else if (clazz == Boolean.class) {
-            return clazz.cast(Boolean.parseBoolean(value.toString()));
-        } else if(clazz == Object.class) {
-            return clazz.cast(value);
-        } else {
-            throw new IllegalArgumentException("Unsupported type: " + clazz.getName());
+        }
+
+        try {
+            String jsonValue = value.toString(); // 转换为 JSON 字符串
+            return objectMapper.readValue(jsonValue, clazz); // 使用 Jackson 转换为目标类型
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to convert value to type: " + clazz.getName(), e);
+        }
+    }
+
+    /**
+     * 获取任意泛型对象
+     * @param key
+     * @param typeReference
+     * @return
+     * @param <T>
+     */
+    public <T> T get(String key, TypeReference<T> typeReference) {
+        Object value = redisTemplate.opsForValue().get(key);
+        if (value == null) {
+            return null;
+        }
+
+        try {
+            String jsonValue = value.toString(); // 转换为 JSON 字符串
+            return objectMapper.readValue(jsonValue, typeReference); // 使用 Jackson 转换为目标类型
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to convert value to type: " + typeReference.getType(), e);
         }
     }
 
@@ -50,8 +102,8 @@ public class RedisUtil {
      * @param key Redis 键
      * @param value 要存储的值
      */
-    public void set(String key, Object value,long timeOut, TimeUnit timeUnit) {
-        redisTemplate.opsForValue().set(key, value,timeOut,timeUnit);
+    public void set(String key, Object value,long timeOut, TimeUnit timeUnit) throws JsonProcessingException {
+        redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(value),timeOut,timeUnit);
     }
 
     public void set(String key, Object value) {
