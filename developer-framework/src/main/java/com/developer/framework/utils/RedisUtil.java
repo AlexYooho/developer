@@ -102,8 +102,12 @@ public class RedisUtil {
      * @param key Redis 键
      * @param value 要存储的值
      */
-    public void set(String key, Object value,long timeOut, TimeUnit timeUnit) throws JsonProcessingException {
-        redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(value),timeOut,timeUnit);
+    public void set(String key, Object value,long timeOut, TimeUnit timeUnit) {
+        try{
+            redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(value),timeOut,timeUnit);
+        }catch (JsonProcessingException e){
+            e.printStackTrace();
+        }
     }
 
     public void set(String key, Object value) {
