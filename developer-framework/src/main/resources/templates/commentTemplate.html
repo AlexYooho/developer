@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>DeveloperChat</title>
+    <style>
+        .button {
+            background-color: rgb(14 165 233);
+            border-radius: 10px;
+            border: #181818;
+            color: white;
+            padding: 6px 10px;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 9px;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div style="display: flex;align-items: center">
+        <img class="avatar" src="https://q1.qlogo.cn/headimg_dl?dst_uin=1032065316&spec=100" alt="头像">
+        <div style="display: block;margin-left: 10px">
+            <p th:text="'您好,'+${nickname}"></p>
+            <p>您的验证码是：<strong th:text="${authCode}"></strong></p>
+        </div>
+    </div>
+<!--    <p><strong>您的评论内容：</strong></p>-->
+<!--    <p th:text="${oldContent}"></p>-->
+<!--    <p><strong th:text="${nickname}+'回复内容:'"></strong></p>-->
+<!--    <p th:text="${newContent}"><strong></strong></p>-->
+<!--    <button class="button">-->
+<!--        <a th:href="${url}">查看详细内容</a>-->
+<!--    </button>-->
+    <p>此邮件由系统自动发出,请勿直接回复</p>
+</div>
+</body>
+</html>

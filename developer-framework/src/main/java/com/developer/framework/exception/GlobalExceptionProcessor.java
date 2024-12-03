@@ -17,6 +17,12 @@ public class GlobalExceptionProcessor {
             RemoteInvokeException invokeException = (RemoteInvokeException) e;
             return DeveloperResult.error(invokeException.getCode(),invokeException.getErrMsg());
         }
+
+        if(e instanceof EmailException){
+            EmailException emailException = (EmailException) e;
+            return DeveloperResult.error(emailException.getCode(),emailException.getErrMsg());
+        }
+
         log.error(e.toString());
         throw new RuntimeException(e);
         //return DeveloperResult.error("服务器出错辣~~~~,快速修复中,请耐心等待");
