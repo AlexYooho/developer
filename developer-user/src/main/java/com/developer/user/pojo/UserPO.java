@@ -43,6 +43,9 @@ public class UserPO {
     @TableField(value = "type")
     private Integer type;
 
+    @TableField(value = "email")
+    private String email;
+
     @TableField(value = "signature")
     private String signature;
 
@@ -52,7 +55,7 @@ public class UserPO {
     @TableField(value = "created_time")
     private Date createTime;
 
-    public UserPO(String account, String username, String nickname, String headImage, String headImageThumb, String password, Integer sex, Integer type, String signature, Date lastLoginTime, Date createTime) {
+    public UserPO(String account, String username, String nickname, String headImage, String headImageThumb, String password, Integer sex, Integer type,String email, String signature, Date lastLoginTime, Date createTime) {
         this.account = account;
         this.username = username;
         this.nickname = nickname;
@@ -61,6 +64,7 @@ public class UserPO {
         this.password = password;
         this.sex = sex;
         this.type = type;
+        this.email = email;
         this.signature = signature;
         this.lastLoginTime = lastLoginTime;
         this.createTime = createTime;

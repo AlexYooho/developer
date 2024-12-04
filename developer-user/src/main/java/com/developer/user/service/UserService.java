@@ -43,7 +43,7 @@ public interface UserService {
      * @param dto
      * @return
      */
-    public DeveloperResult<Boolean> modifyUserInfo(ModifyUserInfoDTO dto);
+    DeveloperResult<Boolean> modifyUserInfo(ModifyUserInfoDTO dto);
 
     /**
      * 查找在线终端
@@ -52,4 +52,10 @@ public interface UserService {
      */
     DeveloperResult<List<OnlineTerminalDTO>> findOnlineTerminal(String userIds);
 
+    /**
+     * 发送注册验证码
+     * @param account
+     * @return
+     */
+    DeveloperResult<Integer> sendRegisterVerifyCode(String emailAccount);
 }

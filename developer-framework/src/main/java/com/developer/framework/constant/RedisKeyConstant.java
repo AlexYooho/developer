@@ -92,4 +92,13 @@ public class RedisKeyConstant {
     public static String RED_PACKETS_INFO_KEY(Long redPacketsId){
     	return String.format("developer:payment:red:packets:info:%s",redPacketsId);
     }
+
+    /**
+     * 用户注册验证码
+     * @param account
+     * @return
+     */
+    public static String RegisterVerifyCode(String account){
+    	return String.format("developer:user:register:verify:%s",account);
+    }
 }

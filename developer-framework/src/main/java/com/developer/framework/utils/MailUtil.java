@@ -16,6 +16,7 @@ import java.io.File;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 public class MailUtil {
@@ -86,5 +87,18 @@ public class MailUtil {
         String content = templateEngine.process("commentTemplate.html", context);
         sendHtml("17608478306@163.com", "Verify your identity", content);
         return code;
+    }
+
+    private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+
+    /**
+     * 校验邮箱地址是否合法
+     */
+    public Boolean verifyEmailAddress(String emailAddress){
+        if(emailAddress==null || emailAddress.isEmpty()){
+            return false;
+        }
+
+        return Pattern.matches(EMAIL_REGEX, emailAddress);
     }
 }

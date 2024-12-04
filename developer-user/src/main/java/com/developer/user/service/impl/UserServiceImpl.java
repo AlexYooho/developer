@@ -1,9 +1,12 @@
 package com.developer.user.service.impl;
 
+import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.IMOnlineUtil;
+import com.developer.framework.utils.MailUtil;
+import com.developer.framework.utils.RedisUtil;
 import com.developer.user.client.FriendClient;
 import com.developer.user.client.GroupMemberClient;
 import com.developer.user.dto.*;
@@ -16,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +28,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Autowired
     private IMOnlineUtil imOnlineUtil;
@@ -37,6 +43,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private MailUtil mailUtil;
+
     /**
      * 用户注册
      * @param dto
@@ -48,6 +57,10 @@ public class UserServiceImpl implements UserService {
             return DeveloperResult.error(500,"请输入正确的手机号");
         }
 
+        if(!mailUtil.verifyEmailAddress(dto.getEmail())){
+            return DeveloperResult.error(500,"请输入正确的邮箱");
+        }
+
         if("".equals(dto.getPassword())){
             return DeveloperResult.error(500,"请输入密码");
         }
@@ -56,13 +69,22 @@ public class UserServiceImpl implements UserService {
             return DeveloperResult.error(500,"请输入昵称");
         }
 
+        if(dto.getVerifyCode()==null){
+            return DeveloperResult.error(500,"请输入验证码");
+        }
+
+        String key = RedisKeyConstant.RegisterVerifyCode(dto.getEmail());
+        Integer verifyCode = redisUtil.get(key, Integer.class);
+        if(!Objects.equals(verifyCode, dto.getVerifyCode())){
+            return DeveloperResult.error(500,"验证码错误");
+        }
 
         UserPO userPO = userRepository.findByAccount(dto.getAccount());
         if(userPO!=null){
             return DeveloperResult.error(500,"手机号已存在,请重新输入");
         }
 
-        userPO = new UserPO(dto.getAccount(), "", dto.getNickname(), "","", passwordEncoder.encode(dto.getPassword()), dto.getSex(),0,"",new Date(),new Date());
+        userPO = new UserPO(dto.getAccount(), "", dto.getNickname(), "","", passwordEncoder.encode(dto.getPassword()), dto.getSex(),0, dto.getEmail(), "",new Date(),new Date());
         userRepository.save(userPO);
         return DeveloperResult.success();
     }
@@ -168,6 +190,19 @@ public class UserServiceImpl implements UserService {
             list.add(new OnlineTerminalDTO(userId,collect));
         });
         return DeveloperResult.success(list);
+    }
+
+    @Override
+    public DeveloperResult<Integer> sendRegisterVerifyCode(String emailAccount) {
+        if(!mailUtil.verifyEmailAddress(emailAccount)){
+            return DeveloperResult.error(500,"请输入正确的邮箱");
+        }
+
+        Integer code = mailUtil.sendAuthorizationCode();
+        String key = RedisKeyConstant.RegisterVerifyCode(emailAccount);
+        redisUtil.set(key,code,5, TimeUnit.MINUTES);
+
+        return DeveloperResult.success();
     }
 
 }

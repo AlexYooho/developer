@@ -13,4 +13,8 @@ public class UserRegisterDTO {
 
     private Integer sex;
 
+    private Integer verifyCode;
+
+    private String email;
+
 }
