@@ -43,6 +43,7 @@ public class ResourceServerConfiger extends ResourceServerConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .and().authorizeRequests()
                 .antMatchers("/user/register").permitAll()
+                .antMatchers("/user/send/code").permitAll()
                 .antMatchers("/**").authenticated();
     }
 

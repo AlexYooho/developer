@@ -1,10 +1,9 @@
 package com.developer.user.service;
 
-import com.developer.user.dto.ModifyUserInfoDTO;
-import com.developer.user.dto.OnlineTerminalDTO;
-import com.developer.user.dto.UserInfoDTO;
-import com.developer.user.dto.UserRegisterDTO;
+import com.developer.framework.enums.VerifyCodeTypeEnum;
+import com.developer.user.dto.*;
 import com.developer.framework.model.DeveloperResult;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.util.List;
 
@@ -53,9 +52,8 @@ public interface UserService {
     DeveloperResult<List<OnlineTerminalDTO>> findOnlineTerminal(String userIds);
 
     /**
-     * 发送注册验证码
-     * @param account
+     * 修改用户登录密码
      * @return
      */
-    DeveloperResult<Integer> sendRegisterVerifyCode(String emailAccount);
+    DeveloperResult<Boolean> modifyUserPassword(ModifyUserPasswordDTO dto);
 }

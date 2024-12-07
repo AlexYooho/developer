@@ -1,9 +1,12 @@
 package com.developer.user.controller;
 
+import com.developer.framework.enums.VerifyCodeTypeEnum;
 import com.developer.user.client.FriendClient;
 import com.developer.user.dto.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.user.service.UserService;
+import com.developer.user.service.VerifyCodeService;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +18,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private VerifyCodeService verifyCodeService;
 
     /**
      * 用户注册
@@ -74,9 +80,24 @@ public class UserController {
         return userService.modifyUserInfo(dto);
     }
 
+    /**
+     * 获取在线终端
+     * @param userIds
+     * @return
+     */
     @GetMapping("/online/terminal")
     public DeveloperResult<List<OnlineTerminalDTO>> onlineTerminal(@RequestParam("userIds") String userIds){
         return userService.findOnlineTerminal(userIds);
+    }
+
+    /**
+     * 发送校验码
+     * @param email
+     * @return
+     */
+    @PostMapping("/send/code")
+    public DeveloperResult<Boolean> sendRegisterVerifyCode(@RequestParam("email") String email, @RequestParam("verifyCodeType")Integer verifyCodeType){
+        return verifyCodeService.sendVerifyCode(VerifyCodeTypeEnum.fromCode(verifyCodeType),email);
     }
 
 }

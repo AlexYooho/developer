@@ -1,12 +1,11 @@
 package com.developer.user.service.impl;
 
-import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.MessageTerminalTypeEnum;
+import com.developer.framework.enums.VerifyCodeTypeEnum;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.IMOnlineUtil;
 import com.developer.framework.utils.MailUtil;
-import com.developer.framework.utils.RedisUtil;
 import com.developer.user.client.FriendClient;
 import com.developer.user.client.GroupMemberClient;
 import com.developer.user.dto.*;
@@ -14,6 +13,7 @@ import com.developer.user.pojo.UserPO;
 import com.developer.user.repository.UserRepository;
 import com.developer.user.service.UserService;
 import com.developer.framework.model.DeveloperResult;
+import com.developer.user.service.VerifyCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,9 +29,6 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private RedisUtil redisUtil;
-
-    @Autowired
     private IMOnlineUtil imOnlineUtil;
 
     @Autowired
@@ -45,6 +42,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private MailUtil mailUtil;
+
+    @Autowired
+    private VerifyCodeService verifyCodeService;
 
     /**
      * 用户注册
@@ -73,10 +73,9 @@ public class UserServiceImpl implements UserService {
             return DeveloperResult.error(500,"请输入验证码");
         }
 
-        String key = RedisKeyConstant.RegisterVerifyCode(dto.getEmail());
-        Integer verifyCode = redisUtil.get(key, Integer.class);
-        if(!Objects.equals(verifyCode, dto.getVerifyCode())){
-            return DeveloperResult.error(500,"验证码错误");
+        Long existCount = userRepository.findByEmail(dto.getEmail());
+        if(existCount>0){
+            return DeveloperResult.error(500,"邮箱已存在,请重新输入");
         }
 
         UserPO userPO = userRepository.findByAccount(dto.getAccount());
@@ -84,8 +83,14 @@ public class UserServiceImpl implements UserService {
             return DeveloperResult.error(500,"手机号已存在,请重新输入");
         }
 
+        DeveloperResult<Boolean> checkResult = verifyCodeService.checkVerifyCode(VerifyCodeTypeEnum.REGISTER_ACCOUNT,dto.getEmail(),dto.getVerifyCode());
+        if(!checkResult.getIsSuccessful()){
+            return DeveloperResult.error(checkResult.getMsg());
+        }
+
         userPO = new UserPO(dto.getAccount(), "", dto.getNickname(), "","", passwordEncoder.encode(dto.getPassword()), dto.getSex(),0, dto.getEmail(), "",new Date(),new Date());
         userRepository.save(userPO);
+
         return DeveloperResult.success();
     }
 
@@ -192,15 +197,41 @@ public class UserServiceImpl implements UserService {
         return DeveloperResult.success(list);
     }
 
+    /**
+     * 修改密码
+     */
     @Override
-    public DeveloperResult<Integer> sendRegisterVerifyCode(String emailAccount) {
-        if(!mailUtil.verifyEmailAddress(emailAccount)){
-            return DeveloperResult.error(500,"请输入正确的邮箱");
+    public DeveloperResult<Boolean> modifyUserPassword(ModifyUserPasswordDTO dto) {
+
+        if(dto.getOldPassword().isEmpty()){
+            return DeveloperResult.error("请输入原始密码");
         }
 
-        Integer code = mailUtil.sendAuthorizationCode();
-        String key = RedisKeyConstant.RegisterVerifyCode(emailAccount);
-        redisUtil.set(key,code,5, TimeUnit.MINUTES);
+        if(dto.getNewPassword().isEmpty()){
+            return DeveloperResult.error("请输入新密码");
+        }
+
+        if(dto.getVerifyCode()==null){
+            return DeveloperResult.error("请输入验证码");
+        }
+
+        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        UserPO user = userRepository.getById(userId);
+        if(user==null){
+            return DeveloperResult.error("用户不存在");
+        }
+
+        DeveloperResult<Boolean> checkResult = verifyCodeService.checkVerifyCode(VerifyCodeTypeEnum.MODIFY_PASSWORD,user.getEmail(),dto.getVerifyCode());
+        if(!checkResult.getIsSuccessful()){
+            return DeveloperResult.error(checkResult.getMsg());
+        }
+
+        if(passwordEncoder.matches(dto.getOldPassword(),user.getPassword())){
+            return DeveloperResult.error("原始密码错误");
+        }
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        this.userRepository.updateById(user);
 
         return DeveloperResult.success();
     }

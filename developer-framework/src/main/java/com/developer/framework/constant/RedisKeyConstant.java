@@ -1,6 +1,7 @@
 package com.developer.framework.constant;
 
 import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.VerifyCodeTypeEnum;
 
 public class RedisKeyConstant {
 
@@ -98,7 +99,7 @@ public class RedisKeyConstant {
      * @param account
      * @return
      */
-    public static String RegisterVerifyCode(String account){
-    	return String.format("developer:user:register:verify:%s",account);
+    public static String verifyCode(VerifyCodeTypeEnum verifyCodeType, String account){
+    	return String.format("developer:user:verify:type:%s:%s",verifyCodeType.code(),account);
     }
 }

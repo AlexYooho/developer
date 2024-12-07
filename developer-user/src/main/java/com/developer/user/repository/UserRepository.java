@@ -14,6 +14,10 @@ public class UserRepository extends ServiceImpl<UserMapper, UserPO> {
         return this.lambdaQuery().eq(UserPO::getAccount,account).one();
     }
 
+    public Long findByEmail(String email){
+        return this.lambdaQuery().eq(UserPO::getEmail,email).count();
+    }
+
     public List<UserPO> findByName(String name){
         return this.lambdaQuery().like(UserPO::getNickname,name)
                 .or()

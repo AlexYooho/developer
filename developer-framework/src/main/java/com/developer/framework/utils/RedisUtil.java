@@ -19,38 +19,6 @@ public class RedisUtil {
     private ObjectMapper objectMapper;
 
     /**
-     * 获取 Redis 中的值并转换为指定类型,针对string
-     *
-     * @param key Redis 键
-     * @param clazz 目标类型的 Class 对象
-     * @param <T> 泛型类型
-     * @return 转换后的对象
-     */
-//    public <T> T get(String key, Class<T> clazz) {
-//        Object value = redisTemplate.opsForValue().get(key);
-//        if (value == null) {
-//            return null;
-//        }
-//        if (clazz.isInstance(value)) {
-//            return clazz.cast(value);
-//        } else if (clazz == String.class) {
-//            return clazz.cast(value.toString());
-//        } else if (clazz == Integer.class) {
-//            return clazz.cast(Integer.parseInt(value.toString()));
-//        } else if (clazz == Long.class) {
-//            return clazz.cast(Long.parseLong(value.toString()));
-//        } else if (clazz == Double.class) {
-//            return clazz.cast(Double.parseDouble(value.toString()));
-//        } else if (clazz == Boolean.class) {
-//            return clazz.cast(Boolean.parseBoolean(value.toString()));
-//        } else if(clazz == Object.class) {
-//            return clazz.cast(value);
-//        } else {
-//            throw new IllegalArgumentException("Unsupported type: " + clazz.getName());
-//        }
-//    }
-
-    /**
      * 获取任意简单对象
      * @param key
      * @param clazz
@@ -126,4 +94,7 @@ public class RedisUtil {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
+    public void delete(String key) {
+        redisTemplate.delete(key);
+    }
 }
