@@ -6,15 +6,15 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum RabbitMQEventTypeEnum {
 
-    PAYMENT(0,"PAYMENT"),
+    PAYMENT(0,"支付"),
 
-    IM(1,"IM"),
+    IM(1,"IM即时消息"),
 
-    MESSAGE_LIKE(2,"MESSAGE_LIKE"),
+    MESSAGE_LIKE(2,"消息点赞"),
 
-    MESSAGE(3,"MESSAGE"),
+    MESSAGE(3,"消息"),
 
-    RED_PACKETS_RECOVERY(4,"RED_PACKETS_RECOVERY");
+    RED_PACKETS_RECOVERY(4,"红包退回");
 
     @EnumValue
     private final Integer code;

@@ -1,12 +1,10 @@
 package com.developer.user.controller;
 
 import com.developer.framework.enums.VerifyCodeTypeEnum;
-import com.developer.user.client.FriendClient;
 import com.developer.user.dto.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.user.service.UserService;
 import com.developer.user.service.VerifyCodeService;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -92,12 +90,12 @@ public class UserController {
 
     /**
      * 发送校验码
-     * @param email
+     * @param emailAddress
      * @return
      */
     @PostMapping("/send/code")
-    public DeveloperResult<Boolean> sendRegisterVerifyCode(@RequestParam("email") String email, @RequestParam("verifyCodeType")Integer verifyCodeType){
-        return verifyCodeService.sendVerifyCode(VerifyCodeTypeEnum.fromCode(verifyCodeType),email);
+    public DeveloperResult<Boolean> sendRegisterVerifyCode(@RequestParam("email_address") String emailAddress, @RequestParam("verify_code_type")Integer verifyCodeType){
+        return verifyCodeService.sendVerifyCode(VerifyCodeTypeEnum.fromCode(verifyCodeType),emailAddress);
     }
 
 }

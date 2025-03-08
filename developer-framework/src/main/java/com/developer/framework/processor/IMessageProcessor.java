@@ -6,7 +6,6 @@ import com.developer.framework.model.DeveloperResult;
 
 public interface IMessageProcessor {
 
-
     RabbitMQEventTypeEnum eventType();
 
     DeveloperResult<Boolean> processor(RabbitMQMessageBodyDTO dto);
