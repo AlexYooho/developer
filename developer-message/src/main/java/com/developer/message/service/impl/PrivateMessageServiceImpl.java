@@ -2,7 +2,6 @@ package com.developer.message.service.impl;
 
 import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.constant.DeveloperMQConstant;
-import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.*;
@@ -10,7 +9,6 @@ import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
-import com.developer.framework.utils.TokenUtil;
 import com.developer.message.client.FriendClient;
 import com.developer.message.dto.*;
 import com.developer.message.pojo.PrivateMessagePO;
@@ -47,6 +45,15 @@ public class PrivateMessageServiceImpl implements MessageService {
 
     @Autowired
     private MessageLikeService messageLikeService;
+
+    /**
+     * 消息主体类型
+     * @return
+     */
+    @Override
+    public MessageMainTypeEnum messageMainType() {
+        return MessageMainTypeEnum.PRIVATE_MESSAGE;
+    }
 
     /**
      * 拉取最新消息
@@ -100,7 +107,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         redisUtil.set(key,privateMessage.getId(),24, TimeUnit.HOURS);
 
         // 发送消息
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, RabbitMQEventTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, SelfUserInfoContext.selfUserInfo().getNickName(), req.getMessageContent(), Collections.singletonList(req.getReceiverId()),new ArrayList<>(), MessageStatusEnum.fromCode(privateMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,privateMessage.getSendTime()));
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, SelfUserInfoContext.selfUserInfo().getNickName(), req.getMessageContent(), Collections.singletonList(req.getReceiverId()),new ArrayList<>(), MessageStatusEnum.fromCode(privateMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,privateMessage.getSendTime()));
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
@@ -116,7 +123,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     public DeveloperResult<Boolean> readMessage(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, RabbitMQEventTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
         privateMessageRepository.updateMessageStatus(friendId,userId,MessageStatusEnum.READED.code());
         return DeveloperResult.success();
     }
@@ -147,7 +154,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         privateMessageRepository.updateById(privateMessage);
 
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, RabbitMQEventTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName,"对方撤回了一条消息", Collections.singletonList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL, MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName,"对方撤回了一条消息", Collections.singletonList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL, MessageTerminalTypeEnum.WEB,new Date()));
 
         return DeveloperResult.success();
     }

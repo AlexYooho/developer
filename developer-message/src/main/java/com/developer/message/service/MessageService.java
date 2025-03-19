@@ -1,6 +1,7 @@
 package com.developer.message.service;
 
 import com.developer.framework.enums.MessageContentTypeEnum;
+import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.MessageInsertDTO;
 import com.developer.message.dto.SendMessageRequestDTO;
@@ -10,6 +11,12 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface MessageService {
+
+    /**
+     * 消息主体类型
+     * @return
+     */
+    MessageMainTypeEnum messageMainType();
 
     /**
      * 加载消息

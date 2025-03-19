@@ -4,7 +4,7 @@ import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
-import com.developer.framework.processor.MessageProcessorFactory;
+import com.developer.framework.processor.ProcessorDispatchFactory;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -26,13 +26,14 @@ import java.time.LocalDateTime;
 public class RabbitMQEventListener {
 
     @Autowired
-    private MessageProcessorFactory messageProcessorFactory;
+    private ProcessorDispatchFactory processorDispatchFactory;
 
     @RabbitHandler
     public void messageSubscribe(RabbitMQMessageBodyDTO dto, Channel channel, Message message) throws IOException {
         try {
             LocalDateTime begin = LocalDateTime.now();
-            IMessageProcessor instance = messageProcessorFactory.getInstance(dto.getMessageType());
+            //IMessageProcessor instance = messageProcessorFactory.getInstance(dto.getProcessorType());
+            IMessageProcessor instance = processorDispatchFactory.getInstance(dto.getProcessorType());
             if(instance==null){
                 log.info("【payment服务】消息内容:{},没有对应的消息处理器",dto);
                 return;

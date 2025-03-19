@@ -2,7 +2,7 @@ package com.developer.message.eventlistener.processor;
 
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.MessageMainTypeEnum;
-import com.developer.framework.enums.RabbitMQEventTypeEnum;
+import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
 import com.developer.message.dto.MessageLikeEventDTO;
@@ -19,7 +19,7 @@ import java.util.Date;
 
 @Component
 @Slf4j
-public class MessageLikeEventProcessor implements IMessageProcessor {
+public class MessageLikeProcessor implements IMessageProcessor {
 
     @Autowired
     private MessageLikeRecordRepository messageLikeRecordRepository;
@@ -28,8 +28,8 @@ public class MessageLikeEventProcessor implements IMessageProcessor {
     private GroupMessageRepository groupMessageRepository;
 
     @Override
-    public RabbitMQEventTypeEnum eventType() {
-        return RabbitMQEventTypeEnum.MESSAGE_LIKE;
+    public ProcessorTypeEnum processorType() {
+        return ProcessorTypeEnum.MESSAGE_LIKE;
     }
 
     @Override

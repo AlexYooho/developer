@@ -1,16 +1,16 @@
 package com.developer.payment.listener.processor;
 
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.RabbitMQEventTypeEnum;
+import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RedPacketsRecoveryEventProcessor implements IMessageProcessor {
+public class RedPacketsReturnProcessor implements IMessageProcessor {
     @Override
-    public RabbitMQEventTypeEnum eventType() {
-        return RabbitMQEventTypeEnum.RED_PACKETS_RECOVERY;
+    public ProcessorTypeEnum processorType() {
+        return ProcessorTypeEnum.RED_PACKETS_RETURN;
     }
 
     @Override

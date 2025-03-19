@@ -2,10 +2,8 @@ package com.developer.message.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.developer.framework.constant.DeveloperMQConstant;
-import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.dto.MessageDTO;
 import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
@@ -56,6 +54,20 @@ public class GroupMessageServiceImpl implements MessageService {
     @Autowired
     private MessageLikeService messageLikeService;
 
+    /**
+     * 消息主体类型
+     * @return
+     */
+    @Override
+    public MessageMainTypeEnum messageMainType() {
+        return MessageMainTypeEnum.GROUP_MESSAGE;
+    }
+
+    /**
+     * 拉取消息
+     * @param minId
+     * @return
+     */
     @Override
     public DeveloperResult<List<SendMessageResultDTO>> loadMessage(Long minId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -101,6 +113,11 @@ public class GroupMessageServiceImpl implements MessageService {
         return DeveloperResult.success(vos);
     }
 
+    /**
+     * 发送消息
+     * @param req
+     * @return
+     */
     @Override
     public DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -145,7 +162,7 @@ public class GroupMessageServiceImpl implements MessageService {
 
         groupMessageMemberReceiveRecordRepository.saveBatch(receiveRecods);
 
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, RabbitMQEventTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(),message.getId(),message.getGroupId(),userId,nickName,req.getMessageContent(),receiverIds,req.getAtUserIds(),MessageStatusEnum.fromCode(message.getMessageStatus()), MessageTerminalTypeEnum.WEB,message.getSendTime()));
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(),message.getId(),message.getGroupId(),userId,nickName,req.getMessageContent(),receiverIds,req.getAtUserIds(),MessageStatusEnum.fromCode(message.getMessageStatus()), MessageTerminalTypeEnum.WEB,message.getSendTime()));
 
 
         GroupMessageDTO data = new GroupMessageDTO();
@@ -155,6 +172,11 @@ public class GroupMessageServiceImpl implements MessageService {
         return DeveloperResult.success(data);
     }
 
+    /**
+     * 已读消息
+     * @param groupId
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> readMessage(Long groupId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -169,7 +191,7 @@ public class GroupMessageServiceImpl implements MessageService {
         List<GroupMessageMemberReceiveRecordPO> records = groupMessageMemberReceiveRecordRepository.findCurGroupUnreadRecordList(groupId, userId);
         records.forEach(x->{
             // 通知前端
-            rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, RabbitMQEventTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE,MessageContentTypeEnum.TEXT, x.getMessageId(), groupId, userId, nickName,"", Collections.singletonList(x.getSendId()), new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
+            rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE,MessageContentTypeEnum.TEXT, x.getMessageId(), groupId, userId, nickName,"", Collections.singletonList(x.getSendId()), new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
             x.setStatus(MessageStatusEnum.READED.code());
             groupMessageMemberReceiveRecordRepository.updateById(x);
         });
@@ -179,6 +201,11 @@ public class GroupMessageServiceImpl implements MessageService {
         return DeveloperResult.success();
     }
 
+    /**
+     * 撤回消息
+     * @param id
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> recallMessage(Long id) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -206,12 +233,19 @@ public class GroupMessageServiceImpl implements MessageService {
 
         String message = String.format("%s 撤回了一条消息",selfJoinGroupInfoDTO.getAliasName());
 
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, RabbitMQEventTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(),groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), MessageStatusEnum.fromCode(groupMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(),groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), MessageStatusEnum.fromCode(groupMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,new Date()));
 
 
         return DeveloperResult.success();
     }
 
+    /**
+     * 查询历史记录
+     * @param groupId
+     * @param page
+     * @param size
+     * @return
+     */
     @Override
     public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(Long groupId, Long page, Long size) {
         page = page>0?page:1;
@@ -231,16 +265,32 @@ public class GroupMessageServiceImpl implements MessageService {
         return DeveloperResult.success(list);
     }
 
+    /**
+     * 新增消息
+     * @param dto
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> insertMessage(MessageInsertDTO dto) {
         return DeveloperResult.success();
     }
 
+    /**
+     * 删除消息
+     * @param friendId
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> deleteMessage(Long friendId) {
         return DeveloperResult.success();
     }
 
+    /**
+     * 回复
+     * @param id
+     * @param dto
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> replyMessage(Long id,SendMessageRequestDTO dto) {
         GroupMessagePO groupMessagePO = groupMessageRepository.getById(id);
@@ -252,11 +302,22 @@ public class GroupMessageServiceImpl implements MessageService {
         return DeveloperResult.success();
     }
 
+    /**
+     * 收藏
+     * @param messageId
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> collectionMessage(Long messageId) {
         return null;
     }
 
+    /**
+     * 转发
+     * @param messageId
+     * @param userIdList
+     * @return
+     */
     @Override
     public DeveloperResult<Boolean> forwardMessage(Long messageId, List<Long> userIdList) {
         GroupMessagePO groupMessagePO = groupMessageRepository.getById(messageId);
@@ -275,6 +336,11 @@ public class GroupMessageServiceImpl implements MessageService {
         return DeveloperResult.success();
     }
 
+    /**
+     * 点赞
+     * @param messageId
+     * @return
+     */
     @Async
     @Transactional
     @Override
@@ -282,6 +348,11 @@ public class GroupMessageServiceImpl implements MessageService {
         return messageLikeService.like(messageId, MessageMainTypeEnum.GROUP_MESSAGE);
     }
 
+    /**
+     * 取消点赞
+     * @param messageId
+     * @return
+     */
     @Async
     @Transactional
     @Override

@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum RabbitMQEventTypeEnum {
+public enum ProcessorTypeEnum {
 
     PAYMENT(0,"支付"),
 
@@ -14,7 +14,7 @@ public enum RabbitMQEventTypeEnum {
 
     MESSAGE(3,"消息"),
 
-    RED_PACKETS_RECOVERY(4,"红包退回");
+    RED_PACKETS_RETURN(4,"红包退回");
 
     @EnumValue
     private final Integer code;

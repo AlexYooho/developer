@@ -1,25 +1,25 @@
 package com.developer.message.eventlistener.processor;
 
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.RabbitMQEventTypeEnum;
+import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
 import com.developer.message.dto.SendMessageRequestDTO;
-import com.developer.message.service.MessageServiceRegister;
+import com.developer.message.service.MessageTypeProcessorDispatchFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class MessageEventProcessor implements IMessageProcessor {
+public class MessageSendProcessor implements IMessageProcessor {
 
     @Autowired
-    private MessageServiceRegister messageServiceRegister;
+    private MessageTypeProcessorDispatchFactory messageTypeProcessorDispatchFactory;
 
     @Override
-    public RabbitMQEventTypeEnum eventType() {
-        return RabbitMQEventTypeEnum.MESSAGE;
+    public ProcessorTypeEnum processorType() {
+        return ProcessorTypeEnum.MESSAGE;
     }
 
     @Override
@@ -29,7 +29,8 @@ public class MessageEventProcessor implements IMessageProcessor {
             return DeveloperResult.error("消息体为空");
         }
 
-        messageServiceRegister.getMessageService(messageContent.getMessageMainType()).sendMessage(messageContent);
+        messageTypeProcessorDispatchFactory.getInstance(messageContent.getMessageMainType()).sendMessage(messageContent);
+
         return DeveloperResult.success();
     }
 }

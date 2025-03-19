@@ -103,7 +103,7 @@ public class FriendServiceImpl implements FriendService {
         }
 
         // 发送添加请求
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, RabbitMQEventTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
         return DeveloperResult.success(true);
     }
 
@@ -140,7 +140,7 @@ public class FriendServiceImpl implements FriendService {
         friendApplicationRecordPORepository.updateStatus(userId, req.getFriendId(), status.code());
 
         if (ObjectUtil.isNotEmpty(message)) {
-            rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, RabbitMQEventTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+            rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
         }
 
         return DeveloperResult.success();

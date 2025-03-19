@@ -2,7 +2,7 @@ package com.developer.payment.listener.processor;
 
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.RabbitMQEventTypeEnum;
+import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
 import com.developer.payment.service.PaymentService;
@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PaymentEventProcessor implements IMessageProcessor {
+public class PaymentProcessor implements IMessageProcessor {
     @Override
-    public RabbitMQEventTypeEnum eventType() {
-        return RabbitMQEventTypeEnum.PAYMENT;
+    public ProcessorTypeEnum processorType() {
+        return ProcessorTypeEnum.PAYMENT;
     }
 
     @Autowired

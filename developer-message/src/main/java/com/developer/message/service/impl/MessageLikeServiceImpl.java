@@ -4,7 +4,7 @@ import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.MessageMainTypeEnum;
-import com.developer.framework.enums.RabbitMQEventTypeEnum;
+import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.message.dto.MessageLikeEventDTO;
@@ -70,7 +70,7 @@ public class MessageLikeServiceImpl implements MessageLikeService {
                 redisUtil.setExpire(messageLikeCountKey,1,TimeUnit.HOURS);
 
                 // 推送mq事件，更新数据库
-                rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, RabbitMQEventTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(messageId).userId(userId).messageMainTypeEnum(messageMainTypeEnum).build());
+                rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(messageId).userId(userId).messageMainTypeEnum(messageMainTypeEnum).build());
 
                 return CompletableFuture.completedFuture(DeveloperResult.success(true));
             }else{
