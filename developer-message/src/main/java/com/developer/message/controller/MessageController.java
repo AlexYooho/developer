@@ -51,7 +51,8 @@ public class MessageController {
 
     /**
      * 消息已读
-     * @param groupId
+     * @param type
+     * @param targetId
      * @return
      */
     @PostMapping("/{type}/readed")
@@ -96,7 +97,7 @@ public class MessageController {
     /**
      * 回复消息
      * @param type
-     * @param id
+     * @param messageId
      * @param dto
      * @return
      */
@@ -108,7 +109,7 @@ public class MessageController {
     /**
      * 收藏消息
      * @param type
-     * @param id
+     * @param messageId
      * @return
      */
     @PostMapping("{type}/collection/{messageId}")
