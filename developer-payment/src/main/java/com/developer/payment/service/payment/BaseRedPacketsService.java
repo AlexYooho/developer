@@ -185,7 +185,7 @@ public class BaseRedPacketsService {
                 .messageContentType(MessageContentTypeEnum.RED_PACKETS)
                 .groupId(targetId)
                 .build();
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, RabbitMQEventTypeEnum.MESSAGE,dto);
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE,dto);
     }
 
     /**
@@ -194,7 +194,7 @@ public class BaseRedPacketsService {
      * @param delayRecoveryTime
      */
     public void redPacketsRecoveryEvent(Long redPacketsId,Integer delayRecoveryTime){
-        rabbitMQUtil.sendDelayMessage(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY,RabbitMQEventTypeEnum.RED_PACKETS_RECOVERY,redPacketsId,delayRecoveryTime);
+        rabbitMQUtil.sendDelayMessage(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_RETURN,redPacketsId,delayRecoveryTime);
     }
 
     /**
@@ -247,6 +247,6 @@ public class BaseRedPacketsService {
                 .messageContentType(MessageContentTypeEnum.RED_PACKETS)
                 .groupId(targetId)
                 .build();
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, RabbitMQEventTypeEnum.MESSAGE,dto);
+        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE,dto);
     }
 }
