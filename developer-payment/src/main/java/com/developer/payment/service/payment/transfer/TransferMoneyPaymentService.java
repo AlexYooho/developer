@@ -4,6 +4,7 @@ import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.enums.TransferStatusEnum;
 import com.developer.payment.enums.WalletOperationTypeEnum;
@@ -26,6 +27,9 @@ public class TransferMoneyPaymentService implements PaymentService {
 
     @Autowired
     private TransferInfoRepository transferInfoRepository;
+
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
 
     /**
      * 发起转账
@@ -56,7 +60,7 @@ public class TransferMoneyPaymentService implements PaymentService {
                 .receiverUserId(dto.getTransferInfoDTO().getToUserId()).transferStatus(TransferStatusEnum.PENDING)
                 .createdTime(new Date()).updateTime(new Date()).build());
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -89,7 +93,7 @@ public class TransferMoneyPaymentService implements PaymentService {
             return DeveloperResult.error(transactionResult.getMsg());
         }
 
-        return DeveloperResult.success(transferInfo.getTransferAmount());
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),transferInfo.getTransferAmount());
     }
 
     /**
@@ -118,6 +122,6 @@ public class TransferMoneyPaymentService implements PaymentService {
             return DeveloperResult.error(transactionResult.getMsg());
         }
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 }

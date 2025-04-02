@@ -1,6 +1,7 @@
 package com.developer.user.controller;
 
 import com.developer.framework.enums.VerifyCodeTypeEnum;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.user.dto.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.user.service.UserService;
@@ -20,6 +21,9 @@ public class UserController {
     @Autowired
     private VerifyCodeService verifyCodeService;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     /**
      * 用户注册
      * @param dto
@@ -36,7 +40,7 @@ public class UserController {
      */
     @PutMapping("/modify/password")
     public DeveloperResult<Boolean> modifyPassword(){
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**

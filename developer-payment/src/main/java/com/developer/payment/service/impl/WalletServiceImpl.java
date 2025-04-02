@@ -3,6 +3,7 @@ package com.developer.payment.service.impl;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.CurrencyEnum;
 import com.developer.framework.model.DeveloperResult;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.payment.enums.TransactionStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.enums.WalletOperationTypeEnum;
@@ -26,6 +27,9 @@ public class WalletServiceImpl implements WalletService {
 
     @Autowired
     private WalletTransactionRecordRepository walletTransactionRepository;
+
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
 
     /**
      * 发起交易
@@ -70,7 +74,7 @@ public class WalletServiceImpl implements WalletService {
                 .updateTime(new Date())
                 .build());
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -91,7 +95,7 @@ public class WalletServiceImpl implements WalletService {
         walletInfo.setUpdateTime(new Date());
         walletRepository.updateById(walletInfo);
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -115,6 +119,6 @@ public class WalletServiceImpl implements WalletService {
                 .currency(CurrencyEnum.CNY)
                 .lastTransactionTime(new Date())
                 .status(WalletStatusEnum.NORMAL).build());
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 }

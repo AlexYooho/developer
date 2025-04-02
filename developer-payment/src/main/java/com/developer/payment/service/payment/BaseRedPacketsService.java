@@ -7,6 +7,7 @@ import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.payment.client.FriendClient;
 import com.developer.payment.client.GroupClient;
 import com.developer.payment.client.MessageClient;
@@ -52,7 +53,7 @@ public class BaseRedPacketsService {
     private RabbitMQUtil rabbitMQUtil;
 
     @Autowired
-    private MessageClient messageClient;
+    private SnowflakeNoUtil snowflakeNoUtil;
 
     /**
      * 计算红包分配金额
@@ -118,7 +119,7 @@ public class BaseRedPacketsService {
             }
         }
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -233,7 +234,7 @@ public class BaseRedPacketsService {
         redPacketsInfo.setStatus(RedPacketsStatusEnum.FINISHED);
         redPacketsInfo.setRemainingCount(0);
         redPacketsInfoRepository.updateById(redPacketsInfo);
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**

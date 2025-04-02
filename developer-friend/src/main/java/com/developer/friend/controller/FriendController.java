@@ -55,7 +55,7 @@ public class FriendController {
      */
     @PutMapping("/update")
     public DeveloperResult<Boolean> modifyFriend(){
-        return DeveloperResult.success();
+        return DeveloperResult.success("");
     }
 
     /**

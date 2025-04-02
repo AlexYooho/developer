@@ -1,5 +1,6 @@
 package com.developer.group.config;
 
+import com.developer.framework.exception.CustomIdentityVerifyExceptionProcessor;
 import com.developer.group.converter.AccessTokenConvertor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -21,20 +22,25 @@ public class ResourceServerConfiger extends ResourceServerConfigurerAdapter {
 
     private String SIGN_KEY="developer";
 
+    @Autowired
+    private CustomIdentityVerifyExceptionProcessor customIdentityVerifyExceptionProcessor;
+
     /**
      * 远程校验token
      * @param resources
      */
     @Override
     public void configure(ResourceServerSecurityConfigurer resources)  {
-        resources.resourceId("developer_group").tokenStore(tokenStore()).stateless(true);
+        resources.resourceId("developer_group").tokenStore(tokenStore()).stateless(true).authenticationEntryPoint(customIdentityVerifyExceptionProcessor); // 添加自定义异常处理
     }
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 .and().authorizeRequests()
-                .antMatchers("/**").authenticated();
+                .antMatchers("/**").authenticated().and()
+                .exceptionHandling()
+                .authenticationEntryPoint(customIdentityVerifyExceptionProcessor);
     }
 
     public TokenStore tokenStore(){

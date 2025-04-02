@@ -9,6 +9,7 @@ import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.message.client.FriendClient;
 import com.developer.message.dto.*;
 import com.developer.message.pojo.PrivateMessagePO;
@@ -46,6 +47,9 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Autowired
     private MessageLikeService messageLikeService;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     /**
      * 消息主体类型
      * @return
@@ -68,7 +72,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
         Long maxMessageId = redisUtil.get(key, Long.class) == null ? 0L:redisUtil.get(key, Long.class);
         if(minId.equals(maxMessageId)){
-            return DeveloperResult.success(list);
+            return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
         }
 
         List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(minId, userId);
@@ -83,7 +87,7 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         log.info("拉取消息,用户id:{},数量:{}", userId, messages.size());
         list = messages.stream().map(m -> BeanUtils.copyProperties(m, PrivateMessageDTO.class)).collect(Collectors.toList());
-        return DeveloperResult.success(list);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
     }
 
     /**
@@ -111,7 +115,7 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
-        return DeveloperResult.success(dto);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),dto);
     }
 
     /**
@@ -125,7 +129,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
         privateMessageRepository.updateMessageStatus(friendId,userId,MessageStatusEnum.READED.code());
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -156,7 +160,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName,"对方撤回了一条消息", Collections.singletonList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL, MessageTerminalTypeEnum.WEB,new Date()));
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -174,7 +178,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         long pageIndex = (page-1)*size;
         List<PrivateMessagePO> list = privateMessageRepository.getHistoryMessageList(userId, friendId, pageIndex, size);
         List<SendMessageResultDTO> collect = list.stream().map(a -> BeanUtils.copyProperties(a, PrivateMessageDTO.class)).collect(Collectors.toList());
-        return DeveloperResult.success(collect);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),collect);
     }
 
     /**
@@ -192,7 +196,7 @@ public class PrivateMessageServiceImpl implements MessageService {
                 .messageContentType(dto.getMessageContentType())
                 .sendTime(new Date()).build();
         boolean isSuccess = privateMessageRepository.save(privateMessage);
-        return DeveloperResult.success(isSuccess);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),isSuccess);
     }
 
     /**
@@ -204,7 +208,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     public DeveloperResult<Boolean> deleteMessage(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         boolean isSuccess = privateMessageRepository.deleteChatMessage(userId,friendId);
-        return DeveloperResult.success(isSuccess);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),isSuccess);
     }
 
     /**
@@ -222,7 +226,7 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         dto.setReferenceId(id);
         this.sendMessage(dto);
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -257,7 +261,7 @@ public class PrivateMessageServiceImpl implements MessageService {
                     .build();
             this.sendMessage(dto);
         }
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**

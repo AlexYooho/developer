@@ -25,8 +25,8 @@ public class MessageController {
      * @return
      */
     @PostMapping("/{type}/send")
-    public DeveloperResult<SendMessageResultDTO> sendMessage(@PathVariable("type") Integer type,@RequestBody SendMessageRequestDTO req){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).sendMessage(req);
+    public DeveloperResult<SendMessageResultDTO> sendMessage(@PathVariable("type") MessageMainTypeEnum type,@RequestBody SendMessageRequestDTO req){
+        return messageTypeProcessorDispatchFactory.getInstance(type).sendMessage(req);
     }
 
     /**
@@ -35,8 +35,8 @@ public class MessageController {
      * @return
      */
     @PostMapping("/{type}/recall/{id}")
-    public DeveloperResult<Boolean> recallMessage(@PathVariable("type") Integer type,@PathVariable Long id){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).recallMessage(id);
+    public DeveloperResult<Boolean> recallMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable Long id){
+        return messageTypeProcessorDispatchFactory.getInstance(type).recallMessage(id);
     }
 
     /**
@@ -45,8 +45,8 @@ public class MessageController {
      * @return
      */
     @GetMapping("/{type}/loadMessage")
-    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(@PathVariable("type") Integer type, @RequestParam Long minId){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).loadMessage(minId);
+    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestParam Long minId){
+        return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(minId);
     }
 
     /**
@@ -56,8 +56,8 @@ public class MessageController {
      * @return
      */
     @PostMapping("/{type}/readed")
-    public DeveloperResult<Boolean> readedMessage(@PathVariable("type") Integer type,@RequestParam Long targetId){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).readMessage(targetId);
+    public DeveloperResult<Boolean> readedMessage(@PathVariable("type") MessageMainTypeEnum type,@RequestParam Long targetId){
+        return messageTypeProcessorDispatchFactory.getInstance(type).readMessage(targetId);
     }
 
     /**
@@ -68,8 +68,8 @@ public class MessageController {
      * @return
      */
     @GetMapping("/{type}/history")
-    public DeveloperResult<List<SendMessageResultDTO>> recallMessage(@PathVariable("type") Integer type,@RequestParam Long targetId,@RequestParam Long page,@RequestParam Long size){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).findHistoryMessage(targetId,page,size);
+    public DeveloperResult<List<SendMessageResultDTO>> recallMessage(@PathVariable("type") MessageMainTypeEnum type,@RequestParam Long targetId,@RequestParam Long page,@RequestParam Long size){
+        return messageTypeProcessorDispatchFactory.getInstance(type).findHistoryMessage(targetId,page,size);
     }
 
     /**
@@ -79,8 +79,8 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/add")
-    public DeveloperResult<Boolean> insertMessage(@PathVariable("type") Integer type,@RequestBody MessageInsertDTO dto){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).insertMessage(dto);
+    public DeveloperResult<Boolean> insertMessage(@PathVariable("type") MessageMainTypeEnum type,@RequestBody MessageInsertDTO dto){
+        return messageTypeProcessorDispatchFactory.getInstance(type).insertMessage(dto);
     }
 
     /**
@@ -90,8 +90,8 @@ public class MessageController {
      * @return
      */
     @DeleteMapping("{type}/remove/{friendId}")
-    public DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") Integer type,@PathVariable("friendId") Long friendId){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).deleteMessage(friendId);
+    public DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("friendId") Long friendId){
+        return messageTypeProcessorDispatchFactory.getInstance(type).deleteMessage(friendId);
     }
 
     /**
@@ -102,8 +102,8 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/reply/{messageId}")
-    public DeveloperResult<Boolean> replyMessage(@PathVariable("type") Integer type,@PathVariable("messageId") Long messageId,@RequestBody SendMessageRequestDTO dto){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).replyMessage(messageId,dto);
+    public DeveloperResult<Boolean> replyMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("messageId") Long messageId,@RequestBody SendMessageRequestDTO dto){
+        return messageTypeProcessorDispatchFactory.getInstance(type).replyMessage(messageId,dto);
     }
 
     /**
@@ -113,8 +113,8 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/collection/{messageId}")
-    public DeveloperResult<Boolean> collectionMessage(@PathVariable("type") Integer type,@PathVariable("messageId") Long messageId) {
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).collectionMessage(messageId);
+    public DeveloperResult<Boolean> collectionMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("messageId") Long messageId) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).collectionMessage(messageId);
     }
 
     /**
@@ -125,8 +125,8 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/forward/{messageId}")
-    public DeveloperResult<Boolean> forwardMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId, @RequestBody List<Long> userIdList){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).forwardMessage(messageId,userIdList);
+    public DeveloperResult<Boolean> forwardMessage(@PathVariable("type") MessageMainTypeEnum type, @PathVariable("messageId") Long messageId, @RequestBody List<Long> userIdList){
+        return messageTypeProcessorDispatchFactory.getInstance(type).forwardMessage(messageId,userIdList);
     }
 
     /**
@@ -136,8 +136,8 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/like/{messageId}")
-    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).likeMessage(messageId);
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(@PathVariable("type") MessageMainTypeEnum type, @PathVariable("messageId") Long messageId){
+        return messageTypeProcessorDispatchFactory.getInstance(type).likeMessage(messageId);
     }
 
     /**
@@ -147,8 +147,8 @@ public class MessageController {
      * @return
      */
     @PostMapping("{type}/unlike/{messageId}")
-    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId){
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.fromCode(type)).unLikeMessage(messageId);
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(@PathVariable("type") MessageMainTypeEnum type, @PathVariable("messageId") Long messageId){
+        return messageTypeProcessorDispatchFactory.getInstance(type).unLikeMessage(messageId);
     }
 
 }

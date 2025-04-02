@@ -1,6 +1,7 @@
 package com.developer.group.service.impl;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.group.dto.SelfJoinGroupInfoDTO;
 import com.developer.group.pojo.GroupMemberPO;
 import com.developer.group.repository.GroupMemberRepository;
@@ -18,11 +19,14 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     @Autowired
     private GroupMemberRepository groupMemberRepository;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     @Override
     public DeveloperResult<List<Long>> findGroupMember(Long groupId) {
         List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(groupId);
         List<Long> userIds = members.stream().map(GroupMemberPO::getUserId).collect(Collectors.toList());
-        return DeveloperResult.success(userIds);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),userIds);
     }
 
     @Override
@@ -31,6 +35,6 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         List<GroupMemberPO> ll = new ArrayList<>();
         this.groupMemberRepository.updateBatchById(ll);
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 }

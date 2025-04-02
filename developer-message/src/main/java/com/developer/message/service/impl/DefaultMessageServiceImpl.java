@@ -3,10 +3,12 @@ package com.developer.message.service.impl;
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.message.dto.MessageInsertDTO;
 import com.developer.message.dto.SendMessageRequestDTO;
 import com.developer.message.dto.SendMessageResultDTO;
 import com.developer.message.service.MessageService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,8 +17,11 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class DefaultMessageServiceImpl implements MessageService {
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     public DeveloperResult defaultResult(){
-        return DeveloperResult.error(404,"错误的消息类型");
+        return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),404,"错误的消息类型");
     }
 
     @Override

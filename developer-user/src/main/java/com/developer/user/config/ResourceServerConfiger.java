@@ -1,5 +1,6 @@
 package com.developer.user.config;
 
+import com.developer.framework.exception.CustomIdentityVerifyExceptionProcessor;
 import com.developer.user.converter.AccessTokenConvertor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,9 @@ public class ResourceServerConfiger extends ResourceServerConfigurerAdapter {
 
     private String SIGN_KEY="developer";
 
+    @Autowired
+    private CustomIdentityVerifyExceptionProcessor customIdentityVerifyExceptionProcessor;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -35,7 +39,7 @@ public class ResourceServerConfiger extends ResourceServerConfigurerAdapter {
      */
     @Override
     public void configure(ResourceServerSecurityConfigurer resources)  {
-        resources.resourceId("developer_user").tokenStore(tokenStore()).stateless(true);
+        resources.resourceId("developer_user").tokenStore(tokenStore()).stateless(true).authenticationEntryPoint(customIdentityVerifyExceptionProcessor); // 添加自定义异常处理
     }
 
     @Override
@@ -44,7 +48,9 @@ public class ResourceServerConfiger extends ResourceServerConfigurerAdapter {
                 .and().authorizeRequests()
                 .antMatchers("/user/register").permitAll()
                 .antMatchers("/user/send/code").permitAll()
-                .antMatchers("/**").authenticated();
+                .antMatchers("/**").authenticated().and()
+                .exceptionHandling()
+                .authenticationEntryPoint(customIdentityVerifyExceptionProcessor);
     }
 
     public TokenStore tokenStore(){

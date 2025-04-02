@@ -5,6 +5,7 @@ import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.IMOnlineUtil;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.group.client.FriendClient;
 import com.developer.group.dto.*;
 import com.developer.group.pojo.GroupInfoPO;
@@ -37,6 +38,9 @@ public class GroupServiceImpl implements GroupService {
     @Autowired
     private IMOnlineUtil imOnlineUtil;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     @Override
     public DeveloperResult<CreateGroupRequestDTO> createGroup(CreateGroupRequestDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -57,7 +61,7 @@ public class GroupServiceImpl implements GroupService {
         dto.setAliasName(groupMember.getAliasName());
         dto.setRemark(groupMember.getRemark());
 
-        return DeveloperResult.success(dto);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),dto);
     }
 
     @Override
@@ -83,7 +87,7 @@ public class GroupServiceImpl implements GroupService {
         member.setRemark(StringUtils.isEmpty(req.getRemark())?group.getName():req.getRemark());
         groupMemberRepository.updateById(member);
 
-        return DeveloperResult.success(req);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),req);
     }
 
     @Override
@@ -99,7 +103,7 @@ public class GroupServiceImpl implements GroupService {
 
         this.groupMemberRepository.removeByGroupId(groupId);
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     @Override
@@ -115,7 +119,7 @@ public class GroupServiceImpl implements GroupService {
         assert dto != null;
         dto.setAliasName(groupMember.getAliasName());
         dto.setRemark(groupMember.getRemark());
-        return DeveloperResult.success(dto);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),dto);
     }
 
     @Override
@@ -123,7 +127,7 @@ public class GroupServiceImpl implements GroupService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         List<GroupMemberPO> groupMembers = groupMemberRepository.findByUserId(userId);
         if(groupMembers.isEmpty()){
-            return DeveloperResult.success();
+            return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
         }
 
         List<Long> ids = groupMembers.stream().map((GroupMemberPO::getGroupId)).collect(Collectors.toList());
@@ -136,7 +140,7 @@ public class GroupServiceImpl implements GroupService {
             groupInfoRep.setRemark(member.getRemark());
             return groupInfoRep;
         }).collect(Collectors.toList());
-        return DeveloperResult.success(list);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
     }
 
     @Override
@@ -176,7 +180,7 @@ public class GroupServiceImpl implements GroupService {
             groupMemberRepository.saveOrUpdateBatch(groupMembers);
         }
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     @Override
@@ -190,7 +194,7 @@ public class GroupServiceImpl implements GroupService {
             vo.setOnline(onlineUserIds.contains(x.getUserId()));
             return vo;
         }).collect(Collectors.toList());
-        return DeveloperResult.success(list);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
     }
 
     @Override
@@ -202,7 +206,7 @@ public class GroupServiceImpl implements GroupService {
         }
 
         this.groupMemberRepository.removeByGroupAndUserId(groupId,userId);
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     @Override
@@ -218,13 +222,13 @@ public class GroupServiceImpl implements GroupService {
         }
 
         groupMemberRepository.removeByGroupAndUserId(groupId,targetUserId);
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     @Override
     public DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo() {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         List<SelfJoinGroupInfoDTO> joinAllGroupInfoList = groupInfoRepository.findUserJoinGroupInfo(userId);
-        return DeveloperResult.success(joinAllGroupInfoList);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),joinAllGroupInfoList);
     }
 }

@@ -7,6 +7,7 @@ import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.RedisUtil;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.message.dto.MessageLikeEventDTO;
 import com.developer.message.pojo.GroupMessagePO;
 import com.developer.message.pojo.PrivateMessagePO;
@@ -40,6 +41,9 @@ public class MessageLikeServiceImpl implements MessageLikeService {
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> like(Long messageId, MessageMainTypeEnum messageMainTypeEnum) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -66,13 +70,13 @@ public class MessageLikeServiceImpl implements MessageLikeService {
                 }
 
                 redisUtil.set(messageLikeStatusKey,true,24,TimeUnit.HOURS);
-                redisUtil.increment(messageLikeCountKey);
+                redisUtil.increment(messageLikeCountKey,1L);
                 redisUtil.setExpire(messageLikeCountKey,1,TimeUnit.HOURS);
 
                 // 推送mq事件，更新数据库
                 rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(messageId).userId(userId).messageMainTypeEnum(messageMainTypeEnum).build());
 
-                return CompletableFuture.completedFuture(DeveloperResult.success(true));
+                return CompletableFuture.completedFuture(DeveloperResult.success(snowflakeNoUtil.getSerialNo(),true));
             }else{
                 return CompletableFuture.completedFuture(DeveloperResult.error("点赞失败,请稍后重试"));
             }

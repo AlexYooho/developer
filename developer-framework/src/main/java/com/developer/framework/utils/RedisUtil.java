@@ -82,8 +82,8 @@ public class RedisUtil {
         redisTemplate.opsForValue().set(key, value);
     }
 
-    public void increment(String key){
-        redisTemplate.opsForValue().increment(key);
+    public Long increment(String key,Long incrementCount){
+        return redisTemplate.opsForValue().increment(key,incrementCount);
     }
 
     public void setExpire(String key, long timeOut, TimeUnit timeUnit) {

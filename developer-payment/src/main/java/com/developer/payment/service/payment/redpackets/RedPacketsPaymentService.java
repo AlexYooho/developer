@@ -4,6 +4,7 @@ import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
@@ -23,6 +24,9 @@ public class RedPacketsPaymentService implements PaymentService {
 
     @Autowired
     private RedPacketsInfoRepository redPacketsInfoRepository;
+
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
 
     /**
      * 支付红包
@@ -66,6 +70,6 @@ public class RedPacketsPaymentService implements PaymentService {
         redPacketsInfo.setUpdateTime(new Date());
         redPacketsInfoRepository.updateById(redPacketsInfo);
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 }

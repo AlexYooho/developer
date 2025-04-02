@@ -10,6 +10,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.message.client.GroupInfoClient;
 import com.developer.message.client.GroupMemberClient;
 import com.developer.message.dto.*;
@@ -54,6 +55,9 @@ public class GroupMessageServiceImpl implements MessageService {
     @Autowired
     private MessageLikeService messageLikeService;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     /**
      * 消息主体类型
      * @return
@@ -74,7 +78,7 @@ public class GroupMessageServiceImpl implements MessageService {
         DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
         List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult.getData();
         if(joinGroupInfoList.isEmpty()){
-            return DeveloperResult.success();
+            return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
         }
 
         List<Long> groupIds = joinGroupInfoList.stream().map(SelfJoinGroupInfoDTO::getGroupId).collect(Collectors.toList());
@@ -110,7 +114,7 @@ public class GroupMessageServiceImpl implements MessageService {
             return vo;
         }).collect(Collectors.toList());
 
-        return DeveloperResult.success(vos);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),vos);
     }
 
     /**
@@ -169,7 +173,7 @@ public class GroupMessageServiceImpl implements MessageService {
         data.setId(message.getId());
         data.setReadCount(0L);
         data.setUnReadCount((long) receiverIds.size());
-        return DeveloperResult.success(data);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),data);
     }
 
     /**
@@ -184,7 +188,7 @@ public class GroupMessageServiceImpl implements MessageService {
 
         GroupMessagePO lastMessage = groupMessageRepository.findLastMessage(groupId);
         if(Objects.isNull(lastMessage)){
-            return DeveloperResult.success();
+            return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
         }
 
         // 修改群已读状态
@@ -198,7 +202,7 @@ public class GroupMessageServiceImpl implements MessageService {
 
         String key = StrUtil.join(",", RedisKeyConstant.IM_GROUP_READED_POSITION,groupId,userId);
         redisUtil.set(key,lastMessage.getId(),3600*24L, TimeUnit.SECONDS);
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -236,7 +240,7 @@ public class GroupMessageServiceImpl implements MessageService {
         rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(),groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), MessageStatusEnum.fromCode(groupMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,new Date()));
 
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -262,7 +266,7 @@ public class GroupMessageServiceImpl implements MessageService {
 
         List<GroupMessagePO> messages = groupMessageRepository.findHistoryMessage(groupId, selfJoinGroupInfoDTO.getCreatedTime(), stIdx, size);
         List<SendMessageResultDTO> list = messages.stream().map(x -> BeanUtils.copyProperties(x, GroupMessageDTO.class)).collect(Collectors.toList());
-        return DeveloperResult.success(list);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
     }
 
     /**
@@ -272,7 +276,7 @@ public class GroupMessageServiceImpl implements MessageService {
      */
     @Override
     public DeveloperResult<Boolean> insertMessage(MessageInsertDTO dto) {
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -282,7 +286,7 @@ public class GroupMessageServiceImpl implements MessageService {
      */
     @Override
     public DeveloperResult<Boolean> deleteMessage(Long friendId) {
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -299,7 +303,7 @@ public class GroupMessageServiceImpl implements MessageService {
         }
         dto.setReferenceId(id);
         this.sendMessage(dto);
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -333,7 +337,7 @@ public class GroupMessageServiceImpl implements MessageService {
             dto.setMessageMainType(MessageMainTypeEnum.GROUP_MESSAGE);
             this.sendMessage(dto);
         }
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**

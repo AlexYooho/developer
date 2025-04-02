@@ -9,6 +9,7 @@ import com.developer.framework.dto.MessageDTO;
 import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.friend.client.MessageClient;
 import com.developer.friend.dto.*;
 import com.developer.friend.enums.*;
@@ -39,6 +40,9 @@ public class FriendServiceImpl implements FriendService {
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     @Override
     public DeveloperResult<List<FriendInfoDTO>> findFriendList() {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
@@ -50,7 +54,7 @@ public class FriendServiceImpl implements FriendService {
             rep.setHeadImage(x.getFriendHeadImage());
             return rep;
         }).collect(Collectors.toList());
-        return DeveloperResult.success(list);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
     }
 
     @Override
@@ -64,7 +68,7 @@ public class FriendServiceImpl implements FriendService {
         friendInfoDTO.setId(friend.getId());
         friendInfoDTO.setHeadImage(friend.getFriendHeadImage());
         friendInfoDTO.setNickName(friend.getFriendNickName());
-        return DeveloperResult.success(friendInfoDTO);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),friendInfoDTO);
     }
 
     @Override
@@ -75,7 +79,7 @@ public class FriendServiceImpl implements FriendService {
             return DeveloperResult.error(friendInfo.getMsg());
         }
 
-        return DeveloperResult.success(friendInfo.getData());
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),friendInfo.getData());
     }
 
     @Override
@@ -104,7 +108,7 @@ public class FriendServiceImpl implements FriendService {
 
         // 发送添加请求
         rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
-        return DeveloperResult.success(true);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),true);
     }
 
     @Override
@@ -143,7 +147,7 @@ public class FriendServiceImpl implements FriendService {
             rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
         }
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     @Override
@@ -157,13 +161,13 @@ public class FriendServiceImpl implements FriendService {
         boolean isSuccess = friendRepository.removeById(friend.getId());
         messageClient.removeFriendChatMessage(MessageMainTypeEnum.PRIVATE_MESSAGE.code(),friendId);
 
-        return DeveloperResult.success(isSuccess);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),isSuccess);
     }
 
     @Override
     public DeveloperResult<Integer> findFriendAddRequestCount() {
         List<FriendApplicationRecordPO> list = friendApplicationRecordPORepository.findRecordByStatus(SelfUserInfoContext.selfUserInfo().getUserId(),AddFriendStatusEnum.SENT);
-        return DeveloperResult.success(list.size());
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list.size());
     }
 
     @Override
@@ -171,13 +175,13 @@ public class FriendServiceImpl implements FriendService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         //List<NewFriendListDTO> lists = friendApplicationRecordPORepository.findNewFriendList(userId);
         List<NewFriendListDTO> list = new ArrayList<>();
-        return DeveloperResult.success(list);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
     }
 
     @Override
     public DeveloperResult<Boolean> updateAddFriendRecordStatus() {
         boolean isSuccess = friendApplicationRecordPORepository.updateStatusSentToViewed(SelfUserInfoContext.selfUserInfo().getUserId());
-        return DeveloperResult.success(isSuccess);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),isSuccess);
     }
 
     @Override
@@ -187,7 +191,7 @@ public class FriendServiceImpl implements FriendService {
         if(!isSuccess){
             return DeveloperResult.error("修改失败");
         }
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**

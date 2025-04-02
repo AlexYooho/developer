@@ -1,6 +1,7 @@
 package com.developer.sso.service;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.sso.client.OAuthClient;
 import com.developer.sso.dto.LoginDTO;
 import com.developer.sso.dto.TokenDTO;
@@ -24,6 +25,9 @@ public class SysUserServiceImpl implements SysUserService {
     @Autowired
     private OAuthClient oAuthClient;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     @Override
     public UserInfo getUserByUserName(String userName) {
 
@@ -43,10 +47,10 @@ public class SysUserServiceImpl implements SysUserService {
         try {
             Map<String, Object> response = oAuthClient.getToken("password", dto.getAccount(), dto.getPassword(), "client_dev", "dev");
             TokenDTO tokenDTO = TokenDTO.builder().accessToken(response.get("access_token").toString()).refreshToken(response.get("refresh_token").toString()).build();
-            return DeveloperResult.success(tokenDTO);
+            return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),tokenDTO);
         }catch (FeignException e){
             String errorMsg = parseAndHandleError(e.contentUTF8());
-            return DeveloperResult.error(e.status(),errorMsg);
+            return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),e.status(),errorMsg);
         }
     }
 

@@ -5,6 +5,7 @@ import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.message.dto.MessageLikeEventDTO;
 import com.developer.message.enums.MessageLikeEnum;
 import com.developer.message.pojo.GroupMessagePO;
@@ -26,6 +27,9 @@ public class MessageLikeProcessor implements IMessageProcessor {
 
     @Autowired
     private GroupMessageRepository groupMessageRepository;
+
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
 
     @Override
     public ProcessorTypeEnum processorType() {
@@ -61,6 +65,6 @@ public class MessageLikeProcessor implements IMessageProcessor {
                 groupMessageRepository.updateById(message);
             }
         }
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 }

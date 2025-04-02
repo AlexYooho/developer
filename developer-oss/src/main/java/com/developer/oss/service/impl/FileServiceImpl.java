@@ -4,6 +4,7 @@ import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.FileUtil;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.oss.dto.UploadImageDTO;
 import com.developer.oss.enums.FileTypeEnum;
 import com.developer.oss.service.FileService;
@@ -20,6 +21,7 @@ public class FileServiceImpl implements FileService {
 
     @Autowired
     private MinioService minioService;
+
 
 
     /**
@@ -75,10 +77,10 @@ public class FileServiceImpl implements FileService {
             }
             fileUrl = minioService.findFileUrl("developer",FileTypeEnum.IMAGE,fileName);
             uploadImageRep.setThumbUrl(fileUrl);
-            return DeveloperResult.success(uploadImageRep);
+            return DeveloperResult.success("",uploadImageRep);
         }catch (Exception e){
             log.error("上传图片失败,{}",e.getMessage(),e);
-            return DeveloperResult.error(500,"图片上传失败");
+            return DeveloperResult.error("",500,"图片上传失败");
         }
     }
 }

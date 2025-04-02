@@ -6,6 +6,7 @@ import com.developer.framework.enums.VerifyCodeTypeEnum;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.IMOnlineUtil;
 import com.developer.framework.utils.MailUtil;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.user.client.FriendClient;
 import com.developer.user.client.GroupMemberClient;
 import com.developer.user.dto.*;
@@ -46,6 +47,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private VerifyCodeService verifyCodeService;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     /**
      * 用户注册
      * @param dto
@@ -54,33 +58,33 @@ public class UserServiceImpl implements UserService {
     @Override
     public DeveloperResult<Boolean> register(UserRegisterDTO dto) {
         if("".equals(dto.getAccount())){
-            return DeveloperResult.error(500,"请输入正确的手机号");
+            return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"请输入正确的手机号");
         }
 
         if(!mailUtil.verifyEmailAddress(dto.getEmail())){
-            return DeveloperResult.error(500,"请输入正确的邮箱");
+            return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"请输入正确的邮箱");
         }
 
         if("".equals(dto.getPassword())){
-            return DeveloperResult.error(500,"请输入密码");
+            return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"请输入密码");
         }
 
         if("".equals(dto.getNickname())){
-            return DeveloperResult.error(500,"请输入昵称");
+            return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"请输入昵称");
         }
 
         if(dto.getVerifyCode()==null){
-            return DeveloperResult.error(500,"请输入验证码");
+            return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"请输入验证码");
         }
 
         Long existCount = userRepository.findByEmail(dto.getEmail());
         if(existCount>0){
-            return DeveloperResult.error(500,"邮箱已存在,请重新输入");
+            return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"邮箱已存在,请重新输入");
         }
 
         UserPO userPO = userRepository.findByAccount(dto.getAccount());
         if(userPO!=null){
-            return DeveloperResult.error(500,"手机号已存在,请重新输入");
+            return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"手机号已存在,请重新输入");
         }
 
         DeveloperResult<Boolean> checkResult = verifyCodeService.checkVerifyCode(VerifyCodeTypeEnum.REGISTER_ACCOUNT,dto.getEmail(),dto.getVerifyCode());
@@ -91,7 +95,7 @@ public class UserServiceImpl implements UserService {
         userPO = new UserPO(dto.getAccount(), "", dto.getNickname(), "","", passwordEncoder.encode(dto.getPassword()), dto.getSex(),0, dto.getEmail(), "",new Date(),new Date());
         userRepository.save(userPO);
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -103,7 +107,7 @@ public class UserServiceImpl implements UserService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         UserPO user = userRepository.getById(userId);
         UserInfoDTO userInfoDTO = BeanUtils.copyProperties(user, UserInfoDTO.class);
-        return DeveloperResult.success(userInfoDTO);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),userInfoDTO);
     }
 
     /**
@@ -117,7 +121,7 @@ public class UserServiceImpl implements UserService {
         UserInfoDTO userInfoDTO = BeanUtils.copyProperties(user, UserInfoDTO.class);
         // 设置在线状态
         userInfoDTO.setOnline(true);
-        return DeveloperResult.success(userInfoDTO);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),userInfoDTO);
     }
 
     /**
@@ -135,7 +139,7 @@ public class UserServiceImpl implements UserService {
             userInfoDTO.setOnline(onlineUserIds.contains(x.getId()));
             return userInfoDTO;
         }).collect(Collectors.toList());
-        return DeveloperResult.success(collect);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),collect);
     }
 
     @Override
@@ -177,7 +181,7 @@ public class UserServiceImpl implements UserService {
         user.setHeadImage(dto.getHeadImage());
         user.setHeadImageThumb(dto.getHeadImageThumb());
         this.userRepository.updateById(user);
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -194,7 +198,7 @@ public class UserServiceImpl implements UserService {
             List<Integer> collect = terminals.stream().map(MessageTerminalTypeEnum::code).collect(Collectors.toList());
             list.add(new OnlineTerminalDTO(userId,collect));
         });
-        return DeveloperResult.success(list);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
     }
 
     /**
@@ -233,7 +237,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         this.userRepository.updateById(user);
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
 }

@@ -5,6 +5,7 @@ import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.SendRedPacketsDTO;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
@@ -44,6 +45,9 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
     @Autowired
     private RedPacketsReceiveDetailsRepository redPacketsReceiveDetailsRepository;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     /**
      * 发红包
      * @param dto
@@ -82,7 +86,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
         // 发送消息事件
         sendRedPacketsMessage(dto.getTargetId(),dto.getPaymentChannel());
 
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 
     /**
@@ -165,7 +169,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
         // todo 发送红包领取提示事件给发红包发送人
         redPacketsReceiveNotifyMessage(redPacketsInfo.getSenderUserId(),redPacketsInfo.getChannel());
 
-        return DeveloperResult.success(openAmount);
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),openAmount);
     }
 
     /**

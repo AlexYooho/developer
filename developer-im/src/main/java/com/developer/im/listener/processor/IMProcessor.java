@@ -5,6 +5,7 @@ import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
+import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.im.service.AbstractMessageTypeService;
 import com.developer.im.service.MessageServiceRegister;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,9 @@ public class IMProcessor implements IMessageProcessor {
     @Autowired
     private MessageServiceRegister messageServiceRegister;
 
+    @Autowired
+    private SnowflakeNoUtil snowflakeNoUtil;
+
     @Override
     public ProcessorTypeEnum processorType() {
         return ProcessorTypeEnum.IM;
@@ -29,9 +33,9 @@ public class IMProcessor implements IMessageProcessor {
         AbstractMessageTypeService messageService = messageServiceRegister.getMessageService(messageDTO.getMessageMainTypeEnum());
         if(messageService==null){
             log.info("【IM消息服务】消息内容:{},没有对应的消息处理器",dto);
-            return DeveloperResult.error();
+            return DeveloperResult.error(snowflakeNoUtil.getSerialNo());
         }
         messageService.handler(messageDTO);
-        return DeveloperResult.success();
+        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
     }
 }
