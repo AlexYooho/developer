@@ -57,7 +57,7 @@ public class MessageLikeServiceImpl implements MessageLikeService {
                 redisUtil.set(messageLikeCountKey,likeCount,1, TimeUnit.HOURS);
             }
         }
-
+        String serialNo = snowflakeNoUtil.getSerialNo();
         // 生成分布式锁的key,基于messageId和userId
         RLock lock = redissonClient.getLock(lockKey);
         try{
@@ -74,7 +74,7 @@ public class MessageLikeServiceImpl implements MessageLikeService {
                 redisUtil.setExpire(messageLikeCountKey,1,TimeUnit.HOURS);
 
                 // 推送mq事件，更新数据库
-                rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(messageId).userId(userId).messageMainTypeEnum(messageMainTypeEnum).build());
+                rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(messageId).userId(userId).messageMainTypeEnum(messageMainTypeEnum).build());
 
                 return CompletableFuture.completedFuture(DeveloperResult.success(snowflakeNoUtil.getSerialNo(),true));
             }else{

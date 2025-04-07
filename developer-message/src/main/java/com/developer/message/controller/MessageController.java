@@ -35,7 +35,7 @@ public class MessageController {
      * @return
      */
     @PostMapping("/{type}/recall/{id}")
-    public DeveloperResult<Boolean> recallMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable Long id){
+    public DeveloperResult<Boolean> recallMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("id") Long id){
         return messageTypeProcessorDispatchFactory.getInstance(type).recallMessage(id);
     }
 

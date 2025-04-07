@@ -12,6 +12,7 @@ import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.message.client.FriendClient;
 import com.developer.message.dto.*;
+import com.developer.message.param.IsFriendParam;
 import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.PrivateMessageRepository;
 import com.developer.message.service.MessageLikeService;
@@ -68,11 +69,11 @@ public class PrivateMessageServiceImpl implements MessageService {
     public DeveloperResult<List<SendMessageResultDTO>> loadMessage(Long minId) {
         List<SendMessageResultDTO> list = new ArrayList<>();
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-
+        String serialNo = snowflakeNoUtil.getSerialNo();
         String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
         Long maxMessageId = redisUtil.get(key, Long.class) == null ? 0L:redisUtil.get(key, Long.class);
         if(minId.equals(maxMessageId)){
-            return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
+            return DeveloperResult.success(serialNo,list);
         }
 
         List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(minId, userId);
@@ -87,7 +88,7 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         log.info("拉取消息,用户id:{},数量:{}", userId, messages.size());
         list = messages.stream().map(m -> BeanUtils.copyProperties(m, PrivateMessageDTO.class)).collect(Collectors.toList());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
+        return DeveloperResult.success(serialNo,list);
     }
 
     /**
@@ -98,10 +99,13 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Transactional
     @Override
     public DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty()? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        DeveloperResult<FriendInfoDTO> friend = friendClient.isFriend(userId, req.getReceiverId());
+
+        IsFriendParam isFriendParam = new IsFriendParam(serialNo, req.getReceiverId(), userId);
+        DeveloperResult<FriendInfoDTO> friend = friendClient.isFriend(isFriendParam);
         if(!friend.getIsSuccessful()){
-            return DeveloperResult.error(friend.getMsg());
+            return DeveloperResult.error(serialNo,friend.getMsg());
         }
 
         // 消息入库
@@ -111,11 +115,11 @@ public class PrivateMessageServiceImpl implements MessageService {
         redisUtil.set(key,privateMessage.getId(),24, TimeUnit.HOURS);
 
         // 发送消息
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, SelfUserInfoContext.selfUserInfo().getNickName(), req.getMessageContent(), Collections.singletonList(req.getReceiverId()),new ArrayList<>(), MessageStatusEnum.fromCode(privateMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,privateMessage.getSendTime()));
+        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getId(), 0L, userId, SelfUserInfoContext.selfUserInfo().getNickName(), req.getMessageContent(), Collections.singletonList(req.getReceiverId()),new ArrayList<>(), MessageStatusEnum.fromCode(privateMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,privateMessage.getSendTime()));
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),dto);
+        return DeveloperResult.success(serialNo,dto);
     }
 
     /**
@@ -126,10 +130,11 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<Boolean> readMessage(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        String serialNo = snowflakeNoUtil.getSerialNo();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(friendId),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
         privateMessageRepository.updateMessageStatus(friendId,userId,MessageStatusEnum.READED.code());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
@@ -140,17 +145,18 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<Boolean> recallMessage(Long id) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        String serialNo = snowflakeNoUtil.getSerialNo();
         PrivateMessagePO privateMessage = privateMessageRepository.getById(id);
         if(privateMessage==null){
-            return DeveloperResult.error("消息不存在");
+            return DeveloperResult.error(serialNo,"消息不存在");
         }
 
         if(!privateMessage.getSendId().equals(userId)){
-            return DeveloperResult.error("该消息不是你发送的,无法撤回");
+            return DeveloperResult.error(serialNo,"该消息不是你发送的,无法撤回");
         }
 
         if(System.currentTimeMillis()-privateMessage.getSendTime().getTime()> DeveloperConstant.ALLOW_RECALL_SECOND*1000){
-            return DeveloperResult.error("消息发送已超过一定时间,无法撤回");
+            return DeveloperResult.error(serialNo,"消息发送已超过一定时间,无法撤回");
         }
 
         // 修改消息状态
@@ -158,9 +164,9 @@ public class PrivateMessageServiceImpl implements MessageService {
         privateMessageRepository.updateById(privateMessage);
 
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName,"对方撤回了一条消息", Collections.singletonList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL, MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, privateMessage.getId(), 0L, userId, nickName,"对方撤回了一条消息", Collections.singletonList(privateMessage.getReceiverId()),new ArrayList<>(), MessageStatusEnum.RECALL, MessageTerminalTypeEnum.WEB,new Date()));
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**

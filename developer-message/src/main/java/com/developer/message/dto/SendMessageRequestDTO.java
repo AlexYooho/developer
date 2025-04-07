@@ -18,6 +18,11 @@ import java.util.List;
 public class SendMessageRequestDTO {
 
     /**
+     * 操作编号
+     */
+    private String serialNo;
+
+    /**
      * 接收人
      */
     private Long receiverId;

@@ -1,10 +1,7 @@
 package com.developer.friend.controller;
 
 import com.developer.framework.model.DeveloperResult;
-import com.developer.friend.dto.FriendInfoDTO;
-import com.developer.friend.dto.NewFriendListDTO;
-import com.developer.friend.dto.ProcessAddFriendRequestDTO;
-import com.developer.friend.dto.SendAddFriendInfoRequestDTO;
+import com.developer.friend.dto.*;
 import com.developer.friend.service.FriendService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,8 +118,8 @@ public class FriendController {
      * @param userId
      * @return
      */
-    @GetMapping("{friendId}/is-friend/{userId}")
-    public DeveloperResult<FriendInfoDTO> isFriend(@PathVariable("friendId") Long friendId,@PathVariable("userId") Long userId){
-        return friendService.isFriend(userId,friendId);
+    @GetMapping("is-friend")
+    public DeveloperResult<FriendInfoDTO> isFriend(@RequestBody IsFriendDto dto){
+        return friendService.isFriend(dto);
     }
 }

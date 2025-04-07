@@ -3,19 +3,22 @@ package com.developer.message.client;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.FriendInfoDTO;
 import com.developer.message.interceptor.FeignRequestInterceptor;
+import com.developer.message.param.IsFriendParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
 @FeignClient(name="developer-gateway",contextId = "developer-friend",configuration = {FeignRequestInterceptor.class})
 public interface FriendClient {
 
-    @GetMapping("/friend-module/api/friend/{friendId}/is-friend/{userId}")
-    DeveloperResult<FriendInfoDTO> isFriend(@PathVariable("friendId") Long friendId, @PathVariable("userId") Long userId);
+    @GetMapping("/friend-module/api/friend/is-friend")
+    DeveloperResult<FriendInfoDTO> isFriend(@RequestBody IsFriendParam param);
 
     @GetMapping("/friend-module/api/friend/list")
-    DeveloperResult<List<FriendInfoDTO>> friends();
+    DeveloperResult<List<FriendInfoDTO>> friends(@RequestHeader("serialNo")String serialNo);
 
 }

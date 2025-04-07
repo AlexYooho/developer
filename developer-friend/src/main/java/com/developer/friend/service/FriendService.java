@@ -1,10 +1,7 @@
 package com.developer.friend.service;
 
 import com.developer.framework.model.DeveloperResult;
-import com.developer.friend.dto.FriendInfoDTO;
-import com.developer.friend.dto.NewFriendListDTO;
-import com.developer.friend.dto.ProcessAddFriendRequestDTO;
-import com.developer.friend.dto.SendAddFriendInfoRequestDTO;
+import com.developer.friend.dto.*;
 
 import java.util.List;
 
@@ -18,11 +15,9 @@ public interface FriendService {
 
     /**
      * 是否是好友
-     * @param userId1
-     * @param userId2
      * @return
      */
-    DeveloperResult<FriendInfoDTO> isFriend(Long userId1,Long userId2);
+    DeveloperResult<FriendInfoDTO> isFriend(IsFriendDto dto);
 
     /**
      *  通过用户id查询好友

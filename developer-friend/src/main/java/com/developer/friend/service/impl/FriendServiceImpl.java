@@ -58,23 +58,24 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public DeveloperResult<FriendInfoDTO> isFriend(Long userId1, Long userId2) {
-        FriendPO friend = friendRepository.findByFriendId(userId1,userId2);
+    public DeveloperResult<FriendInfoDTO> isFriend(IsFriendDto dto) {
+        String serialNo = dto.getSerialNo().isEmpty()? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
+        FriendPO friend = friendRepository.findByFriendId(dto.getFriendId(),dto.getUserId());
         if(friend==null){
-            return DeveloperResult.error("对方不是你的好友");
+            return DeveloperResult.error(serialNo,"对方不是你的好友");
         }
 
         FriendInfoDTO friendInfoDTO = new FriendInfoDTO();
         friendInfoDTO.setId(friend.getId());
         friendInfoDTO.setHeadImage(friend.getFriendHeadImage());
         friendInfoDTO.setNickName(friend.getFriendNickName());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),friendInfoDTO);
+        return DeveloperResult.success(serialNo,friendInfoDTO);
     }
 
     @Override
     public DeveloperResult<FriendInfoDTO> findFriend(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        DeveloperResult<FriendInfoDTO> friendInfo = this.isFriend(friendId, userId);
+        DeveloperResult<FriendInfoDTO> friendInfo = this.isFriend(new IsFriendDto("",friendId,userId));
         if (!friendInfo.getIsSuccessful()) {
             return DeveloperResult.error(friendInfo.getMsg());
         }
