@@ -38,22 +38,22 @@ public class GroupController {
 
     /**
      * 解散群聊
-     * @param groupId
+     * @param req
      * @return
      */
-    @PostMapping("/delete/{groupId}")
-    public DeveloperResult<Boolean> deleteGroup(@PathVariable Long groupId){
-        return groupService.deleteGroup(groupId);
+    @PostMapping("/delete")
+    public DeveloperResult<Boolean> deleteGroup(@RequestBody DissolveGroupRequestDTO req){
+        return groupService.deleteGroup(req);
     }
 
     /**
      * 查询群聊
-     * @param groupId
+     * @param req
      * @return
      */
     @GetMapping("/find/{groupId}")
-    public DeveloperResult<GroupInfoDTO> findGroup(@PathVariable Long groupId){
-        return groupService.findById(groupId);
+    public DeveloperResult<GroupInfoDTO> findGroup(@RequestBody FindGroupRequestDTO req){
+        return groupService.findById(req);
     }
 
     /**
@@ -61,8 +61,8 @@ public class GroupController {
      * @return
      */
     @GetMapping("/list")
-    public DeveloperResult<List<GroupInfoDTO>> findGroups(){
-        return groupService.findGroupList();
+    public DeveloperResult<List<GroupInfoDTO>> findGroups(@RequestParam("serial_no") String serialNo){
+        return groupService.findGroupList(serialNo);
     }
 
     /**
@@ -77,33 +77,32 @@ public class GroupController {
 
     /**
      * 查询群聊成员列表
-     * @param groupId
+     * @param req
      * @return
      */
-    @GetMapping("/{groupId}/members")
-    public DeveloperResult<List<GroupMemberDTO>> findGroupMembers(@PathVariable Long groupId){
-        return groupService.findGroupMembers(groupId);
+    @GetMapping("/members")
+    public DeveloperResult<List<GroupMemberDTO>> findGroupMembers(@RequestBody FindGroupMembersRequestDTO req){
+        return groupService.findGroupMembers(req);
     }
 
     /**
      * 退出群聊
-     * @param groupId
+     * @param req
      * @return
      */
-    @PostMapping("/{groupId}/quit")
-    public DeveloperResult<Boolean> quitGroup(@PathVariable Long groupId){
-        return groupService.quitGroup(groupId);
+    @PostMapping("/quit")
+    public DeveloperResult<Boolean> quitGroup(@RequestBody QuitGroupRequestDTO req){
+        return groupService.quitGroup(req);
     }
 
     /**
      * 踢出群聊
-     * @param groupId
-     * @param userId
+     * @param req
      * @return
      */
-    @PostMapping("/{groupId}/kick/{userId}")
-    public DeveloperResult<Boolean> removeGroup(@PathVariable Long groupId, @PathVariable Long userId){
-        return groupService.kickGroup(groupId,userId);
+    @PostMapping("/kick")
+    public DeveloperResult<Boolean> kickOutGroup(@RequestBody KickOutGroupRequestDTO req){
+        return groupService.kickGroup(req);
     }
 
     /**
@@ -111,7 +110,7 @@ public class GroupController {
      * @return
      */
     @GetMapping("get-self-join-all-group-info")
-    public DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo(){
-        return groupService.findSelfJoinAllGroupInfo();
+    public DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo(@RequestParam("serial_no") String serialNo){
+        return groupService.findSelfJoinAllGroupInfo(serialNo);
     }
 }

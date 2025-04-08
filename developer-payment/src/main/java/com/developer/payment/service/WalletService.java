@@ -1,6 +1,7 @@
 package com.developer.payment.service;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.payment.dto.FreezePayAmountRequestDTO;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.enums.WalletOperationTypeEnum;
 
@@ -15,19 +16,19 @@ public interface WalletService {
      * @param operationType
      * @return
      */
-    DeveloperResult<Boolean> doMoneyTransaction(Long userId,BigDecimal amount, TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType);
+    DeveloperResult<Boolean> doMoneyTransaction(String serialNo,Long userId,BigDecimal amount, TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType);
 
     /**
      * 冻结支付金额
-     * @param amount
+     * @param req
      * @return
      */
-    DeveloperResult<Boolean> freezePaymentAmount(BigDecimal amount);
+    DeveloperResult<Boolean> freezePaymentAmount(FreezePayAmountRequestDTO req);
 
     /**
      * 创建钱包
      * @return
      */
-    DeveloperResult<Boolean> CreateWallet();
+    DeveloperResult<Boolean> CreateWallet(String serialNo);
 
 }

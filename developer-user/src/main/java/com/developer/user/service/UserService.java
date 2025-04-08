@@ -21,21 +21,21 @@ public interface UserService {
      * 获取当前用户信息
      * @return
      */
-    DeveloperResult<UserInfoDTO> findSelfUserInfo();
+    DeveloperResult<UserInfoDTO> findSelfUserInfo(String serialNo);
 
     /**
      * 根据userId查找用户信息
-     * @param userId
+     * @param req
      * @return
      */
-    DeveloperResult<UserInfoDTO> findUserInfoById(Long userId);
+    DeveloperResult<UserInfoDTO> findUserInfoById(FindUserRequestDTO req);
 
     /**
      * 根据用户昵称查找用户
-     * @param name
+     * @param req
      * @return
      */
-    DeveloperResult<List<UserInfoDTO>> findUserByName(String name);
+    DeveloperResult<List<UserInfoDTO>> findUserByName(FindUserRequestDTO req);
 
     /**
      * 修改用户信息
@@ -46,10 +46,10 @@ public interface UserService {
 
     /**
      * 查找在线终端
-     * @param userIds
+     * @param req
      * @return
      */
-    DeveloperResult<List<OnlineTerminalDTO>> findOnlineTerminal(String userIds);
+    DeveloperResult<List<OnlineTerminalDTO>> findOnlineTerminal(FindOnlineTerminalRequestDTO req);
 
     /**
      * 修改用户登录密码

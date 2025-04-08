@@ -5,6 +5,8 @@ import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.payment.dto.OpenRedPacketsRequestDTO;
+import com.developer.payment.dto.ReturnTransferRequestDTO;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
@@ -38,31 +40,33 @@ public class RedPacketsPaymentService implements PaymentService {
 
     /**
      * 领取红包
-     * @param id
+     * @param req
      */
     @Override
-    public DeveloperResult<BigDecimal> amountCharged(Long id) {
-        RedPacketsInfoPO po = redPacketsInfoRepository.getById(id);
+    public DeveloperResult<BigDecimal> amountCharged(OpenRedPacketsRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        RedPacketsInfoPO po = redPacketsInfoRepository.getById(req.getRedPacketsId());
         if (po == null) {
-            return DeveloperResult.error("红包不存在");
+            return DeveloperResult.error(serialNo,"红包不存在");
         }
-        return redPacketsTypeRegister.findInstance(po.getType()).openRedPackets(id);
+        return redPacketsTypeRegister.findInstance(po.getType()).openRedPackets(req.getSerialNo(), req.getRedPacketsId());
     }
 
     /**
      * 退回金额
-     * @param id
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> amountRefunded(Long id) {
-        RedPacketsInfoPO redPacketsInfo = redPacketsInfoRepository.getById(id);
+    public DeveloperResult<Boolean> amountRefunded(ReturnTransferRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        RedPacketsInfoPO redPacketsInfo = redPacketsInfoRepository.getById(req.getRedPacketsId());
         if (redPacketsInfo == null) {
-            return DeveloperResult.error("红包不存在");
+            return DeveloperResult.error(serialNo,"红包不存在");
         }
 
         if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.FINISHED)) {
-            return DeveloperResult.error("红包已领取,无法退回");
+            return DeveloperResult.error(serialNo,"红包已领取,无法退回");
         }
 
         redPacketsInfo.setStatus(RedPacketsStatusEnum.REFUND);
@@ -70,6 +74,6 @@ public class RedPacketsPaymentService implements PaymentService {
         redPacketsInfo.setUpdateTime(new Date());
         redPacketsInfoRepository.updateById(redPacketsInfo);
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 }

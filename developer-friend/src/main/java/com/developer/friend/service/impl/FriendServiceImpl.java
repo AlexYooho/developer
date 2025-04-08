@@ -44,8 +44,9 @@ public class FriendServiceImpl implements FriendService {
     private SnowflakeNoUtil snowflakeNoUtil;
 
     @Override
-    public DeveloperResult<List<FriendInfoDTO>> findFriendList() {
+    public DeveloperResult<List<FriendInfoDTO>> findFriendList(String serialNo) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
         List<FriendPO> friendList = friendRepository.findFriendByUserId(userId);
         List<FriendInfoDTO> list = friendList.stream().map(x -> {
             FriendInfoDTO rep = new FriendInfoDTO();
@@ -54,49 +55,51 @@ public class FriendServiceImpl implements FriendService {
             rep.setHeadImage(x.getFriendHeadImage());
             return rep;
         }).collect(Collectors.toList());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
+        return DeveloperResult.success(serialNo, list);
     }
 
     @Override
     public DeveloperResult<FriendInfoDTO> isFriend(IsFriendDto dto) {
-        String serialNo = dto.getSerialNo().isEmpty()? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
-        FriendPO friend = friendRepository.findByFriendId(dto.getFriendId(),dto.getUserId());
-        if(friend==null){
-            return DeveloperResult.error(serialNo,"对方不是你的好友");
+        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
+        FriendPO friend = friendRepository.findByFriendId(dto.getFriendId(), dto.getUserId());
+        if (friend == null) {
+            return DeveloperResult.error(serialNo, "对方不是你的好友");
         }
 
         FriendInfoDTO friendInfoDTO = new FriendInfoDTO();
         friendInfoDTO.setId(friend.getId());
         friendInfoDTO.setHeadImage(friend.getFriendHeadImage());
         friendInfoDTO.setNickName(friend.getFriendNickName());
-        return DeveloperResult.success(serialNo,friendInfoDTO);
+        return DeveloperResult.success(serialNo, friendInfoDTO);
     }
 
     @Override
-    public DeveloperResult<FriendInfoDTO> findFriend(Long friendId) {
+    public DeveloperResult<FriendInfoDTO> findFriend(FindFriendRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        DeveloperResult<FriendInfoDTO> friendInfo = this.isFriend(new IsFriendDto("",friendId,userId));
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        DeveloperResult<FriendInfoDTO> friendInfo = this.isFriend(new IsFriendDto(serialNo, req.getFriendId(), userId));
         if (!friendInfo.getIsSuccessful()) {
-            return DeveloperResult.error(friendInfo.getMsg());
+            return DeveloperResult.error(serialNo, friendInfo.getMsg());
         }
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),friendInfo.getData());
+        return DeveloperResult.success(serialNo, friendInfo.getData());
     }
 
     @Override
     public DeveloperResult<Boolean> sendAddFriendRequest(SendAddFriendInfoRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
         FriendPO friend = friendRepository.findByFriendId(req.getFriendId(), userId);
         if (!ObjectUtil.isEmpty(friend)) {
-            return DeveloperResult.error("对方已是你好友");
+            return DeveloperResult.error(serialNo, "对方已是你好友");
         }
 
         if (Objects.equals(userId, req.getFriendId())) {
-            return DeveloperResult.error("不允许添加自己为好友");
+            return DeveloperResult.error(serialNo, "不允许添加自己为好友");
         }
 
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        req.setRemark("你好,我是"+nickName+",加个好友呗");
+        req.setRemark("你好,我是" + nickName + ",加个好友呗");
         FriendApplicationRecordPO record = friendApplicationRecordPORepository.findRecord(req.getFriendId(), userId);
         if (record == null) {
             record = new FriendApplicationRecordPO(userId, req.getFriendId(), req.getAddChannel().code(), AddFriendStatusEnum.SENT.code(), new Date(), new Date(), req.getRemark());
@@ -104,20 +107,21 @@ public class FriendServiceImpl implements FriendService {
         } else if (record.getStatus().equals(AddFriendStatusEnum.SENT.code()) || record.getStatus().equals(AddFriendStatusEnum.VIEWED.code()) || record.getStatus().equals(AddFriendStatusEnum.REJECTED.code())) {
             friendApplicationRecordPORepository.updateStatus(req.getFriendId(), userId, AddFriendStatusEnum.SENT.code());
         } else if (record.getStatus().equals(AddFriendStatusEnum.AGREED.code())) {
-            return DeveloperResult.error("已添加该好友,不许重复添加");
+            return DeveloperResult.error(serialNo, "已添加该好友,不许重复添加");
         }
 
         // 发送添加请求
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),true);
+        rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+        return DeveloperResult.success(serialNo, true);
     }
 
     @Override
     public DeveloperResult<Boolean> processFriendRequest(ProcessAddFriendRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         if (Objects.equals(userId, req.getFriendId())) {
-            return DeveloperResult.error("不允许添加自己为好友");
+            return DeveloperResult.error(serialNo, "不允许添加自己为好友");
         }
 
         String message = "";
@@ -134,7 +138,7 @@ public class FriendServiceImpl implements FriendService {
             privateMessage.setReceiverId(req.getFriendId());
             privateMessage.setMessageContentType(0);
             privateMessage.setSendTime(new Date());
-            messageClient.insertMessage(MessageMainTypeEnum.PRIVATE_MESSAGE.code(),privateMessage);
+            messageClient.insertMessage(MessageMainTypeEnum.PRIVATE_MESSAGE.code(), privateMessage);
         } else {
             // 拒绝,如果拒绝理由不为空则回复消息
             message = req.getRefuseReason();
@@ -145,54 +149,58 @@ public class FriendServiceImpl implements FriendService {
         friendApplicationRecordPORepository.updateStatus(userId, req.getFriendId(), status.code());
 
         if (ObjectUtil.isNotEmpty(message)) {
-            rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+            rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, message, Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
         }
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     @Override
-    public DeveloperResult<Boolean> deleteFriendByFriendId(Long friendId) {
+    public DeveloperResult<Boolean> deleteFriendByFriendId(DeleteFriendRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        FriendPO friend = friendRepository.findByFriendId(friendId, userId);
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        FriendPO friend = friendRepository.findByFriendId(req.getFriendId(), userId);
         if (ObjectUtil.isEmpty(friend)) {
-            return DeveloperResult.error("对方不是你的好友");
+            return DeveloperResult.error(serialNo, "对方不是你的好友");
         }
 
         boolean isSuccess = friendRepository.removeById(friend.getId());
-        messageClient.removeFriendChatMessage(MessageMainTypeEnum.PRIVATE_MESSAGE.code(),friendId);
+        messageClient.removeFriendChatMessage(MessageMainTypeEnum.PRIVATE_MESSAGE.code(), req.getFriendId());
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),isSuccess);
+        return DeveloperResult.success(serialNo, isSuccess);
     }
 
     @Override
-    public DeveloperResult<Integer> findFriendAddRequestCount() {
-        List<FriendApplicationRecordPO> list = friendApplicationRecordPORepository.findRecordByStatus(SelfUserInfoContext.selfUserInfo().getUserId(),AddFriendStatusEnum.SENT);
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list.size());
+    public DeveloperResult<Integer> findFriendAddRequestCount(String serialNo) {
+        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
+        List<FriendApplicationRecordPO> list = friendApplicationRecordPORepository.findRecordByStatus(SelfUserInfoContext.selfUserInfo().getUserId(), AddFriendStatusEnum.SENT);
+        return DeveloperResult.success(serialNo);
     }
 
     @Override
-    public DeveloperResult<List<NewFriendListDTO>> findNewFriendList() {
+    public DeveloperResult<List<NewFriendListDTO>> findNewFriendList(String serialNo) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        //List<NewFriendListDTO> lists = friendApplicationRecordPORepository.findNewFriendList(userId);
+        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
         List<NewFriendListDTO> list = new ArrayList<>();
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
+        return DeveloperResult.success(serialNo, list);
     }
 
     @Override
-    public DeveloperResult<Boolean> updateAddFriendRecordStatus() {
+    public DeveloperResult<Boolean> updateAddFriendRecordStatus(String serialNo) {
+        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
         boolean isSuccess = friendApplicationRecordPORepository.updateStatusSentToViewed(SelfUserInfoContext.selfUserInfo().getUserId());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),isSuccess);
+        return DeveloperResult.success(serialNo, isSuccess);
     }
 
     @Override
-    public DeveloperResult<Boolean> modifyFriendList(List<FriendInfoDTO> list) {
-        List<FriendPO> friendPOS = BeanUtils.copyProperties(list, FriendPO.class);
+    public DeveloperResult<Boolean> modifyFriendList(BatchModifyFriendListRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        List<FriendPO> friendPOS = BeanUtils.copyProperties(req.getList(), FriendPO.class);
         boolean isSuccess = friendRepository.updateBatchById(friendPOS);
-        if(!isSuccess){
-            return DeveloperResult.error("修改失败");
+        if (!isSuccess) {
+            return DeveloperResult.error(serialNo, "修改失败");
         }
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
@@ -204,7 +212,7 @@ public class FriendServiceImpl implements FriendService {
     public void bindFriend(Long userId, Long friendId) {
     }
 
-    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime){
+    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime) {
         return RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)

@@ -8,6 +8,8 @@ import java.util.List;
 @Data
 public class MessageInsertDTO {
 
+    private String serialNo;
+
     private Long id;
 
     private Long groupId;

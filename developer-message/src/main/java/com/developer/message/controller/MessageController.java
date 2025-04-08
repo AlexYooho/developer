@@ -2,9 +2,7 @@ package com.developer.message.controller;
 
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.message.dto.MessageInsertDTO;
-import com.developer.message.dto.SendMessageRequestDTO;
-import com.developer.message.dto.SendMessageResultDTO;
+import com.developer.message.dto.*;
 import com.developer.message.service.MessageTypeProcessorDispatchFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,134 +19,140 @@ public class MessageController {
 
     /**
      * 发送消息
+     *
      * @param req
      * @return
      */
     @PostMapping("/{type}/send")
-    public DeveloperResult<SendMessageResultDTO> sendMessage(@PathVariable("type") MessageMainTypeEnum type,@RequestBody SendMessageRequestDTO req){
+    public DeveloperResult<SendMessageResultDTO> sendMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody SendMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).sendMessage(req);
     }
 
     /**
      * 撤回消息
-     * @param id
+     *
+     * @param req
      * @return
      */
-    @PostMapping("/{type}/recall/{id}")
-    public DeveloperResult<Boolean> recallMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("id") Long id){
-        return messageTypeProcessorDispatchFactory.getInstance(type).recallMessage(id);
+    @PostMapping("/{type}/recall")
+    public DeveloperResult<Boolean> recallMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody RecallMessageRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).recallMessage(req);
     }
 
     /**
      * 拉取消息
-     * @param minId
+     *
+     * @param req
      * @return
      */
     @GetMapping("/{type}/loadMessage")
-    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestParam Long minId){
-        return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(minId);
+    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody LoadMessageRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(req);
     }
 
     /**
      * 消息已读
+     *
      * @param type
-     * @param targetId
+     * @param req
      * @return
      */
-    @PostMapping("/{type}/readed")
-    public DeveloperResult<Boolean> readedMessage(@PathVariable("type") MessageMainTypeEnum type,@RequestParam Long targetId){
-        return messageTypeProcessorDispatchFactory.getInstance(type).readMessage(targetId);
+    @PostMapping("/{type}/read")
+    public DeveloperResult<Boolean> readMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody ReadMessageRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).readMessage(req);
     }
 
     /**
      * 查询聊天记录
-     * @param targetId
-     * @param page
-     * @param size
+     * @param req
      * @return
      */
     @GetMapping("/{type}/history")
-    public DeveloperResult<List<SendMessageResultDTO>> recallMessage(@PathVariable("type") MessageMainTypeEnum type,@RequestParam Long targetId,@RequestParam Long page,@RequestParam Long size){
-        return messageTypeProcessorDispatchFactory.getInstance(type).findHistoryMessage(targetId,page,size);
+    public DeveloperResult<List<SendMessageResultDTO>> recallMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody QueryHistoryMessageRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).findHistoryMessage(req);
     }
 
     /**
      * 新增消息
+     *
      * @param type
      * @param dto
      * @return
      */
     @PostMapping("{type}/add")
-    public DeveloperResult<Boolean> insertMessage(@PathVariable("type") MessageMainTypeEnum type,@RequestBody MessageInsertDTO dto){
+    public DeveloperResult<Boolean> insertMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody MessageInsertDTO dto) {
         return messageTypeProcessorDispatchFactory.getInstance(type).insertMessage(dto);
     }
 
     /**
      * 删除消息
      * @param type
-     * @param friendId
+     * @param req
      * @return
      */
-    @DeleteMapping("{type}/remove/{friendId}")
-    public DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("friendId") Long friendId){
-        return messageTypeProcessorDispatchFactory.getInstance(type).deleteMessage(friendId);
+    @DeleteMapping("{type}/remove")
+    public DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody RemoveMessageRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).deleteMessage(req);
     }
 
     /**
      * 回复消息
+     *
      * @param type
      * @param messageId
      * @param dto
      * @return
      */
     @PostMapping("{type}/reply/{messageId}")
-    public DeveloperResult<Boolean> replyMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("messageId") Long messageId,@RequestBody SendMessageRequestDTO dto){
-        return messageTypeProcessorDispatchFactory.getInstance(type).replyMessage(messageId,dto);
+    public DeveloperResult<Boolean> replyMessage(@PathVariable("type") MessageMainTypeEnum type, @PathVariable("messageId") Long messageId, @RequestBody ReplyMessageRequestDTO dto) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).replyMessage(messageId, dto);
     }
 
     /**
      * 收藏消息
+     *
      * @param type
-     * @param messageId
+     * @param req
      * @return
      */
     @PostMapping("{type}/collection/{messageId}")
-    public DeveloperResult<Boolean> collectionMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("messageId") Long messageId) {
-        return messageTypeProcessorDispatchFactory.getInstance(type).collectionMessage(messageId);
+    public DeveloperResult<Boolean> collectionMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody CollectionMessageRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).collectionMessage(req);
     }
 
     /**
      * 转发消息
      * @param type
-     * @param messageId
-     * @param userIdList
+     * @param req
      * @return
      */
-    @PostMapping("{type}/forward/{messageId}")
-    public DeveloperResult<Boolean> forwardMessage(@PathVariable("type") MessageMainTypeEnum type, @PathVariable("messageId") Long messageId, @RequestBody List<Long> userIdList){
-        return messageTypeProcessorDispatchFactory.getInstance(type).forwardMessage(messageId,userIdList);
+    @PostMapping("{type}/forward")
+    public DeveloperResult<Boolean> forwardMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody ForwardMessageRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).forwardMessage(req);
     }
 
     /**
      * 消息点赞
+     *
      * @param type
-     * @param messageId
+     * @param req
      * @return
      */
-    @PostMapping("{type}/like/{messageId}")
-    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(@PathVariable("type") MessageMainTypeEnum type, @PathVariable("messageId") Long messageId){
-        return messageTypeProcessorDispatchFactory.getInstance(type).likeMessage(messageId);
+    @PostMapping("{type}/like")
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody MessageLikeRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).likeMessage(req);
     }
 
     /**
      * 消息取消点赞
+     *
      * @param type
-     * @param messageId
+     * @param req
      * @return
      */
-    @PostMapping("{type}/unlike/{messageId}")
-    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(@PathVariable("type") MessageMainTypeEnum type, @PathVariable("messageId") Long messageId){
-        return messageTypeProcessorDispatchFactory.getInstance(type).unLikeMessage(messageId);
+    @PostMapping("{type}/unlike")
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody MessageLikeRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).unLikeMessage(req);
     }
 
 }

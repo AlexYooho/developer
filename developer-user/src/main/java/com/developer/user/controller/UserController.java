@@ -48,28 +48,28 @@ public class UserController {
      * @return
      */
     @GetMapping("selfInfo")
-    public DeveloperResult<UserInfoDTO> getSelfUserInfo(){
-        return userService.findSelfUserInfo();
+    public DeveloperResult<UserInfoDTO> getSelfUserInfo(@RequestParam("serial_no") String serialNo){
+        return userService.findSelfUserInfo(serialNo);
     }
 
     /**
      * 查找用户根据id
-     * @param id
+     * @param req
      * @return
      */
-    @GetMapping("/find/{id}")
-    public DeveloperResult<UserInfoDTO> findById(@PathVariable("id") Long id){
-        return userService.findUserInfoById(id);
+    @GetMapping("/find")
+    public DeveloperResult<UserInfoDTO> findById(@RequestBody FindUserRequestDTO req){
+        return userService.findUserInfoById(req);
     }
 
     /**
      * 根据昵称查找用户
-     * @param name
+     * @param req
      * @return
      */
     @GetMapping("/findByName")
-    public DeveloperResult<List<UserInfoDTO>> findByName(@RequestParam("name") String name){
-        return userService.findUserByName(name);
+    public DeveloperResult<List<UserInfoDTO>> findByName(@RequestBody FindUserRequestDTO req){
+        return userService.findUserByName(req);
     }
 
     /**
@@ -84,22 +84,22 @@ public class UserController {
 
     /**
      * 获取在线终端
-     * @param userIds
+     * @param req
      * @return
      */
     @GetMapping("/online/terminal")
-    public DeveloperResult<List<OnlineTerminalDTO>> onlineTerminal(@RequestParam("userIds") String userIds){
-        return userService.findOnlineTerminal(userIds);
+    public DeveloperResult<List<OnlineTerminalDTO>> onlineTerminal(@RequestBody FindOnlineTerminalRequestDTO req){
+        return userService.findOnlineTerminal(req);
     }
 
     /**
      * 发送校验码
-     * @param emailAddress
+     * @param req
      * @return
      */
     @PostMapping("/send/code")
-    public DeveloperResult<Boolean> sendRegisterVerifyCode(@RequestParam("email_address") String emailAddress, @RequestParam("verify_code_type")Integer verifyCodeType){
-        return verifyCodeService.sendVerifyCode(VerifyCodeTypeEnum.fromCode(verifyCodeType),emailAddress);
+    public DeveloperResult<Boolean> sendRegisterVerifyCode(@RequestBody SendRegisterVerifyCodeRequestDTO req){
+        return verifyCodeService.sendVerifyCode(req);
     }
 
 }

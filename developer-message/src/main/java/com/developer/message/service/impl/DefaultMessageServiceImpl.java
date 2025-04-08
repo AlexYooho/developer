@@ -4,9 +4,7 @@ import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.SnowflakeNoUtil;
-import com.developer.message.dto.MessageInsertDTO;
-import com.developer.message.dto.SendMessageRequestDTO;
-import com.developer.message.dto.SendMessageResultDTO;
+import com.developer.message.dto.*;
 import com.developer.message.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +28,7 @@ public class DefaultMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(Long minId) {
+    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(LoadMessageRequestDTO req) {
         return defaultResult();
     }
 
@@ -40,17 +38,17 @@ public class DefaultMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult<Boolean> readMessage(Long friendId) {
+    public DeveloperResult<Boolean> readMessage(ReadMessageRequestDTO req) {
         return defaultResult();
     }
 
     @Override
-    public DeveloperResult<Boolean> recallMessage(Long id) {
+    public DeveloperResult<Boolean> recallMessage(RecallMessageRequestDTO req) {
         return defaultResult();
     }
 
     @Override
-    public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(Long friendId, Long page, Long size) {
+    public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
         return defaultResult();
     }
 
@@ -60,32 +58,32 @@ public class DefaultMessageServiceImpl implements MessageService {
     }
 
     @Override
-    public DeveloperResult<Boolean> deleteMessage(Long friendId) {
+    public DeveloperResult<Boolean> deleteMessage(RemoveMessageRequestDTO req) {
         return defaultResult();
     }
 
     @Override
-    public DeveloperResult<Boolean> replyMessage(Long id, SendMessageRequestDTO dto) {
+    public DeveloperResult<Boolean> replyMessage(Long id, ReplyMessageRequestDTO req) {
         return defaultResult();
     }
 
     @Override
-    public DeveloperResult<Boolean> collectionMessage(Long messageId) {
+    public DeveloperResult<Boolean> collectionMessage(CollectionMessageRequestDTO req) {
         return defaultResult();
     }
 
     @Override
-    public DeveloperResult<Boolean> forwardMessage(Long messageId, List<Long> userIdList) {
+    public DeveloperResult<Boolean> forwardMessage(ForwardMessageRequestDTO req) {
         return defaultResult();
     }
 
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId) {
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(MessageLikeRequestDTO req) {
         return CompletableFuture.completedFuture(defaultResult());
     }
 
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId) {
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(MessageLikeRequestDTO req) {
         return CompletableFuture.completedFuture(defaultResult());
     }
 

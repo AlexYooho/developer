@@ -3,9 +3,7 @@ package com.developer.message.service;
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.message.dto.MessageInsertDTO;
-import com.developer.message.dto.SendMessageRequestDTO;
-import com.developer.message.dto.SendMessageResultDTO;
+import com.developer.message.dto.*;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -23,7 +21,7 @@ public interface MessageService {
      * @param minId
      * @return
      */
-    DeveloperResult<List<SendMessageResultDTO>> loadMessage(Long minId);
+    DeveloperResult<List<SendMessageResultDTO>> loadMessage(LoadMessageRequestDTO req);
 
     /**
      * 发送消息
@@ -34,17 +32,17 @@ public interface MessageService {
 
     /**
      * 已读消息
-     * @param friendId
+     * @param req
      * @return
      */
-    DeveloperResult<Boolean> readMessage(Long friendId);
+    DeveloperResult<Boolean> readMessage(ReadMessageRequestDTO req);
 
     /**
      * 撤回消息
-     * @param id
+     * @param req
      * @return
      */
-    DeveloperResult<Boolean> recallMessage(Long id);
+    DeveloperResult<Boolean> recallMessage(RecallMessageRequestDTO req);
 
     /**
      * 查询历史记录
@@ -53,7 +51,7 @@ public interface MessageService {
      * @param size
      * @return
      */
-    DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(Long friendId,Long page,Long size);
+    DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req);
 
     /**
      * 新增消息
@@ -64,43 +62,43 @@ public interface MessageService {
 
     /**
      * 删除消息
-     * @param friendId
+     * @param req
      * @return
      */
-    DeveloperResult<Boolean> deleteMessage(Long friendId);
+    DeveloperResult<Boolean> deleteMessage(RemoveMessageRequestDTO req);
 
     /**
      * 回复消息
      * @return
      */
-    DeveloperResult<Boolean> replyMessage(Long id,SendMessageRequestDTO dto);
+    DeveloperResult<Boolean> replyMessage(Long id,ReplyMessageRequestDTO req);
 
     /**
      * 收藏消息
      * @return
      */
-    DeveloperResult<Boolean> collectionMessage(Long messageId);
+    DeveloperResult<Boolean> collectionMessage(CollectionMessageRequestDTO req);
 
     /**
      * 转发消息
      * @return
      */
-    DeveloperResult<Boolean> forwardMessage(Long messageId, List<Long> userIdList);
+    DeveloperResult<Boolean> forwardMessage(ForwardMessageRequestDTO req);
 
     /**
      * 消息点赞
      *
-     * @param messageId
+     * @param req
      * @return
      */
-    CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId);
+    CompletableFuture<DeveloperResult<Boolean>> likeMessage(MessageLikeRequestDTO req);
 
     /**
      * 取消点赞
-     * @param messageId
+     * @param req
      * @return
      */
-    CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId);
+    CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(MessageLikeRequestDTO req);
 
     /**
      * 是否支付类型消息

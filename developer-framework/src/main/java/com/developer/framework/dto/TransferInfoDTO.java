@@ -3,6 +3,7 @@ package com.developer.framework.dto;
 import com.developer.framework.enums.PaymentChannelEnum;
 import lombok.Builder;
 import lombok.Data;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -10,6 +11,9 @@ import java.math.BigDecimal;
 @Data
 @Builder
 public class TransferInfoDTO implements Serializable {
+
+    @JsonProperty("serial_no")
+    private String serialNo;
 
     /**
      * 转账金额

@@ -23,9 +23,9 @@ public class RabbitMQUtil {
      * @param routingKey
      * @param content
      */
-    public void sendMessage(String exchange, String routingKey, ProcessorTypeEnum messageType, Object content){
+    public void sendMessage(String serialNo,String exchange, String routingKey, ProcessorTypeEnum messageType, Object content){
         RabbitMQMessageBodyDTO dto = RabbitMQMessageBodyDTO.builder()
-                .serialNo(UUID.randomUUID().toString())
+                .serialNo(serialNo)
                 .type(MQMessageTypeConstant.SENDMESSAGE)
                 .token(TokenUtil.getToken())
                 .data(JSON.toJSON(content))
@@ -41,9 +41,9 @@ public class RabbitMQUtil {
      * @param content
      * @param delayTime 单位s
      */
-    public void sendDelayMessage(String exchange, String routingKey, ProcessorTypeEnum messageType, Object content, Integer delayTime) {
+    public void sendDelayMessage(String serialNo,String exchange, String routingKey, ProcessorTypeEnum messageType, Object content, Integer delayTime) {
         RabbitMQMessageBodyDTO dto = RabbitMQMessageBodyDTO.builder()
-                .serialNo(UUID.randomUUID().toString())
+                .serialNo(serialNo)
                 .type(MQMessageTypeConstant.SENDMESSAGE)
                 .token(TokenUtil.getToken())
                 .data(JSON.toJSON(content))

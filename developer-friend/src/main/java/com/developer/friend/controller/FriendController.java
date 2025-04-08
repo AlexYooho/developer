@@ -22,28 +22,28 @@ public class FriendController {
      * @return
      */
     @GetMapping("/list")
-    public DeveloperResult<List<FriendInfoDTO>> friends(){
-        return friendService.findFriendList();
+    public DeveloperResult<List<FriendInfoDTO>> friendList(@RequestParam("serial_no") String serialNo){
+        return friendService.findFriendList(serialNo);
     }
 
     /**
      * 通过好友id查询好友信息
-     * @param friendId
+     * @param req
      * @return
      */
-    @GetMapping("/find/{friendId}")
-    public DeveloperResult<FriendInfoDTO> findFriend(@PathVariable("friendId") Long friendId){
-        return friendService.findFriend(friendId);
+    @GetMapping("/find")
+    public DeveloperResult<FriendInfoDTO> findFriend(@RequestBody FindFriendRequestDTO req){
+        return friendService.findFriend(req);
     }
 
     /**
      * 通过好友id删除好友
-     * @param friendId
+     * @param req
      * @return
      */
     @DeleteMapping("/delete/{friendId}")
-    public DeveloperResult<Boolean> deleteFriend(@PathVariable("friendId") Long friendId){
-        return friendService.deleteFriendByFriendId(friendId);
+    public DeveloperResult<Boolean> deleteFriend(@RequestBody DeleteFriendRequestDTO req){
+        return friendService.deleteFriendByFriendId(req);
     }
 
     /**
@@ -57,12 +57,12 @@ public class FriendController {
 
     /**
      * 批量更新好友信息
-     * @param list
+     * @param req
      * @return
      */
     @PutMapping("/update/list")
-    public DeveloperResult<Boolean> modifyFriendList(@RequestBody List<FriendInfoDTO> list){
-        return friendService.modifyFriendList(list);
+    public DeveloperResult<Boolean> modifyFriendList(@RequestBody BatchModifyFriendListRequestDTO req){
+        return friendService.modifyFriendList(req);
     }
 
     /**
@@ -90,8 +90,8 @@ public class FriendController {
      * @return
      */
     @GetMapping("/friendAddRequestCount")
-    public DeveloperResult<Integer> friendAddRequestCount(){
-        return friendService.findFriendAddRequestCount();
+    public DeveloperResult<Integer> friendAddRequestCount(@RequestParam("serial_no") String serialNo){
+        return friendService.findFriendAddRequestCount(serialNo);
     }
 
     /**
@@ -99,8 +99,8 @@ public class FriendController {
      * @return
      */
     @GetMapping("/new/list")
-    public DeveloperResult<List<NewFriendListDTO>> newFriendList(){
-        return friendService.findNewFriendList();
+    public DeveloperResult<List<NewFriendListDTO>> newFriendList(@RequestParam("serial_no") String serialNo){
+        return friendService.findNewFriendList(serialNo);
     }
 
     /**
@@ -108,18 +108,17 @@ public class FriendController {
      * @return
      */
     @PutMapping("/update/friend/applicant/record/status")
-    public DeveloperResult<Boolean> updateAddFriendRecordStatus(){
-        return friendService.updateAddFriendRecordStatus();
+    public DeveloperResult<Boolean> updateAddFriendRecordStatus(@RequestParam("serial_no") String serialNo){
+        return friendService.updateAddFriendRecordStatus(serialNo);
     }
 
     /**
      * 是否是好友
-     * @param friendId
-     * @param userId
+     * @param req
      * @return
      */
     @GetMapping("is-friend")
-    public DeveloperResult<FriendInfoDTO> isFriend(@RequestBody IsFriendDto dto){
-        return friendService.isFriend(dto);
+    public DeveloperResult<FriendInfoDTO> isFriend(@RequestBody IsFriendDto req){
+        return friendService.isFriend(req);
     }
 }

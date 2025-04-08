@@ -2,6 +2,8 @@ package com.developer.group.service.impl;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.group.dto.BatchModifyGroupMemberInfoRequestDTO;
+import com.developer.group.dto.FindGroupMemberUserIdRequestDTO;
 import com.developer.group.dto.SelfJoinGroupInfoDTO;
 import com.developer.group.pojo.GroupMemberPO;
 import com.developer.group.repository.GroupMemberRepository;
@@ -23,18 +25,19 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     private SnowflakeNoUtil snowflakeNoUtil;
 
     @Override
-    public DeveloperResult<List<Long>> findGroupMember(Long groupId) {
-        List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(groupId);
+    public DeveloperResult<List<Long>> findGroupMember(FindGroupMemberUserIdRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(req.getGroupId());
         List<Long> userIds = members.stream().map(GroupMemberPO::getUserId).collect(Collectors.toList());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),userIds);
+        return DeveloperResult.success(serialNo,userIds);
     }
 
     @Override
-    public DeveloperResult<Boolean> batchModifyGroupMemberInfo(List<SelfJoinGroupInfoDTO> list) {
-
+    public DeveloperResult<Boolean> batchModifyGroupMemberInfo(BatchModifyGroupMemberInfoRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
         List<GroupMemberPO> ll = new ArrayList<>();
         this.groupMemberRepository.updateBatchById(ll);
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 }

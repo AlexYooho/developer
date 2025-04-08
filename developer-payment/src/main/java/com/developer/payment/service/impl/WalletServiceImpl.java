@@ -4,6 +4,7 @@ import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.CurrencyEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.payment.dto.FreezePayAmountRequestDTO;
 import com.developer.payment.enums.TransactionStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.enums.WalletOperationTypeEnum;
@@ -37,23 +38,22 @@ public class WalletServiceImpl implements WalletService {
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> doMoneyTransaction(Long userId,BigDecimal amount,TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType) {
+    public DeveloperResult<Boolean> doMoneyTransaction(String serialNo,Long userId,BigDecimal amount,TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType) {
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
         if(walletInfo==null){
-            return DeveloperResult.error("用户未开通钱包");
+            return DeveloperResult.error(serialNo,"用户未开通钱包");
         }
 
         if (operationType==WalletOperationTypeEnum.EXPENDITURE && walletInfo.getBalance().compareTo(amount) < 0) {
-            return DeveloperResult.error("余额不足");
+            return DeveloperResult.error(serialNo,"余额不足");
         }
 
         if(walletInfo.getStatus() == WalletStatusEnum.FROZEN){
-            return DeveloperResult.error("钱包被冻结");
+            return DeveloperResult.error(serialNo,"钱包被冻结");
         }
 
         BigDecimal beforeBalance = walletInfo.getBalance();
-        BigDecimal afterBalance = operationType==WalletOperationTypeEnum.EXPENDITURE ?
-                walletInfo.getBalance().subtract(amount.abs()) : walletInfo.getBalance().add(amount.abs());
+        BigDecimal afterBalance = operationType==WalletOperationTypeEnum.EXPENDITURE ? walletInfo.getBalance().subtract(amount.abs()) : walletInfo.getBalance().add(amount.abs());
 
         walletInfo.setLastTransactionTime(new Date());
         walletInfo.setUpdateTime(new Date());
@@ -74,28 +74,29 @@ public class WalletServiceImpl implements WalletService {
                 .updateTime(new Date())
                 .build());
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
      * 冻结支付金额
-     * @param amount
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> freezePaymentAmount(BigDecimal amount) {
+    public DeveloperResult<Boolean> freezePaymentAmount(FreezePayAmountRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
 
-        if (walletInfo.getBalance().compareTo(amount) < 0) {
-            return DeveloperResult.error("余额不足");
+        if (walletInfo.getBalance().compareTo(req.getAmount()) < 0) {
+            return DeveloperResult.error(serialNo,"余额不足");
         }
 
-        walletInfo.setFrozenBalance(walletInfo.getFrozenBalance().add(amount));
+        walletInfo.setFrozenBalance(walletInfo.getFrozenBalance().add(req.getAmount()));
         walletInfo.setUpdateTime(new Date());
         walletRepository.updateById(walletInfo);
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
@@ -103,11 +104,12 @@ public class WalletServiceImpl implements WalletService {
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> CreateWallet() {
+    public DeveloperResult<Boolean> CreateWallet(String serialNo) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
         if(walletInfo!=null){
-            return DeveloperResult.error("用户已开通钱包");
+            return DeveloperResult.error(serialNo,"用户已开通钱包");
         }
 
         walletRepository.save(UserWalletPO.builder()
@@ -119,6 +121,6 @@ public class WalletServiceImpl implements WalletService {
                 .currency(CurrencyEnum.CNY)
                 .lastTransactionTime(new Date())
                 .status(WalletStatusEnum.NORMAL).build());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 }

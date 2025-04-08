@@ -11,7 +11,7 @@ public interface FriendService {
      * 获取好友列表
      * @return
      */
-    DeveloperResult<List<FriendInfoDTO>> findFriendList();
+    DeveloperResult<List<FriendInfoDTO>> findFriendList(String serialNo);
 
     /**
      * 是否是好友
@@ -21,10 +21,10 @@ public interface FriendService {
 
     /**
      *  通过用户id查询好友
-     * @param friendId
+     * @param req
      * @return
      */
-    DeveloperResult<FriendInfoDTO> findFriend(Long friendId);
+    DeveloperResult<FriendInfoDTO> findFriend(FindFriendRequestDTO req);
 
     /**
      * 发送添加好友请求
@@ -42,33 +42,33 @@ public interface FriendService {
 
     /**
      * 通过好友id删除好友
-     * @param friendId
+     * @param req
      * @return
      */
-    DeveloperResult<Boolean> deleteFriendByFriendId(Long friendId);
+    DeveloperResult<Boolean> deleteFriendByFriendId(DeleteFriendRequestDTO req);
 
     /**
      * 获取好友添加数
      * @return
      */
-    DeveloperResult<Integer> findFriendAddRequestCount();
+    DeveloperResult<Integer> findFriendAddRequestCount(String serialNo);
 
     /**
      * 获取新好友添加列表
      * @return
      */
-    DeveloperResult<List<NewFriendListDTO>> findNewFriendList();
+    DeveloperResult<List<NewFriendListDTO>> findNewFriendList(String serialNo);
 
     /**
      * 更新好友添加请求状态
      * @return
      */
-    DeveloperResult<Boolean> updateAddFriendRecordStatus();
+    DeveloperResult<Boolean> updateAddFriendRecordStatus(String serialNo);
 
     /**
      * 批量修改好友信息
-     * @param list
+     * @param req
      * @return
      */
-    DeveloperResult<Boolean> modifyFriendList(List<FriendInfoDTO> list);
+    DeveloperResult<Boolean> modifyFriendList(BatchModifyFriendListRequestDTO req);
 }

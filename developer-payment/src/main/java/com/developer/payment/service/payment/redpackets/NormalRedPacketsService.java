@@ -54,21 +54,22 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
     @Override
     public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
         if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            return DeveloperResult.error("红包金额必须大于0");
+            return DeveloperResult.error(serialNo,"红包金额必须大于0");
         }
 
         if (dto.getTotalCount() <= 0) {
-            return DeveloperResult.error("红包数量必须大于0");
+            return DeveloperResult.error(serialNo,"红包数量必须大于0");
         }
 
         if (dto.getTargetId() <= 0) {
-            return DeveloperResult.error("请指定红包接收人！");
+            return DeveloperResult.error(serialNo,"请指定红包接收人！");
         }
 
-        DeveloperResult<Boolean> result = receiveTargetProcessor(dto.getPaymentChannel(), dto.getTargetId(),userId,dto.getTotalCount());
+        DeveloperResult<Boolean> result = receiveTargetProcessor(serialNo,dto.getPaymentChannel(), dto.getTargetId(),userId,dto.getTotalCount());
         if(!result.getIsSuccessful()){
-            return DeveloperResult.error(result.getMsg());
+            return DeveloperResult.error(serialNo,result.getMsg());
         }
 
         RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto);
@@ -92,15 +93,15 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
         redPacketsReceiveDetailsRepository.saveBatch(list);
 
         // 处理钱包信息
-        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(userId,dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
+        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo,userId,dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
         if(!walletResult.getIsSuccessful()){
             return walletResult;
         }
 
         // 发送消息事件
-        sendRedPacketsMessage(dto.getTargetId(),dto.getPaymentChannel());
+        sendRedPacketsMessage(serialNo,dto.getTargetId(),dto.getPaymentChannel());
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
@@ -109,37 +110,37 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
      * @return
      */
     @Override
-    public DeveloperResult<BigDecimal> openRedPackets(Long redPacketsId) {
+    public DeveloperResult<BigDecimal> openRedPackets(String serialNo,Long redPacketsId) {
         RedPacketsInfoPO redPacketsInfo = findRedPacketsCacheInfo(redPacketsId);
         if (redPacketsInfo == null) {
-            return DeveloperResult.error("红包不存在");
+            return DeveloperResult.error(serialNo,"红包不存在");
         }
 
         if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.FINISHED)) {
-            return DeveloperResult.error("红包已领取完毕");
+            return DeveloperResult.error(serialNo,"红包已领取完毕");
         }
 
         if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.EXPIRED)) {
-            return DeveloperResult.error("红包已过期无法领取");
+            return DeveloperResult.error(serialNo,"红包已过期无法领取");
         }
 
         if(redPacketsInfo.getChannel()==PaymentChannelEnum.FRIEND){
-            DeveloperResult<BigDecimal> openResult = this.openPrivateChatRedPackets(redPacketsInfo);
+            DeveloperResult<BigDecimal> openResult = this.openPrivateChatRedPackets(serialNo,redPacketsInfo);
             if(!openResult.getIsSuccessful()){
                 return openResult;
             }
 
             // todo 增加钱包余额
-            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(SelfUserInfoContext.selfUserInfo().getUserId(), openResult.getData(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
+            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo,SelfUserInfoContext.selfUserInfo().getUserId(), openResult.getData(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
             if(!walletResult.getIsSuccessful()){
-                return DeveloperResult.error(walletResult.getMsg());
+                return DeveloperResult.error(serialNo,walletResult.getMsg());
             }
 
             // 红包过期退回金额
-            this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
+            this.redPacketsRecoveryEvent(serialNo,redPacketsId,60*60*24);
 
             // todo 发送红包领取提示事件给发红包发送人
-            redPacketsReceiveNotifyMessage(redPacketsInfo.getSenderUserId(),redPacketsInfo.getChannel());
+            redPacketsReceiveNotifyMessage(serialNo,redPacketsInfo.getSenderUserId(),redPacketsInfo.getChannel());
 
             return openResult;
         }
@@ -159,14 +160,14 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
                     redPacketsReceiveDetailsRepository.updateById(receiveDetails);
                     openAmount = receiveDetails.getReceiveAmount();
                 }else{
-                    return DeveloperResult.error("红包抢光啦！");
+                    return DeveloperResult.error(serialNo,"红包抢光啦！");
                 }
             }else{
-                return DeveloperResult.error("领取失败请重试！");
+                return DeveloperResult.error(serialNo,"领取失败请重试！");
             }
         }catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            return DeveloperResult.error("领取失败请重试！");
+            return DeveloperResult.error(serialNo,"领取失败请重试！");
         }finally {
             // 释放锁
             if(lock.isHeldByCurrentThread()){
@@ -174,12 +175,12 @@ public class NormalRedPacketsService extends BaseRedPacketsService implements Re
             }
         }
 
-        this.redPacketsRecoveryEvent(redPacketsId,60*60*24);
+        this.redPacketsRecoveryEvent(serialNo,redPacketsId,60*60*24);
 
         // todo 发送红包领取提示事件给发红包发送人
-        redPacketsReceiveNotifyMessage(redPacketsInfo.getSenderUserId(),redPacketsInfo.getChannel());
+        redPacketsReceiveNotifyMessage(serialNo,redPacketsInfo.getSenderUserId(),redPacketsInfo.getChannel());
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),openAmount);
+        return DeveloperResult.success(serialNo,openAmount);
     }
 
 }

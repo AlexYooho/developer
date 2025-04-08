@@ -69,16 +69,16 @@ public class GroupMessageServiceImpl implements MessageService {
 
     /**
      * 拉取消息
-     * @param minId
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(Long minId) {
+    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(LoadMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
-        List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult.getData();
-        if(joinGroupInfoList.isEmpty()){
-            return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        List<SelfJoinGroupInfoDTO> joinGroupInfoList = groupInfoClient.getSelfJoinAllGroupInfo(serialNo).getData();
+        if (joinGroupInfoList.isEmpty()) {
+            return DeveloperResult.success(serialNo);
         }
 
         List<Long> groupIds = joinGroupInfoList.stream().map(SelfJoinGroupInfoDTO::getGroupId).collect(Collectors.toList());
@@ -89,36 +89,34 @@ public class GroupMessageServiceImpl implements MessageService {
         List<GroupMessageMemberReceiveRecordPO> curUserSendMessageList = groupMessageMemberReceiveRecordRepository.findAllMessageBySendId(userId);
 
         Date minDate = DateTimeUtils.addMonths(new Date(), -3);
-        List<GroupMessagePO> messages = groupMessageRepository.find(minId, minDate, groupIds);
+        List<GroupMessagePO> messages = groupMessageRepository.find(req.getMinId(), minDate, groupIds);
         List<SendMessageResultDTO> vos = messages.stream().map(x -> {
             GroupMessageDTO vo = BeanUtils.copyProperties(x, GroupMessageDTO.class);
-            if(vo==null){
+            if (vo == null) {
                 return null;
             }
             Integer messageStatus = unreadMessageList.stream().anyMatch(z ->
-                 Objects.equals(z.getGroupId(), x.getGroupId()) && Objects.equals(z.getMessageId(), x.getId())
+                    Objects.equals(z.getGroupId(), x.getGroupId()) && Objects.equals(z.getMessageId(), x.getId())
             ) ? MessageStatusEnum.UNSEND.code() : MessageStatusEnum.READED.code();
 
             vo.setMessageStatus(messageStatus);
 
-            if(vo.getSendId().equals(userId)){
-                Map<Long, Long> messageCounts = curUserSendMessageList.stream()
-                        .collect(Collectors.groupingBy(GroupMessageMemberReceiveRecordPO::getMessageId, Collectors.summingLong(m -> m.getStatus() == 0 ? 1 : m.getStatus() == 3 ? 1 : 0)));
-
+            if (vo.getSendId().equals(userId)) {
+                Map<Long, Long> messageCounts = curUserSendMessageList.stream().collect(Collectors.groupingBy(GroupMessageMemberReceiveRecordPO::getMessageId, Collectors.summingLong(m -> m.getStatus() == 0 ? 1 : m.getStatus() == 3 ? 1 : 0)));
                 long unReadCount = messageCounts.getOrDefault(vo.getId(), 0L);
                 long readCount = messageCounts.getOrDefault(vo.getId(), 0L);
-
                 vo.setUnReadCount(unReadCount);
                 vo.setReadCount(readCount);
             }
             return vo;
         }).collect(Collectors.toList());
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),vos);
+        return DeveloperResult.success(serialNo, vos);
     }
 
     /**
      * 发送消息
+     *
      * @param req
      * @return
      */
@@ -126,243 +124,248 @@ public class GroupMessageServiceImpl implements MessageService {
     public DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        String serialNo = snowflakeNoUtil.getSerialNo();
-        DeveloperResult<GroupInfoDTO> developerResult = groupInfoClient.findGroup(req.getGroupId());
-        GroupInfoDTO groupInfoDTO = developerResult.getData();
-        if(Objects.isNull(groupInfoDTO)){
-            return DeveloperResult.error("群聊不存在");
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        GroupInfoDTO groupInfoDTO = groupInfoClient.findGroup(req.getGroupId(), serialNo).getData();
+        if (Objects.isNull(groupInfoDTO)) {
+            return DeveloperResult.error(serialNo, "群聊不存在");
         }
 
-        if(groupInfoDTO.getDeleted()){
-            return DeveloperResult.error("群已解散");
+        if (groupInfoDTO.getDeleted()) {
+            return DeveloperResult.error(serialNo, "群已解散");
         }
 
-        DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult2 = groupInfoClient.getSelfJoinAllGroupInfo();
-        List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult2.getData();
-        if(joinGroupInfoList.stream().noneMatch(x -> x.getGroupId().equals(req.getGroupId()) && x.getQuit())){
-            return DeveloperResult.error("您已不在该群聊中,无法发送消息");
+        List<SelfJoinGroupInfoDTO> joinGroupInfoList = groupInfoClient.getSelfJoinAllGroupInfo(serialNo).getData();
+        if (joinGroupInfoList.stream().noneMatch(x -> x.getGroupId().equals(req.getGroupId()) && x.getQuit())) {
+            return DeveloperResult.error(serialNo, "您已不在该群聊中,无法发送消息");
         }
 
         // 消息入库
-        GroupMessagePO message = this.createGroupMessageMode( req.getGroupId(), userId, nickName, req.getAtUserIds(), req.getMessageContent(), req.getMessageContentType());
+        GroupMessagePO message = this.createGroupMessageMode(req.getGroupId(), userId, nickName, req.getAtUserIds(), req.getMessageContent(), req.getMessageContentType());
         this.groupMessageRepository.save(message);
 
         // 需要接受消息的成员
-        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(groupInfoDTO.getId()).getData();
-        receiverIds = receiverIds.stream().filter(id->!userId.equals(id)).collect(Collectors.toList());
+        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(groupInfoDTO.getId(), serialNo).getData();
+        receiverIds = receiverIds.stream().filter(id -> !userId.equals(id)).collect(Collectors.toList());
 
-        List<GroupMessageMemberReceiveRecordPO> receiveRecods = new ArrayList<>();
+        List<GroupMessageMemberReceiveRecordPO> receiveRecords = new ArrayList<>();
         for (Long receiverId : receiverIds) {
-            GroupMessageMemberReceiveRecordPO recod = new GroupMessageMemberReceiveRecordPO();
-            recod.setGroupId(req.getGroupId());
-            recod.setReceiverId(receiverId);
-            recod.setStatus(0);
-            recod.setCreateTime(new Date());
-            recod.setUpdateTime(new Date());
-            recod.setSendId(userId);
-            recod.setMessageId(message.getId());
-            receiveRecods.add(recod);
+            GroupMessageMemberReceiveRecordPO record = new GroupMessageMemberReceiveRecordPO();
+            record.setGroupId(req.getGroupId());
+            record.setReceiverId(receiverId);
+            record.setStatus(0);
+            record.setCreateTime(new Date());
+            record.setUpdateTime(new Date());
+            record.setSendId(userId);
+            record.setMessageId(message.getId());
+            receiveRecords.add(record);
         }
 
-        groupMessageMemberReceiveRecordRepository.saveBatch(receiveRecods);
+        groupMessageMemberReceiveRecordRepository.saveBatch(receiveRecords);
 
-        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(),message.getId(),message.getGroupId(),userId,nickName,req.getMessageContent(),receiverIds,req.getAtUserIds(),MessageStatusEnum.fromCode(message.getMessageStatus()), MessageTerminalTypeEnum.WEB,message.getSendTime()));
+        rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(), req.getMessageContentType(), message.getId(), message.getGroupId(), userId, nickName, req.getMessageContent(), receiverIds, req.getAtUserIds(), MessageStatusEnum.fromCode(message.getMessageStatus()), MessageTerminalTypeEnum.WEB, message.getSendTime()));
 
 
         GroupMessageDTO data = new GroupMessageDTO();
         data.setId(message.getId());
         data.setReadCount(0L);
         data.setUnReadCount((long) receiverIds.size());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),data);
+        return DeveloperResult.success(serialNo, data);
     }
 
     /**
      * 已读消息
-     * @param groupId
+     *
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> readMessage(Long groupId) {
+    public DeveloperResult<Boolean> readMessage(ReadMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        String serialNo = snowflakeNoUtil.getSerialNo();
-        GroupMessagePO lastMessage = groupMessageRepository.findLastMessage(groupId);
-        if(Objects.isNull(lastMessage)){
-            return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        GroupMessagePO lastMessage = groupMessageRepository.findLastMessage(req.getTargetId());
+        if (Objects.isNull(lastMessage)) {
+            return DeveloperResult.success(serialNo);
         }
 
         // 修改群已读状态
-        List<GroupMessageMemberReceiveRecordPO> records = groupMessageMemberReceiveRecordRepository.findCurGroupUnreadRecordList(groupId, userId);
-        records.forEach(x->{
+        List<GroupMessageMemberReceiveRecordPO> records = groupMessageMemberReceiveRecordRepository.findCurGroupUnreadRecordList(req.getTargetId(), userId);
+        records.forEach(x -> {
             // 通知前端
-            rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE,MessageContentTypeEnum.TEXT, x.getMessageId(), groupId, userId, nickName,"", Collections.singletonList(x.getSendId()), new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
+            rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, x.getMessageId(), req.getTargetId(), userId, nickName, "", Collections.singletonList(x.getSendId()), new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB, new Date()));
             x.setStatus(MessageStatusEnum.READED.code());
             groupMessageMemberReceiveRecordRepository.updateById(x);
         });
 
-        String key = StrUtil.join(",", RedisKeyConstant.IM_GROUP_READED_POSITION,groupId,userId);
-        redisUtil.set(key,lastMessage.getId(),3600*24L, TimeUnit.SECONDS);
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        String key = StrUtil.join(",", RedisKeyConstant.IM_GROUP_READED_POSITION, req.getTargetId(), userId);
+        redisUtil.set(key, lastMessage.getId(), 3600 * 24L, TimeUnit.SECONDS);
+        return DeveloperResult.success(serialNo);
     }
 
     /**
      * 撤回消息
-     * @param id
+     *
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> recallMessage(Long id) {
+    public DeveloperResult<Boolean> recallMessage(RecallMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = snowflakeNoUtil.getSerialNo();
-        GroupMessagePO groupMessage = groupMessageRepository.getById(id);
-        if(groupMessage==null){
-            return DeveloperResult.error(serialNo,"消息不存在");
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        GroupMessagePO groupMessage = groupMessageRepository.getById(req.getMessageId());
+        if (groupMessage == null) {
+            return DeveloperResult.error(serialNo, "消息不存在");
         }
 
-        if(!groupMessage.getSendId().equals(userId)){
-            return DeveloperResult.error(serialNo,"无法撤回不是自己发送的消息");
+        if (!groupMessage.getSendId().equals(userId)) {
+            return DeveloperResult.error(serialNo, "无法撤回不是自己发送的消息");
         }
 
-        DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
+        DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult = groupInfoClient.getSelfJoinAllGroupInfo(serialNo);
         List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult.getData();
         SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = joinGroupInfoList.stream().filter(x -> x.getGroupId().equals(groupMessage.getGroupId()) && x.getQuit()).findFirst().get();
-        if(selfJoinGroupInfoDTO==null){
-            return DeveloperResult.error(serialNo,"您已不在该群聊中,无法撤回消息");
+        if (selfJoinGroupInfoDTO == null) {
+            return DeveloperResult.error(serialNo, "您已不在该群聊中,无法撤回消息");
         }
 
         groupMessage.setMessageStatus(MessageStatusEnum.RECALL.code());
         groupMessageRepository.updateById(groupMessage);
 
-        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(groupMessage.getId()).getData();
-        receiverIds = receiverIds.stream().filter(x->!userId.equals(x)).collect(Collectors.toList());
+        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(groupMessage.getId(), serialNo).getData();
+        receiverIds = receiverIds.stream().filter(x -> !userId.equals(x)).collect(Collectors.toList());
 
-        String message = String.format("%s 撤回了一条消息",selfJoinGroupInfoDTO.getAliasName());
+        String message = String.format("%s 撤回了一条消息", selfJoinGroupInfoDTO.getAliasName());
 
-        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(),groupMessage.getSendId(), groupMessage.getSendNickName(), message,receiverIds,new ArrayList<>(), MessageStatusEnum.fromCode(groupMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB,new Date()));
+        rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(), groupMessage.getSendId(), groupMessage.getSendNickName(), message, receiverIds, new ArrayList<>(), MessageStatusEnum.fromCode(groupMessage.getMessageStatus()), MessageTerminalTypeEnum.WEB, new Date()));
 
-
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
      * 查询历史记录
-     * @param groupId
-     * @param page
-     * @param size
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(Long groupId, Long page, Long size) {
-        page = page>0?page:1;
-        size = size>0?size:10;
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        long stIdx = (page-1)*size;
+    public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
+        req.setPage(req.getPage() > 0 ? req.getPage() : 1);
+        req.setSize(req.getSize() > 0 ? req.getSize() : 10);
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        long stIdx = (req.getPage() - 1) * req.getSize();
 
-        DeveloperResult<List<SelfJoinGroupInfoDTO>> developerResult = groupInfoClient.getSelfJoinAllGroupInfo();
-        List<SelfJoinGroupInfoDTO> joinGroupInfoList = developerResult.getData();
-        SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = joinGroupInfoList.stream().filter(x -> x.getGroupId().equals(groupId) && !x.getQuit()).findFirst().get();
-        if(selfJoinGroupInfoDTO==null){
-            return DeveloperResult.error("您已不在群聊");
+        SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = groupInfoClient.getSelfJoinAllGroupInfo(serialNo).getData().stream().filter(x -> x.getGroupId().equals(req.getTargetId()) && !x.getQuit()).findFirst().get();
+        if (selfJoinGroupInfoDTO == null) {
+            return DeveloperResult.error(serialNo, "您已不在群聊");
         }
 
-        List<GroupMessagePO> messages = groupMessageRepository.findHistoryMessage(groupId, selfJoinGroupInfoDTO.getCreatedTime(), stIdx, size);
+        List<GroupMessagePO> messages = groupMessageRepository.findHistoryMessage(req.getTargetId(), selfJoinGroupInfoDTO.getCreatedTime(), stIdx, req.getSize());
         List<SendMessageResultDTO> list = messages.stream().map(x -> BeanUtils.copyProperties(x, GroupMessageDTO.class)).collect(Collectors.toList());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
+        return DeveloperResult.success(serialNo, list);
     }
 
     /**
      * 新增消息
-     * @param dto
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> insertMessage(MessageInsertDTO dto) {
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+    public DeveloperResult<Boolean> insertMessage(MessageInsertDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        return DeveloperResult.success(serialNo);
     }
 
     /**
      * 删除消息
-     * @param friendId
+     *
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> deleteMessage(Long friendId) {
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+    public DeveloperResult<Boolean> deleteMessage(RemoveMessageRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        return DeveloperResult.success(serialNo);
     }
 
     /**
      * 回复
      * @param id
-     * @param dto
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> replyMessage(Long id,SendMessageRequestDTO dto) {
+    public DeveloperResult<Boolean> replyMessage(Long id, ReplyMessageRequestDTO req) {
         GroupMessagePO groupMessagePO = groupMessageRepository.getById(id);
-        if(groupMessagePO==null){
-            return DeveloperResult.error("回复消息不存在");
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        if (groupMessagePO == null) {
+            return DeveloperResult.error(serialNo, "回复消息不存在");
         }
-        dto.setReferenceId(id);
-        this.sendMessage(dto);
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        this.sendMessage(SendMessageRequestDTO.builder().serialNo(serialNo).receiverId(req.getReceiverId()).messageContent(req.getMessageContent())
+                .messageMainType(req.getMessageMainType()).messageContentType(req.getMessageContentType()).groupId(req.getGroupId()).atUserIds(req.getAtUserIds())
+                .referenceId(id).build());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
      * 收藏
-     * @param messageId
+     *
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> collectionMessage(Long messageId) {
+    public DeveloperResult<Boolean> collectionMessage(CollectionMessageRequestDTO req) {
         return null;
     }
 
     /**
      * 转发
-     * @param messageId
-     * @param userIdList
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> forwardMessage(Long messageId, List<Long> userIdList) {
-        GroupMessagePO groupMessagePO = groupMessageRepository.getById(messageId);
-        if(groupMessagePO==null){
-            return DeveloperResult.error("转发消息本体不存在");
+    public DeveloperResult<Boolean> forwardMessage(ForwardMessageRequestDTO req) {
+        GroupMessagePO groupMessagePO = groupMessageRepository.getById(req.getMessageId());
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        req.setSerialNo(serialNo);
+        if (groupMessagePO == null) {
+            return DeveloperResult.error(serialNo, "转发消息本体不存在");
         }
 
-        for (Long userId : userIdList) {
+        for (Long userId : req.getUserIdList()) {
             SendMessageRequestDTO dto = new SendMessageRequestDTO();
+            dto.setSerialNo(serialNo);
             dto.setMessageContent(groupMessagePO.getMessageContent());
             dto.setReceiverId(userId);
             dto.setMessageContentType(MessageContentTypeEnum.fromCode(groupMessagePO.getMessageContentType()));
             dto.setMessageMainType(MessageMainTypeEnum.GROUP_MESSAGE);
+
             this.sendMessage(dto);
         }
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
      * 点赞
-     * @param messageId
+     * @param req
      * @return
      */
     @Async
     @Transactional
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId) {
-        return messageLikeService.like(messageId, MessageMainTypeEnum.GROUP_MESSAGE);
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(MessageLikeRequestDTO req) {
+        return messageLikeService.like(req, MessageMainTypeEnum.GROUP_MESSAGE);
     }
 
     /**
      * 取消点赞
-     * @param messageId
+     *
+     * @param req
      * @return
      */
     @Async
     @Transactional
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId) {
-        return messageLikeService.unLike(messageId, MessageMainTypeEnum.GROUP_MESSAGE);
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(MessageLikeRequestDTO req) {
+        return messageLikeService.unLike(req, MessageMainTypeEnum.GROUP_MESSAGE);
     }
 
     @Override
@@ -370,7 +373,7 @@ public class GroupMessageServiceImpl implements MessageService {
         return null;
     }
 
-    private GroupMessagePO createGroupMessageMode(Long groupId, Long sendId, String sendNickName, List<Long> atUserIds, String message, MessageContentTypeEnum messageContentType){
+    private GroupMessagePO createGroupMessageMode(Long groupId, Long sendId, String sendNickName, List<Long> atUserIds, String message, MessageContentTypeEnum messageContentType) {
         GroupMessagePO groupMessage = new GroupMessagePO();
         groupMessage.setGroupId(groupId);
         groupMessage.setSendId(sendId);
@@ -379,13 +382,13 @@ public class GroupMessageServiceImpl implements MessageService {
         groupMessage.setMessageContentType(messageContentType.code());
         groupMessage.setMessageStatus(0);
         groupMessage.setSendTime(new Date());
-        if(atUserIds!=null) {
+        if (atUserIds != null) {
             groupMessage.setAtUserIds(atUserIds.toString());
         }
         return groupMessage;
     }
 
-    private MessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime){
+    private MessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime) {
         return MessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
                 .messageContentTypeEnum(messageContentTypeEnum)
                 .messageId(messageId)

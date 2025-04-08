@@ -44,13 +44,14 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public DeveloperResult<TokenDTO> Login(LoginDTO dto) {
+        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
         try {
             Map<String, Object> response = oAuthClient.getToken("password", dto.getAccount(), dto.getPassword(), "client_dev", "dev");
             TokenDTO tokenDTO = TokenDTO.builder().accessToken(response.get("access_token").toString()).refreshToken(response.get("refresh_token").toString()).build();
-            return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),tokenDTO);
+            return DeveloperResult.success(serialNo,tokenDTO);
         }catch (FeignException e){
             String errorMsg = parseAndHandleError(e.contentUTF8());
-            return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),e.status(),errorMsg);
+            return DeveloperResult.error(serialNo,e.status(),errorMsg);
         }
     }
 

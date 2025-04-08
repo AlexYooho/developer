@@ -5,6 +5,8 @@ import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.payment.dto.OpenRedPacketsRequestDTO;
+import com.developer.payment.dto.ReturnTransferRequestDTO;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.enums.TransferStatusEnum;
 import com.developer.payment.enums.WalletOperationTypeEnum;
@@ -38,49 +40,50 @@ public class TransferMoneyPaymentService implements PaymentService {
      */
     @Override
     public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto) {
+        String serialNo = dto.getTransferInfoDTO().getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getTransferInfoDTO().getSerialNo();
         if(dto.getTransferInfoDTO().getTransferAmount().compareTo(BigDecimal.ZERO)<=0){
-            return DeveloperResult.error("转账金额必须大于0");
+            return DeveloperResult.error(serialNo,"转账金额必须大于0");
         }
 
-
         if(dto.getTransferInfoDTO().getPaymentChannel()== PaymentChannelEnum.FRIEND && dto.getTransferInfoDTO().getToUserId()==null){
-            return DeveloperResult.error("请指定转账对象");
+            return DeveloperResult.error(serialNo,"请指定转账对象");
         }
 
         if(dto.getTransferInfoDTO().getPaymentChannel()== PaymentChannelEnum.GROUP && (dto.getTransferInfoDTO().getToGroupId()==null || dto.getTransferInfoDTO().getToUserId()==null)) {
-            return DeveloperResult.error("请指定转账群组和对象");
+            return DeveloperResult.error(serialNo,"请指定转账群组和对象");
         }
 
-        DeveloperResult<Boolean> transactionResult = walletService.doMoneyTransaction(SelfUserInfoContext.selfUserInfo().getUserId(), dto.getTransferInfoDTO().getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.EXPENDITURE);
+        DeveloperResult<Boolean> transactionResult = walletService.doMoneyTransaction(serialNo,SelfUserInfoContext.selfUserInfo().getUserId(), dto.getTransferInfoDTO().getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.EXPENDITURE);
         if(!transactionResult.getIsSuccessful()){
-            return DeveloperResult.error(transactionResult.getMsg());
+            return DeveloperResult.error(serialNo,transactionResult.getMsg());
         }
 
         transferInfoRepository.save(TransferInfoPO.builder().TransferAmount(dto.getTransferInfoDTO().getTransferAmount()).userId(SelfUserInfoContext.selfUserInfo().getUserId())
                 .receiverUserId(dto.getTransferInfoDTO().getToUserId()).transferStatus(TransferStatusEnum.PENDING)
                 .createdTime(new Date()).updateTime(new Date()).build());
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
      * 确认收款
-     * @param id
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<BigDecimal> amountCharged(Long id) {
-        TransferInfoPO transferInfo = transferInfoRepository.getById(id);
+    public DeveloperResult<BigDecimal> amountCharged(OpenRedPacketsRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        TransferInfoPO transferInfo = transferInfoRepository.getById(req.getRedPacketsId());
         if(transferInfo==null){
-            return DeveloperResult.error("转账记录不存在");
+            return DeveloperResult.error(serialNo,"转账记录不存在");
         }
 
         if(!Objects.equals(transferInfo.getReceiverUserId(), SelfUserInfoContext.selfUserInfo().getUserId())){
-            return DeveloperResult.error("您不是收款人，无法确认收款");
+            return DeveloperResult.error(serialNo,"您不是收款人，无法确认收款");
         }
 
         if(transferInfo.getTransferStatus() == TransferStatusEnum.SUCCESS){
-            return DeveloperResult.error("已确认收款,无法再次收款");
+            return DeveloperResult.error(serialNo,"已确认收款,无法再次收款");
         }
 
         transferInfo.setTransferStatus(TransferStatusEnum.SUCCESS);
@@ -88,28 +91,29 @@ public class TransferMoneyPaymentService implements PaymentService {
         transferInfoRepository.updateById(transferInfo);
 
         // 增加钱包余额
-        DeveloperResult<Boolean> transactionResult = walletService.doMoneyTransaction(SelfUserInfoContext.selfUserInfo().getUserId(), transferInfo.getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.INCOME);
+        DeveloperResult<Boolean> transactionResult = walletService.doMoneyTransaction(serialNo,SelfUserInfoContext.selfUserInfo().getUserId(), transferInfo.getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.INCOME);
         if(!transactionResult.getIsSuccessful()){
-            return DeveloperResult.error(transactionResult.getMsg());
+            return DeveloperResult.error(serialNo,transactionResult.getMsg());
         }
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),transferInfo.getTransferAmount());
+        return DeveloperResult.success(serialNo,transferInfo.getTransferAmount());
     }
 
     /**
      * 退回金额
-     * @param id
+     * @param req
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> amountRefunded(Long id) {
-        TransferInfoPO transferInfo = transferInfoRepository.getById(id);
+    public DeveloperResult<Boolean> amountRefunded(ReturnTransferRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        TransferInfoPO transferInfo = transferInfoRepository.getById(req.getRedPacketsId());
         if(transferInfo==null){
-            return DeveloperResult.error("转账记录不存在");
+            return DeveloperResult.error(serialNo,"转账记录不存在");
         }
 
         if(transferInfo.getTransferStatus() == TransferStatusEnum.SUCCESS || transferInfo.getTransferStatus() == TransferStatusEnum.REFUND){
-            return DeveloperResult.error("转账已被收款或已退回,无法操作");
+            return DeveloperResult.error(serialNo,"转账已被收款或已退回,无法操作");
         }
 
         transferInfo.setTransferStatus(TransferStatusEnum.REFUND);
@@ -117,11 +121,11 @@ public class TransferMoneyPaymentService implements PaymentService {
         transferInfoRepository.updateById(transferInfo);
 
         // 增加钱包余额
-        DeveloperResult<Boolean> transactionResult = walletService.doMoneyTransaction(transferInfo.getUserId(), transferInfo.getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.INCOME);
+        DeveloperResult<Boolean> transactionResult = walletService.doMoneyTransaction(serialNo,transferInfo.getUserId(), transferInfo.getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.INCOME);
         if(!transactionResult.getIsSuccessful()){
-            return DeveloperResult.error(transactionResult.getMsg());
+            return DeveloperResult.error(serialNo,transactionResult.getMsg());
         }
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 }

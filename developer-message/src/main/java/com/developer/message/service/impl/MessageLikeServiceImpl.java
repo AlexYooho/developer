@@ -8,6 +8,7 @@ import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.message.dto.MessageLikeRequestDTO;
 import com.developer.message.dto.MessageLikeEventDTO;
 import com.developer.message.pojo.GroupMessagePO;
 import com.developer.message.pojo.PrivateMessagePO;
@@ -45,19 +46,19 @@ public class MessageLikeServiceImpl implements MessageLikeService {
     private SnowflakeNoUtil snowflakeNoUtil;
 
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> like(Long messageId, MessageMainTypeEnum messageMainTypeEnum) {
+    public CompletableFuture<DeveloperResult<Boolean>> like(MessageLikeRequestDTO req, MessageMainTypeEnum messageMainTypeEnum) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String lockKey = RedisKeyConstant.MESSAGE_LIKE_KEY(messageMainTypeEnum, messageId, userId);
-        String messageLikeStatusKey = RedisKeyConstant.MESSAGE_LIKE_USER_KEY(messageMainTypeEnum, messageId, userId);
-        String messageLikeCountKey = RedisKeyConstant.MESSAGE_LIKE_MESSAGE_KEY(messageMainTypeEnum,messageId);
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String lockKey = RedisKeyConstant.MESSAGE_LIKE_KEY(messageMainTypeEnum, req.getMessageId(), userId);
+        String messageLikeStatusKey = RedisKeyConstant.MESSAGE_LIKE_USER_KEY(messageMainTypeEnum, req.getMessageId(), userId);
+        String messageLikeCountKey = RedisKeyConstant.MESSAGE_LIKE_MESSAGE_KEY(messageMainTypeEnum,req.getMessageId());
         if(!redisUtil.hasKey(messageLikeCountKey)){
             // 做缓存预热
-            Long likeCount = getMessageLikeCount(messageId,messageMainTypeEnum);
+            Long likeCount = getMessageLikeCount(req.getMessageId(),messageMainTypeEnum);
             if(likeCount>0){
                 redisUtil.set(messageLikeCountKey,likeCount,1, TimeUnit.HOURS);
             }
         }
-        String serialNo = snowflakeNoUtil.getSerialNo();
         // 生成分布式锁的key,基于messageId和userId
         RLock lock = redissonClient.getLock(lockKey);
         try{
@@ -66,7 +67,7 @@ public class MessageLikeServiceImpl implements MessageLikeService {
                 Boolean isLiked = redisUtil.get(messageLikeStatusKey, Boolean.class);
 
                 if(isLiked!=null && isLiked){
-                    return CompletableFuture.completedFuture(DeveloperResult.error("不能重复点赞"));
+                    return CompletableFuture.completedFuture(DeveloperResult.error(serialNo,"不能重复点赞"));
                 }
 
                 redisUtil.set(messageLikeStatusKey,true,24,TimeUnit.HOURS);
@@ -74,15 +75,15 @@ public class MessageLikeServiceImpl implements MessageLikeService {
                 redisUtil.setExpire(messageLikeCountKey,1,TimeUnit.HOURS);
 
                 // 推送mq事件，更新数据库
-                rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(messageId).userId(userId).messageMainTypeEnum(messageMainTypeEnum).build());
+                rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(req.getMessageId()).userId(userId).messageMainTypeEnum(messageMainTypeEnum).build());
 
-                return CompletableFuture.completedFuture(DeveloperResult.success(snowflakeNoUtil.getSerialNo(),true));
+                return CompletableFuture.completedFuture(DeveloperResult.success(serialNo,true));
             }else{
-                return CompletableFuture.completedFuture(DeveloperResult.error("点赞失败,请稍后重试"));
+                return CompletableFuture.completedFuture(DeveloperResult.error(serialNo,"点赞失败,请稍后重试"));
             }
         }catch (InterruptedException e){
             Thread.currentThread().interrupt();
-            return CompletableFuture.completedFuture(DeveloperResult.error("点赞失败,请稍后重试"));
+            return CompletableFuture.completedFuture(DeveloperResult.error(serialNo,"点赞失败,请稍后重试"));
         }finally {
             // 释放锁
             if(lock.isHeldByCurrentThread()){
@@ -92,7 +93,7 @@ public class MessageLikeServiceImpl implements MessageLikeService {
     }
 
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> unLike(Long messageId, MessageMainTypeEnum messageMainTypeEnum) {
+    public CompletableFuture<DeveloperResult<Boolean>> unLike(MessageLikeRequestDTO req, MessageMainTypeEnum messageMainTypeEnum) {
         return null;
     }
 

@@ -44,6 +44,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public DeveloperResult<CreateGroupRequestDTO> createGroup(CreateGroupRequestDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         GroupInfoPO group = BeanUtils.copyProperties(dto, GroupInfoPO.class);
         assert group != null;
@@ -61,16 +62,17 @@ public class GroupServiceImpl implements GroupService {
         dto.setAliasName(groupMember.getAliasName());
         dto.setRemark(groupMember.getRemark());
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),dto);
+        return DeveloperResult.success(serialNo,dto);
     }
 
     @Override
     public DeveloperResult<CreateGroupRequestDTO> modifyGroup(CreateGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         GroupInfoPO group = groupInfoRepository.getById(req.getId());
         if(group==null){
-            return DeveloperResult.error("群不存在,请确认再操作");
+            return DeveloperResult.error(serialNo,"群不存在,请确认再操作");
         }
 
         if(group.getOwnerId().equals(userId)){
@@ -80,54 +82,57 @@ public class GroupServiceImpl implements GroupService {
 
         GroupMemberPO member = groupMemberRepository.findByGroupIdAndUserId(req.getId(), userId);
         if(member==null){
-            return DeveloperResult.error("你不是群聊的成员");
+            return DeveloperResult.error(serialNo,"你不是群聊的成员");
         }
 
         member.setAliasName(StringUtils.isEmpty(req.getAliasName())? nickName : req.getAliasName());
         member.setRemark(StringUtils.isEmpty(req.getRemark())?group.getName():req.getRemark());
         groupMemberRepository.updateById(member);
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),req);
+        return DeveloperResult.success(serialNo,req);
     }
 
     @Override
-    public DeveloperResult<Boolean> deleteGroup(Long groupId) {
+    public DeveloperResult<Boolean> deleteGroup(DissolveGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        GroupInfoPO group = this.groupInfoRepository.getById(groupId);
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        GroupInfoPO group = this.groupInfoRepository.getById(req.getGroupId());
         if(!group.getOwnerId().equals(userId)){
-            return DeveloperResult.error("您不是群主,只有群主才能解散");
+            return DeveloperResult.error(serialNo,"您不是群主,只有群主才能解散");
         }
 
         group.setDeleted(true);
         this.groupInfoRepository.updateById(group);
 
-        this.groupMemberRepository.removeByGroupId(groupId);
+        this.groupMemberRepository.removeByGroupId(req.getGroupId());
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     @Override
-    public DeveloperResult<GroupInfoDTO> findById(Long groupId) {
+    public DeveloperResult<GroupInfoDTO> findById(FindGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        GroupInfoPO group = groupInfoRepository.getById(groupId);
-        GroupMemberPO groupMember = groupMemberRepository.findByGroupIdAndUserId(groupId, userId);
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        GroupInfoPO group = groupInfoRepository.getById(req.getGroupId());
+        GroupMemberPO groupMember = groupMemberRepository.findByGroupIdAndUserId(req.getGroupId(), userId);
         if(groupMember==null){
-            return DeveloperResult.error("您未加入群聊");
+            return DeveloperResult.error(serialNo,"您未加入群聊");
         }
 
         GroupInfoDTO dto = BeanUtils.copyProperties(group, GroupInfoDTO.class);
         assert dto != null;
         dto.setAliasName(groupMember.getAliasName());
         dto.setRemark(groupMember.getRemark());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),dto);
+        return DeveloperResult.success(serialNo,dto);
     }
 
     @Override
-    public DeveloperResult<List<GroupInfoDTO>> findGroupList() {
+    public DeveloperResult<List<GroupInfoDTO>> findGroupList(String serialNo) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
         List<GroupMemberPO> groupMembers = groupMemberRepository.findByUserId(userId);
         if(groupMembers.isEmpty()){
-            return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+            return DeveloperResult.success(serialNo);
         }
 
         List<Long> ids = groupMembers.stream().map((GroupMemberPO::getGroupId)).collect(Collectors.toList());
@@ -140,27 +145,28 @@ public class GroupServiceImpl implements GroupService {
             groupInfoRep.setRemark(member.getRemark());
             return groupInfoRep;
         }).collect(Collectors.toList());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
+        return DeveloperResult.success(serialNo,list);
     }
 
     @Override
     public DeveloperResult<Boolean> invite(GroupInviteRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
         GroupInfoPO group = this.groupInfoRepository.getById(req.getGroupId());
         if(group==null){
-            return DeveloperResult.error("群聊不存在");
+            return DeveloperResult.error(serialNo,"群聊不存在");
         }
 
         List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(req.getGroupId());
         long size = members.stream().filter(x -> !x.getQuit()).count();
         if(req.getFriendIds().size()+size> DeveloperConstant.MAX_GROUP_MEMBER){
-            return DeveloperResult.error("群聊人数不能大于"+DeveloperConstant.MAX_GROUP_MEMBER+"人");
+            return DeveloperResult.error(serialNo,"群聊人数不能大于"+DeveloperConstant.MAX_GROUP_MEMBER+"人");
         }
 
         DeveloperResult<List<FriendInfoDTO>> developerResult = friendClient.friends();
         List<FriendInfoDTO> friends = (List<FriendInfoDTO>) developerResult.getData();
         List<FriendInfoDTO> friendsList = req.getFriendIds().stream().map(id -> friends.stream().filter(f -> f.getId().equals(id)).findFirst().get()).collect(Collectors.toList());
         if(friendsList.size()!=req.getFriendIds().size()){
-            return DeveloperResult.error("部分用户不是您的好友,邀请失败");
+            return DeveloperResult.error(serialNo,"部分用户不是您的好友,邀请失败");
         }
 
         List<GroupMemberPO> groupMembers = friendsList.stream().map(f -> {
@@ -180,12 +186,13 @@ public class GroupServiceImpl implements GroupService {
             groupMemberRepository.saveOrUpdateBatch(groupMembers);
         }
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     @Override
-    public DeveloperResult<List<GroupMemberDTO>> findGroupMembers(Long groupId) {
-        List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(groupId);
+    public DeveloperResult<List<GroupMemberDTO>> findGroupMembers(FindGroupMembersRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(req.getGroupId());
         List<Long> userIds = members.stream().map(GroupMemberPO::getUserId).collect(Collectors.toList());
         List<Long> onlineUserIds = imOnlineUtil.getOnlineUser(userIds);
         List<GroupMemberDTO> list = members.stream().map(x -> {
@@ -194,41 +201,44 @@ public class GroupServiceImpl implements GroupService {
             vo.setOnline(onlineUserIds.contains(x.getUserId()));
             return vo;
         }).collect(Collectors.toList());
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),list);
+        return DeveloperResult.success(serialNo,list);
     }
 
     @Override
-    public DeveloperResult<Boolean> quitGroup(Long groupId) {
+    public DeveloperResult<Boolean> quitGroup(QuitGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        GroupInfoPO group = groupInfoRepository.getById(groupId);
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        GroupInfoPO group = groupInfoRepository.getById(req.getGroupId());
         if(group.getOwnerId().equals(userId)){
-            return DeveloperResult.error("你是群主,不能退出");
+            return DeveloperResult.error(serialNo,"你是群主,不能退出");
         }
 
-        this.groupMemberRepository.removeByGroupAndUserId(groupId,userId);
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        this.groupMemberRepository.removeByGroupAndUserId(req.getGroupId(),userId);
+        return DeveloperResult.success(serialNo);
     }
 
     @Override
-    public DeveloperResult<Boolean> kickGroup(Long groupId, Long targetUserId) {
+    public DeveloperResult<Boolean> kickGroup(KickOutGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        GroupInfoPO group = groupInfoRepository.getById(groupId);
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        GroupInfoPO group = groupInfoRepository.getById(req.getGroupId());
         if(!group.getOwnerId().equals(userId)){
-            return DeveloperResult.error("你不是群主，不能踢人");
+            return DeveloperResult.error(serialNo,"你不是群主，不能踢人");
         }
 
-        if(targetUserId.equals(userId)){
-            return DeveloperResult.error("你不能踢自己");
+        if(req.getUserId().equals(userId)){
+            return DeveloperResult.error(serialNo,"你不能踢自己");
         }
 
-        groupMemberRepository.removeByGroupAndUserId(groupId,targetUserId);
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        groupMemberRepository.removeByGroupAndUserId(req.getGroupId(),req.getUserId());
+        return DeveloperResult.success(serialNo);
     }
 
     @Override
-    public DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo() {
+    public DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo(String serialNo) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
+        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
         List<SelfJoinGroupInfoDTO> joinAllGroupInfoList = groupInfoRepository.findUserJoinGroupInfo(userId);
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),joinAllGroupInfoList);
+        return DeveloperResult.success(serialNo,joinAllGroupInfoList);
     }
 }

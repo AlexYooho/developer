@@ -97,29 +97,29 @@ public class BaseRedPacketsService {
      * @param targetId
      * @return
      */
-    public DeveloperResult<Boolean> receiveTargetProcessor(PaymentChannelEnum channel, Long targetId,Long userId,Integer redPacketsCount){
+    public DeveloperResult<Boolean> receiveTargetProcessor(String serialNo,PaymentChannelEnum channel, Long targetId,Long userId,Integer redPacketsCount){
         if(channel== PaymentChannelEnum.FRIEND) {
             if(redPacketsCount>1){
-                return DeveloperResult.error("好友红包一次只能发一个");
+                return DeveloperResult.error(serialNo,"好友红包一次只能发一个");
             }
 
             FriendInfoDTO isFriend = friendClient.isFriend(targetId, userId).getData();
             if (isFriend==null) {
-                return DeveloperResult.error("对方不是您的好友，无法发送红包！");
+                return DeveloperResult.error(serialNo,"对方不是您的好友，无法发送红包！");
             }
         } else if(channel== PaymentChannelEnum.GROUP){
             List<SelfJoinGroupInfoDTO> groupList = groupClient.getSelfJoinAllGroupInfo().getData();
             Optional<SelfJoinGroupInfoDTO> optional = groupList.stream().filter(x -> x.getGroupId().equals(targetId)).findAny();
             if(!optional.isPresent()){
-                return DeveloperResult.error("你不在群聊中,无法发送红包！");
+                return DeveloperResult.error(serialNo,"你不在群聊中,无法发送红包！");
             }else{
                 if(!optional.get().getQuit()){
-                    return DeveloperResult.error("你不在群聊中,无法发送红包！");
+                    return DeveloperResult.error(serialNo,"你不在群聊中,无法发送红包！");
                 }
             }
         }
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
@@ -177,7 +177,7 @@ public class BaseRedPacketsService {
      * @param targetId
      * @param channelEnum
      */
-    public void sendRedPacketsMessage(Long targetId,PaymentChannelEnum channelEnum){
+    public void sendRedPacketsMessage(String serialNo,Long targetId,PaymentChannelEnum channelEnum){
         MessageMainTypeEnum messageMainType = channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE;
         SendChatMessageDTO dto = SendChatMessageDTO.builder()
                 .receiverId(targetId)
@@ -186,7 +186,7 @@ public class BaseRedPacketsService {
                 .messageContentType(MessageContentTypeEnum.RED_PACKETS)
                 .groupId(targetId)
                 .build();
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE,dto);
+        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE,dto);
     }
 
     /**
@@ -194,8 +194,8 @@ public class BaseRedPacketsService {
      * @param redPacketsId
      * @param delayRecoveryTime
      */
-    public void redPacketsRecoveryEvent(Long redPacketsId,Integer delayRecoveryTime){
-        rabbitMQUtil.sendDelayMessage(DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_RETURN,redPacketsId,delayRecoveryTime);
+    public void redPacketsRecoveryEvent(String serialNo,Long redPacketsId,Integer delayRecoveryTime){
+        rabbitMQUtil.sendDelayMessage(serialNo,DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_RETURN,redPacketsId,delayRecoveryTime);
     }
 
     /**
@@ -203,7 +203,7 @@ public class BaseRedPacketsService {
      * @param redPacketsInfo
      * @return
      */
-    public DeveloperResult<BigDecimal> openPrivateChatRedPackets(RedPacketsInfoPO redPacketsInfo){
+    public DeveloperResult<BigDecimal> openPrivateChatRedPackets(String serialNo,RedPacketsInfoPO redPacketsInfo){
         RedPacketsReceiveDetailsPO detailsPO;
         List<RedPacketsReceiveDetailsPO> list = redPacketsReceiveDetailsRepository.findList(redPacketsInfo.getId());
         if(list.isEmpty()){
@@ -234,13 +234,13 @@ public class BaseRedPacketsService {
         redPacketsInfo.setStatus(RedPacketsStatusEnum.FINISHED);
         redPacketsInfo.setRemainingCount(0);
         redPacketsInfoRepository.updateById(redPacketsInfo);
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     /**
      * 红包领取通知消息
      */
-    public void redPacketsReceiveNotifyMessage(Long targetId,PaymentChannelEnum channelEnum){
+    public void redPacketsReceiveNotifyMessage(String serialNo,Long targetId,PaymentChannelEnum channelEnum){
         SendChatMessageDTO dto = SendChatMessageDTO.builder()
                 .receiverId(targetId)
                 .messageContent(SelfUserInfoContext.selfUserInfo().getNickName()+"领取了你的红包")
@@ -248,6 +248,6 @@ public class BaseRedPacketsService {
                 .messageContentType(MessageContentTypeEnum.RED_PACKETS)
                 .groupId(targetId)
                 .build();
-        rabbitMQUtil.sendMessage(DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE,dto);
+        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE,dto);
     }
 }

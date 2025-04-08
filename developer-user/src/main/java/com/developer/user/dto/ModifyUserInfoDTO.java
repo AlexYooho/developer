@@ -1,9 +1,13 @@
 package com.developer.user.dto;
 
 import lombok.Data;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 @Data
 public class ModifyUserInfoDTO {
+
+    @JsonProperty("serial_no")
+    private String serialNo;
 
     private Long id;
 

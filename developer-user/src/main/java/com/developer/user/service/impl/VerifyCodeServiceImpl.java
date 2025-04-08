@@ -6,6 +6,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.MailUtil;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.user.dto.SendRegisterVerifyCodeRequestDTO;
 import com.developer.user.service.VerifyCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,16 +26,17 @@ public class VerifyCodeServiceImpl implements VerifyCodeService {
     private SnowflakeNoUtil snowflakeNoUtil;
 
     @Override
-    public DeveloperResult<Boolean> sendVerifyCode(VerifyCodeTypeEnum verifyCodeTypeEnum, String emailAccount) {
-        if(!mailUtil.verifyEmailAddress(emailAccount)){
-            return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"请输入正确的邮箱");
+    public DeveloperResult<Boolean> sendVerifyCode(SendRegisterVerifyCodeRequestDTO req) {
+        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        if(!mailUtil.verifyEmailAddress(req.getEmailAddress())){
+            return DeveloperResult.error(serialNo,500,"请输入正确的邮箱");
         }
 
         Integer code = mailUtil.sendAuthorizationCode();
-        String key = RedisKeyConstant.verifyCode(verifyCodeTypeEnum,emailAccount);
+        String key = RedisKeyConstant.verifyCode(req.getVerifyCodeType(),req.getEmailAddress());
         redisUtil.set(key,code,5, TimeUnit.MINUTES);
 
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+        return DeveloperResult.success(serialNo);
     }
 
     @Override
@@ -45,14 +47,14 @@ public class VerifyCodeServiceImpl implements VerifyCodeService {
     }
 
     @Override
-    public DeveloperResult<Boolean> checkVerifyCode(VerifyCodeTypeEnum verifyCodeTypeEnum, String emailAccount, Integer verifyCode) {
+    public DeveloperResult<Boolean> checkVerifyCode(String serialNo,VerifyCodeTypeEnum verifyCodeTypeEnum, String emailAccount, Integer verifyCode) {
         String key = RedisKeyConstant.verifyCode(verifyCodeTypeEnum,emailAccount);
         Integer code = redisUtil.get(key, Integer.class);
         if(code!=null && code.equals(verifyCode)){
             redisUtil.delete(key);
-            return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+            return DeveloperResult.success(serialNo);
         }else{
-            return DeveloperResult.error("验证码错误");
+            return DeveloperResult.error(serialNo,"验证码错误");
         }
     }
 }

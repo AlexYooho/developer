@@ -19,30 +19,32 @@ public class RabbitMQUtil {
 
     /**
      * 发送消息
+     *
      * @param exchange
      * @param routingKey
      * @param content
      */
-    public void sendMessage(String exchange, String routingKey, ProcessorTypeEnum messageType, Object content){
+    public void sendMessage(String serialNo, String exchange, String routingKey, ProcessorTypeEnum messageType, Object content) {
         RabbitMQMessageBodyDTO dto = RabbitMQMessageBodyDTO.builder()
-                .serialNo(UUID.randomUUID().toString())
+                .serialNo(serialNo)
                 .type(MQMessageTypeConstant.SENDMESSAGE)
                 .token(TokenUtil.getToken())
                 .data(JSON.toJSON(content))
                 .build();
-        rabbitTemplate.convertAndSend(exchange, routingKey,dto);
+        rabbitTemplate.convertAndSend(exchange, routingKey, dto);
     }
 
     /**
      * 发送延迟消息
+     *
      * @param exchange
      * @param routingKey
      * @param content
      * @param delayTime
      */
-    public void sendDelayMessage(String exchange, String routingKey, ProcessorTypeEnum messageType, Object content, int delayTime) {
+    public void sendDelayMessage(String serialNo, String exchange, String routingKey, ProcessorTypeEnum messageType, Object content, int delayTime) {
         RabbitMQMessageBodyDTO dto = RabbitMQMessageBodyDTO.builder()
-                .serialNo(UUID.randomUUID().toString())
+                .serialNo(serialNo)
                 .type(MQMessageTypeConstant.SENDMESSAGE)
                 .token(TokenUtil.getToken())
                 .data(JSON.toJSON(content))

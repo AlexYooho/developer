@@ -22,23 +22,23 @@ public interface GroupService {
 
     /**
      * 解散群聊
-     * @param groupId
+     * @param req
      * @return
      */
-    DeveloperResult<Boolean> deleteGroup(Long groupId);
+    DeveloperResult<Boolean> deleteGroup(DissolveGroupRequestDTO req);
 
     /**
      * 查找群聊
-     * @param groupId
+     * @param req
      * @return
      */
-    DeveloperResult<GroupInfoDTO> findById(Long groupId);
+    DeveloperResult<GroupInfoDTO> findById(FindGroupRequestDTO req);
 
     /**
      * 查询群聊列表
      * @return
      */
-    DeveloperResult<List<GroupInfoDTO>> findGroupList();
+    DeveloperResult<List<GroupInfoDTO>> findGroupList(String serialNo);
 
     /**
      * 邀请进群
@@ -48,30 +48,29 @@ public interface GroupService {
 
     /**
      * 查找群成员
-     * @param groupId
+     * @param req
      * @return
      */
-    DeveloperResult<List<GroupMemberDTO>> findGroupMembers(Long groupId);
+    DeveloperResult<List<GroupMemberDTO>> findGroupMembers(FindGroupMembersRequestDTO req);
 
     /**
      * 退出群聊
-     * @param groupId
+     * @param req
      * @return
      */
-    DeveloperResult<Boolean> quitGroup(Long groupId);
+    DeveloperResult<Boolean> quitGroup(QuitGroupRequestDTO req);
 
     /**
      * 踢出群聊
-     * @param groupId
-     * @param userId
+     * @param req
      * @return
      */
-    DeveloperResult<Boolean> kickGroup(Long groupId,Long userId);
+    DeveloperResult<Boolean> kickGroup(KickOutGroupRequestDTO req);
 
     /**
      * 获取当前用户所加入的群信息
      * @return
      */
-    DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo();
+    DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo(String serialNo);
 
 }

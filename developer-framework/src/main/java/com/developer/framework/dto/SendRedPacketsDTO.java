@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -15,6 +16,9 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SendRedPacketsDTO {
+
+    @JsonProperty("serial_no")
+    private String serialNo;
 
     /**
      * 红包金额
