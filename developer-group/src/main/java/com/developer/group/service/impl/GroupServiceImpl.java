@@ -44,7 +44,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public DeveloperResult<CreateGroupRequestDTO> createGroup(CreateGroupRequestDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         GroupInfoPO group = BeanUtils.copyProperties(dto, GroupInfoPO.class);
         assert group != null;
@@ -68,7 +68,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public DeveloperResult<CreateGroupRequestDTO> modifyGroup(CreateGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         GroupInfoPO group = groupInfoRepository.getById(req.getId());
         if(group==null){
@@ -95,7 +95,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public DeveloperResult<Boolean> deleteGroup(DissolveGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         GroupInfoPO group = this.groupInfoRepository.getById(req.getGroupId());
         if(!group.getOwnerId().equals(userId)){
             return DeveloperResult.error(serialNo,"您不是群主,只有群主才能解散");
@@ -112,7 +112,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public DeveloperResult<GroupInfoDTO> findById(FindGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         GroupInfoPO group = groupInfoRepository.getById(req.getGroupId());
         GroupMemberPO groupMember = groupMemberRepository.findByGroupIdAndUserId(req.getGroupId(), userId);
         if(groupMember==null){
@@ -129,7 +129,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public DeveloperResult<List<GroupInfoDTO>> findGroupList(String serialNo) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
+        serialNo = snowflakeNoUtil.getSerialNo(serialNo);
         List<GroupMemberPO> groupMembers = groupMemberRepository.findByUserId(userId);
         if(groupMembers.isEmpty()){
             return DeveloperResult.success(serialNo);
@@ -150,7 +150,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public DeveloperResult<Boolean> invite(GroupInviteRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         GroupInfoPO group = this.groupInfoRepository.getById(req.getGroupId());
         if(group==null){
             return DeveloperResult.error(serialNo,"群聊不存在");
@@ -191,7 +191,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public DeveloperResult<List<GroupMemberDTO>> findGroupMembers(FindGroupMembersRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(req.getGroupId());
         List<Long> userIds = members.stream().map(GroupMemberPO::getUserId).collect(Collectors.toList());
         List<Long> onlineUserIds = imOnlineUtil.getOnlineUser(userIds);
@@ -207,7 +207,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public DeveloperResult<Boolean> quitGroup(QuitGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         GroupInfoPO group = groupInfoRepository.getById(req.getGroupId());
         if(group.getOwnerId().equals(userId)){
             return DeveloperResult.error(serialNo,"你是群主,不能退出");
@@ -220,7 +220,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public DeveloperResult<Boolean> kickGroup(KickOutGroupRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         GroupInfoPO group = groupInfoRepository.getById(req.getGroupId());
         if(!group.getOwnerId().equals(userId)){
             return DeveloperResult.error(serialNo,"你不是群主，不能踢人");
@@ -237,7 +237,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo(String serialNo) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
+        serialNo = snowflakeNoUtil.getSerialNo(serialNo);
         List<SelfJoinGroupInfoDTO> joinAllGroupInfoList = groupInfoRepository.findUserJoinGroupInfo(userId);
         return DeveloperResult.success(serialNo,joinAllGroupInfoList);
     }

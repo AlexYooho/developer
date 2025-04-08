@@ -1,7 +1,7 @@
 package com.developer.user.dto;
 
 import lombok.Data;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 public class UserRegisterDTO {
@@ -9,16 +9,22 @@ public class UserRegisterDTO {
     @JsonProperty("serial_no")
     private String serialNo;
 
+    @JsonProperty("account")
     private String account;
 
+    @JsonProperty("password")
     private String password;
 
+    @JsonProperty("nickname")
     private String nickname;
 
+    @JsonProperty("sex")
     private Integer sex;
 
+    @JsonProperty("verify_code")
     private Integer verifyCode;
 
+    @JsonProperty("email")
     private String email;
 
 }

@@ -27,7 +27,7 @@ public class VerifyCodeServiceImpl implements VerifyCodeService {
 
     @Override
     public DeveloperResult<Boolean> sendVerifyCode(SendRegisterVerifyCodeRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         if(!mailUtil.verifyEmailAddress(req.getEmailAddress())){
             return DeveloperResult.error(serialNo,500,"请输入正确的邮箱");
         }

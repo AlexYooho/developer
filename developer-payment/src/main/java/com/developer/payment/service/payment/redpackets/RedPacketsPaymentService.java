@@ -44,7 +44,7 @@ public class RedPacketsPaymentService implements PaymentService {
      */
     @Override
     public DeveloperResult<BigDecimal> amountCharged(OpenRedPacketsRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         RedPacketsInfoPO po = redPacketsInfoRepository.getById(req.getRedPacketsId());
         if (po == null) {
             return DeveloperResult.error(serialNo,"红包不存在");
@@ -59,7 +59,7 @@ public class RedPacketsPaymentService implements PaymentService {
      */
     @Override
     public DeveloperResult<Boolean> amountRefunded(ReturnTransferRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         RedPacketsInfoPO redPacketsInfo = redPacketsInfoRepository.getById(req.getRedPacketsId());
         if (redPacketsInfo == null) {
             return DeveloperResult.error(serialNo,"红包不存在");

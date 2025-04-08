@@ -48,7 +48,7 @@ public class MessageLikeServiceImpl implements MessageLikeService {
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> like(MessageLikeRequestDTO req, MessageMainTypeEnum messageMainTypeEnum) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         String lockKey = RedisKeyConstant.MESSAGE_LIKE_KEY(messageMainTypeEnum, req.getMessageId(), userId);
         String messageLikeStatusKey = RedisKeyConstant.MESSAGE_LIKE_USER_KEY(messageMainTypeEnum, req.getMessageId(), userId);
         String messageLikeCountKey = RedisKeyConstant.MESSAGE_LIKE_MESSAGE_KEY(messageMainTypeEnum,req.getMessageId());

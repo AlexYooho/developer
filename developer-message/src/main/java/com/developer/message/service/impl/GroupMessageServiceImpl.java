@@ -75,7 +75,7 @@ public class GroupMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<List<SendMessageResultDTO>> loadMessage(LoadMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         List<SelfJoinGroupInfoDTO> joinGroupInfoList = groupInfoClient.getSelfJoinAllGroupInfo(serialNo).getData();
         if (joinGroupInfoList.isEmpty()) {
             return DeveloperResult.success(serialNo);
@@ -124,7 +124,7 @@ public class GroupMessageServiceImpl implements MessageService {
     public DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         GroupInfoDTO groupInfoDTO = groupInfoClient.findGroup(req.getGroupId(), serialNo).getData();
         if (Objects.isNull(groupInfoDTO)) {
             return DeveloperResult.error(serialNo, "群聊不存在");
@@ -182,7 +182,7 @@ public class GroupMessageServiceImpl implements MessageService {
     public DeveloperResult<Boolean> readMessage(ReadMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         GroupMessagePO lastMessage = groupMessageRepository.findLastMessage(req.getTargetId());
         if (Objects.isNull(lastMessage)) {
             return DeveloperResult.success(serialNo);
@@ -211,7 +211,7 @@ public class GroupMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<Boolean> recallMessage(RecallMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         GroupMessagePO groupMessage = groupMessageRepository.getById(req.getMessageId());
         if (groupMessage == null) {
             return DeveloperResult.error(serialNo, "消息不存在");
@@ -250,7 +250,7 @@ public class GroupMessageServiceImpl implements MessageService {
     public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
         req.setPage(req.getPage() > 0 ? req.getPage() : 1);
         req.setSize(req.getSize() > 0 ? req.getSize() : 10);
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         long stIdx = (req.getPage() - 1) * req.getSize();
 
         SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = groupInfoClient.getSelfJoinAllGroupInfo(serialNo).getData().stream().filter(x -> x.getGroupId().equals(req.getTargetId()) && !x.getQuit()).findFirst().get();
@@ -270,7 +270,7 @@ public class GroupMessageServiceImpl implements MessageService {
      */
     @Override
     public DeveloperResult<Boolean> insertMessage(MessageInsertDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         return DeveloperResult.success(serialNo);
     }
 
@@ -282,7 +282,7 @@ public class GroupMessageServiceImpl implements MessageService {
      */
     @Override
     public DeveloperResult<Boolean> deleteMessage(RemoveMessageRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         return DeveloperResult.success(serialNo);
     }
 
@@ -295,7 +295,7 @@ public class GroupMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<Boolean> replyMessage(Long id, ReplyMessageRequestDTO req) {
         GroupMessagePO groupMessagePO = groupMessageRepository.getById(id);
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         if (groupMessagePO == null) {
             return DeveloperResult.error(serialNo, "回复消息不存在");
         }
@@ -324,7 +324,7 @@ public class GroupMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<Boolean> forwardMessage(ForwardMessageRequestDTO req) {
         GroupMessagePO groupMessagePO = groupMessageRepository.getById(req.getMessageId());
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         req.setSerialNo(serialNo);
         if (groupMessagePO == null) {
             return DeveloperResult.error(serialNo, "转发消息本体不存在");

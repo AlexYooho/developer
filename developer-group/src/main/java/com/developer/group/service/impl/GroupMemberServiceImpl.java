@@ -26,7 +26,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
 
     @Override
     public DeveloperResult<List<Long>> findGroupMember(FindGroupMemberUserIdRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(req.getGroupId());
         List<Long> userIds = members.stream().map(GroupMemberPO::getUserId).collect(Collectors.toList());
         return DeveloperResult.success(serialNo,userIds);
@@ -34,7 +34,7 @@ public class GroupMemberServiceImpl implements GroupMemberService {
 
     @Override
     public DeveloperResult<Boolean> batchModifyGroupMemberInfo(BatchModifyGroupMemberInfoRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         List<GroupMemberPO> ll = new ArrayList<>();
         this.groupMemberRepository.updateBatchById(ll);
 

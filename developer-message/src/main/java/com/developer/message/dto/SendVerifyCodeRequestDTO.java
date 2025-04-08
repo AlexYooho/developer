@@ -2,7 +2,7 @@ package com.developer.message.dto;
 
 import com.developer.framework.enums.VerifyCodeTypeEnum;
 import lombok.Data;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 public class SendVerifyCodeRequestDTO {

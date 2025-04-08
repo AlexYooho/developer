@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public DeveloperResult<TokenDTO> Login(LoginDTO dto) {
-        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
         try {
             Map<String, Object> response = oAuthClient.getToken("password", dto.getAccount(), dto.getPassword(), "client_dev", "dev");
             TokenDTO tokenDTO = TokenDTO.builder().accessToken(response.get("access_token").toString()).refreshToken(response.get("refresh_token").toString()).build();

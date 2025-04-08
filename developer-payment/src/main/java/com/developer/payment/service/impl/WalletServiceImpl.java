@@ -85,7 +85,7 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public DeveloperResult<Boolean> freezePaymentAmount(FreezePayAmountRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
 
         if (walletInfo.getBalance().compareTo(req.getAmount()) < 0) {
@@ -106,7 +106,7 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public DeveloperResult<Boolean> CreateWallet(String serialNo) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
+        serialNo = snowflakeNoUtil.getSerialNo(serialNo);
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
         if(walletInfo!=null){
             return DeveloperResult.error(serialNo,"用户已开通钱包");

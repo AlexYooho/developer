@@ -56,7 +56,7 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
     @Override
     public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
         if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
             return DeveloperResult.error(serialNo,"红包金额必须大于0");
         }

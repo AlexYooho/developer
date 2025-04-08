@@ -1,7 +1,7 @@
 package com.developer.friend.dto;
 
 import lombok.Data;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 

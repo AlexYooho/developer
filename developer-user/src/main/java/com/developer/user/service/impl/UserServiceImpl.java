@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public DeveloperResult<Boolean> register(UserRegisterDTO dto) {
-        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
         if("".equals(dto.getAccount())){
             return DeveloperResult.error(serialNo,500,"请输入正确的手机号");
         }
@@ -106,7 +106,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public DeveloperResult<UserInfoDTO> findSelfUserInfo(String serialNo) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
+        serialNo = snowflakeNoUtil.getSerialNo(serialNo);
         UserPO user = userRepository.getById(userId);
         UserInfoDTO userInfoDTO = BeanUtils.copyProperties(user, UserInfoDTO.class);
         return DeveloperResult.success(serialNo,userInfoDTO);
@@ -119,7 +119,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public DeveloperResult<UserInfoDTO> findUserInfoById(FindUserRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         UserPO user = userRepository.getById(req.getUserId());
         UserInfoDTO userInfoDTO = BeanUtils.copyProperties(user, UserInfoDTO.class);
         // 设置在线状态
@@ -134,7 +134,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public DeveloperResult<List<UserInfoDTO>> findUserByName(FindUserRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         List<UserPO> userInfos = userRepository.findByName(req.getUserName());
         List<Long> userIds = userInfos.stream().map(UserPO::getId).collect(Collectors.toList());
         List<Long> onlineUserIds = imOnlineUtil.getOnlineUser(userIds);
@@ -148,7 +148,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public DeveloperResult<Boolean> modifyUserInfo(ModifyUserInfoDTO dto) {
-        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         if(!userId.equals(dto.getId())){
             return DeveloperResult.error(serialNo,"不允许修改其他用户信息");
@@ -196,7 +196,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public DeveloperResult<List<OnlineTerminalDTO>> findOnlineTerminal(FindOnlineTerminalRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         List<Long> userIdList = Arrays.stream(req.getUserIds().split(",")).map(Long::parseLong).collect(Collectors.toList());
         Map<Long, List<MessageTerminalTypeEnum>> onlineTerminals = imOnlineUtil.getOnlineTerminal(userIdList);
         List<OnlineTerminalDTO> list=new LinkedList<>();
@@ -212,7 +212,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public DeveloperResult<Boolean> modifyUserPassword(ModifyUserPasswordDTO dto) {
-        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
         if(dto.getOldPassword().isEmpty()){
             return DeveloperResult.error(serialNo,"请输入原始密码");
         }

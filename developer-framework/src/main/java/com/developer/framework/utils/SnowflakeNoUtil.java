@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -47,4 +48,7 @@ public class SnowflakeNoUtil {
         return timestamp + machineIdStr + sequenceStr;
     }
 
+    public String getSerialNo(String serialNo){
+        return !StringUtils.hasText(serialNo) ? getSerialNo() : serialNo;
+    }
 }

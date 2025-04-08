@@ -1,7 +1,7 @@
 package com.developer.payment.dto;
 
 import lombok.Data;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 public class ReturnTransferRequestDTO {

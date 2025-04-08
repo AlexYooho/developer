@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -69,7 +70,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     public DeveloperResult<List<SendMessageResultDTO>> loadMessage(LoadMessageRequestDTO req) {
         List<SendMessageResultDTO> list = new ArrayList<>();
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
         Long maxMessageId = redisUtil.get(key, Long.class) == null ? 0L:redisUtil.get(key, Long.class);
         if(req.getMinId().equals(maxMessageId)){
@@ -98,7 +99,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Transactional
     @Override
     public DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty()? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
 
         DeveloperResult<FriendInfoDTO> friend = friendClient.isFriend(IsFriendParam.builder().serialNo(serialNo).friendId(req.getReceiverId()).userId(userId).build());
@@ -128,7 +129,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<Boolean> readMessage(ReadMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, "",Collections.singletonList(req.getTargetId()),new ArrayList<>(), MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB,new Date()));
         privateMessageRepository.updateMessageStatus(req.getTargetId(),userId,MessageStatusEnum.READED.code());
@@ -143,7 +144,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<Boolean> recallMessage(RecallMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         PrivateMessagePO privateMessage = privateMessageRepository.getById(req.getMessageId());
         if(privateMessage==null){
             return DeveloperResult.error(serialNo,"消息不存在");
@@ -177,7 +178,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         req.setPage(req.getPage()>0?req.getPage():1);
         req.setSize(req.getSize()>0?req.getSize():10);
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         long pageIndex = (req.getPage()-1)*req.getSize();
         List<PrivateMessagePO> list = privateMessageRepository.getHistoryMessageList(userId, req.getTargetId(), pageIndex, req.getSize());
         List<SendMessageResultDTO> collect = list.stream().map(a -> BeanUtils.copyProperties(a, PrivateMessageDTO.class)).collect(Collectors.toList());
@@ -191,7 +192,7 @@ public class PrivateMessageServiceImpl implements MessageService {
      */
     @Override
     public DeveloperResult<Boolean> insertMessage(MessageInsertDTO dto) {
-        String serialNo = dto.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
         PrivateMessagePO privateMessage = PrivateMessagePO.builder()
                 .messageStatus(dto.getMessageStatus())
                 .messageContent(dto.getMessageContent())
@@ -211,7 +212,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<Boolean> deleteMessage(RemoveMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         boolean isSuccess = privateMessageRepository.deleteChatMessage(userId,req.getTargetId());
         return DeveloperResult.success(serialNo,isSuccess);
     }
@@ -225,7 +226,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<Boolean> replyMessage(Long id,ReplyMessageRequestDTO req) {
         PrivateMessagePO messagePO = privateMessageRepository.getById(id);
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         if(messagePO==null){
             return DeveloperResult.error(serialNo,"回复消息不存在");
         }
@@ -255,7 +256,7 @@ public class PrivateMessageServiceImpl implements MessageService {
     @Override
     public DeveloperResult<Boolean> forwardMessage(ForwardMessageRequestDTO req) {
         PrivateMessagePO messagePO = privateMessageRepository.getById(req.getMessageId());
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         if(messagePO==null){
             return DeveloperResult.error(serialNo,"转发消息本体不存在");
         }

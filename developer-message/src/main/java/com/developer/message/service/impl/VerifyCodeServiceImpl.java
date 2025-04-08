@@ -10,6 +10,7 @@ import com.developer.message.dto.SendVerifyCodeRequestDTO;
 import com.developer.message.service.VerifyCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +28,7 @@ public class VerifyCodeServiceImpl implements VerifyCodeService {
 
     @Override
     public DeveloperResult<Boolean> sendVerifyCode(SendVerifyCodeRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = !StringUtils.hasText(req.getSerialNo()) ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
         if(!mailUtil.verifyEmailAddress(req.getEmailAddress())){
             return DeveloperResult.error(serialNo,500,"请输入正确的邮箱");
         }

@@ -2,7 +2,7 @@ package com.developer.friend.dto;
 
 import com.developer.friend.enums.AddFriendChannelEnum;
 import lombok.Data;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 public class SendAddFriendInfoRequestDTO {

@@ -40,7 +40,7 @@ public class TransferMoneyPaymentService implements PaymentService {
      */
     @Override
     public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto) {
-        String serialNo = dto.getTransferInfoDTO().getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : dto.getTransferInfoDTO().getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(dto.getTransferInfoDTO().getSerialNo());
         if(dto.getTransferInfoDTO().getTransferAmount().compareTo(BigDecimal.ZERO)<=0){
             return DeveloperResult.error(serialNo,"转账金额必须大于0");
         }
@@ -72,7 +72,7 @@ public class TransferMoneyPaymentService implements PaymentService {
      */
     @Override
     public DeveloperResult<BigDecimal> amountCharged(OpenRedPacketsRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         TransferInfoPO transferInfo = transferInfoRepository.getById(req.getRedPacketsId());
         if(transferInfo==null){
             return DeveloperResult.error(serialNo,"转账记录不存在");
@@ -106,7 +106,7 @@ public class TransferMoneyPaymentService implements PaymentService {
      */
     @Override
     public DeveloperResult<Boolean> amountRefunded(ReturnTransferRequestDTO req) {
-        String serialNo = req.getSerialNo().isEmpty() ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         TransferInfoPO transferInfo = transferInfoRepository.getById(req.getRedPacketsId());
         if(transferInfo==null){
             return DeveloperResult.error(serialNo,"转账记录不存在");
