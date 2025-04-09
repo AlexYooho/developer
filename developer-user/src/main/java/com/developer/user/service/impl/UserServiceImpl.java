@@ -172,7 +172,7 @@ public class UserServiceImpl implements UserService {
 
         // 更新所在群的头像
         if(!user.getHeadImage().equals(dto.getHeadImage())){
-            DeveloperResult<List<SelfJoinGroupInfoDTO>> selfJoinAllGroupInfo = groupMemberClient.getSelfJoinAllGroupInfo();
+            DeveloperResult<List<SelfJoinGroupInfoDTO>> selfJoinAllGroupInfo = groupMemberClient.getSelfJoinAllGroupInfo(serialNo);
             List<SelfJoinGroupInfoDTO> joinGroupInfoList = selfJoinAllGroupInfo.getData();
             for (SelfJoinGroupInfoDTO member : joinGroupInfoList) {
                 member.setHeadImage(dto.getHeadImage());

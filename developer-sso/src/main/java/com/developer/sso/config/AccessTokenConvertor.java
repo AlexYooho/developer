@@ -25,24 +25,26 @@ public class AccessTokenConvertor extends DefaultAccessTokenConverter {
     @Override
     public Map<String, ?> convertAccessToken(OAuth2AccessToken token, OAuth2Authentication authentication) {
         Map<String, String> stringMap = (Map<String, String>) super.convertAccessToken(token, authentication);
-        // 需要查询相关用户信息放在jwt中
-        if(authentication.getUserAuthentication()==null){
+        if (authentication.getUserAuthentication() == null) {
             return stringMap;
         }
-        HashMap<String, String> details = (HashMap<String, String>) authentication.getUserAuthentication().getDetails();
 
-        UserPO userInfo = userRepository.findByAccount(details.get("username"));
+        String username = authentication.getUserAuthentication().getName();
+        if (username == null) {
+            return stringMap;
+        }
+
+        UserPO userInfo = userRepository.findByAccount(username);
+        if (userInfo == null) {
+            return stringMap;
+        }
 
         SelfUserInfoModel selfUserInfoModel = new SelfUserInfoModel();
         selfUserInfoModel.setUserId(userInfo.getId());
         selfUserInfoModel.setUserName(userInfo.getUsername());
         selfUserInfoModel.setNickName(userInfo.getNickname());
         selfUserInfoModel.setTerminal(0);
-        String jsonString = JSON.toJSONString(selfUserInfoModel);
-
-
-        stringMap.put("selfUserInfoKey",jsonString);
-
+        stringMap.put("selfUserInfoKey", JSON.toJSONString(selfUserInfoModel));
         return stringMap;
     }
 }

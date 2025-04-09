@@ -20,8 +20,13 @@ public class CustomOauth2ExceptionHandler implements WebResponseExceptionTransla
                     .body(badCredentialsException);
         }
 
+        String errorMessage = null;
+        if(e.getMessage().contains("Invalid refresh token (expired)")){
+            errorMessage = "无效的刷新令牌(已过期)";
+        }
+
         // 处理其他类型的异常
-        OAuth2Exception oAuth2Exception = new OAuth2Exception(e.getMessage());
+        OAuth2Exception oAuth2Exception = new OAuth2Exception(errorMessage);
         return ResponseEntity
                 .status(500) // 返回 HTTP 500 错误码，表示服务器内部错误
                 .body(oAuth2Exception);

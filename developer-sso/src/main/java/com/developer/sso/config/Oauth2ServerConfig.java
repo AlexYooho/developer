@@ -1,8 +1,11 @@
 package com.developer.sso.config;
 
+import com.developer.framework.exception.CustomIdentityVerifyExceptionProcessor;
 import com.developer.sso.handler.CustomOauth2ExceptionHandler;
 import com.developer.sso.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,13 +28,35 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 @Configuration
 @EnableAuthorizationServer
+@RefreshScope
 public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
+
+    @Value("${signKey}")
+    private String SIGN_KEY;
 
     /**
      * 认证管理器
      */
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    /**
+     * 自定义身份认证
+     */
+    @Autowired
+    private UserServiceImpl userDetailsService;
+
+    /**
+     * token转换器
+     */
+    @Autowired
+    private AccessTokenConvertor accessTokenConvertor;
+
+    /**
+     * 自定义异常处理器
+     */
+    @Autowired
+    private CustomOauth2ExceptionHandler customOauth2ExceptionHandler;
 
     /**
      * 密码加密方式
@@ -43,12 +68,6 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
     }
 
     /**
-     * 自定义身份认证
-     */
-    @Autowired
-    private UserServiceImpl userDetailsService;
-
-    /**
      * token存储方式
      * @return
      */
@@ -56,18 +75,11 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
         return new JwtTokenStore(jwtAccessTokenConverter());
     }
 
-
-    private String SIGN_KEY="developer";
-
-    @Autowired
-    private AccessTokenConvertor accessTokenConvertor;
-
     public JwtAccessTokenConverter jwtAccessTokenConverter(){
         JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
         jwtAccessTokenConverter.setSigningKey(SIGN_KEY);
         jwtAccessTokenConverter.setVerifier(new MacSigner(SIGN_KEY));
         jwtAccessTokenConverter.setAccessTokenConverter(accessTokenConvertor);
-
         return jwtAccessTokenConverter;
     }
 
@@ -82,9 +94,6 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
                 .authorizedGrantTypes("password","refresh_token","client_credentials")
                 .scopes("all");
     }
-
-    @Autowired
-    private CustomOauth2ExceptionHandler customOauth2ExceptionHandler;
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
