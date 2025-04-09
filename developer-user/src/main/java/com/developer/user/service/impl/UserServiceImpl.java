@@ -161,13 +161,13 @@ public class UserServiceImpl implements UserService {
 
         // 更新自己好友列表中的昵称和头像
         if(!user.getNickname().equals(dto.getNickname()) || !user.getHeadImageThumb().equals(dto.getHeadImageThumb())){
-            DeveloperResult<List<FriendInfoDTO>> friends = friendClient.friends();
+            DeveloperResult<List<FriendInfoDTO>> friends = friendClient.friends(serialNo);
             List<FriendInfoDTO> list2 = friends.getData();
             for (FriendInfoDTO friend:list2){
                 friend.setNickName(dto.getNickname());
                 friend.setHeadImage(dto.getHeadImage());
             }
-            friendClient.modifyFriend(list2);
+            friendClient.modifyFriend(BatchModifyFriendListRequestDTO.builder().list(list2).serialNo(serialNo).build());
         }
 
         // 更新所在群的头像

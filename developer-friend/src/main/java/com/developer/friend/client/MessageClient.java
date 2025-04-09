@@ -1,7 +1,9 @@
 package com.developer.friend.client;
 
+import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.friend.dto.MessageInsertDTO;
+import com.developer.friend.dto.RemoveMessageRequestDTO;
 import com.developer.friend.interceptor.FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,8 +16,8 @@ public interface MessageClient {
 
 
     @PostMapping("/message-module/api/message/{type}/add")
-    DeveloperResult<Boolean> insertMessage(@PathVariable("type") Integer type, @RequestBody MessageInsertDTO dto);
+    DeveloperResult<Boolean> insertMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody MessageInsertDTO dto);
 
-    @DeleteMapping("/message-module/api/message/{type}/remove/{friendId}")
-    DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") Integer type,@PathVariable("friendId") Long friendId);
+    @DeleteMapping("/message-module/api/message/{type}/remove")
+    DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") MessageMainTypeEnum type,@RequestBody RemoveMessageRequestDTO req);
 }

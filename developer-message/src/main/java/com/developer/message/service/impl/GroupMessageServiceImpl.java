@@ -125,7 +125,7 @@ public class GroupMessageServiceImpl implements MessageService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
-        GroupInfoDTO groupInfoDTO = groupInfoClient.findGroup(req.getGroupId(), serialNo).getData();
+        GroupInfoDTO groupInfoDTO = groupInfoClient.findGroup(FindGroupRequestDTO.builder().groupId(req.getGroupId()).serialNo(serialNo).build()).getData();
         if (Objects.isNull(groupInfoDTO)) {
             return DeveloperResult.error(serialNo, "群聊不存在");
         }
@@ -144,7 +144,7 @@ public class GroupMessageServiceImpl implements MessageService {
         this.groupMessageRepository.save(message);
 
         // 需要接受消息的成员
-        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(groupInfoDTO.getId(), serialNo).getData();
+        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(FindGroupMemberUserIdRequestDTO.builder().groupId(groupInfoDTO.getId()).serialNo(serialNo).build()).getData();
         receiverIds = receiverIds.stream().filter(id -> !userId.equals(id)).collect(Collectors.toList());
 
         List<GroupMessageMemberReceiveRecordPO> receiveRecords = new ArrayList<>();
@@ -231,7 +231,7 @@ public class GroupMessageServiceImpl implements MessageService {
         groupMessage.setMessageStatus(MessageStatusEnum.RECALL.code());
         groupMessageRepository.updateById(groupMessage);
 
-        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(groupMessage.getId(), serialNo).getData();
+        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(FindGroupMemberUserIdRequestDTO.builder().groupId(groupMessage.getId()).serialNo(serialNo).build()).getData();
         receiverIds = receiverIds.stream().filter(x -> !userId.equals(x)).collect(Collectors.toList());
 
         String message = String.format("%s 撤回了一条消息", selfJoinGroupInfoDTO.getAliasName());

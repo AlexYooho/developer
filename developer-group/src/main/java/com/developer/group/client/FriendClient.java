@@ -5,6 +5,7 @@ import com.developer.group.dto.FriendInfoDTO;
 import com.developer.group.interceptor.FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -12,6 +13,6 @@ import java.util.List;
 public interface FriendClient {
 
     @GetMapping("/friend-module/api/friend/list")
-    DeveloperResult<List<FriendInfoDTO>> friends();
+    DeveloperResult<List<FriendInfoDTO>> friends(@RequestParam("serial_no") String serialNo);
 
 }

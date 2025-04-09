@@ -1,5 +1,6 @@
 package com.developer.message.param;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,10 +12,13 @@ import lombok.NoArgsConstructor;
 @Builder
 public class IsFriendParam {
 
+    @JsonProperty("serial_no")
     private String serialNo;
 
+    @JsonProperty("friend_id")
     private Long friendId;
 
+    @JsonProperty("user_id")
     private Long userId;
 
 }

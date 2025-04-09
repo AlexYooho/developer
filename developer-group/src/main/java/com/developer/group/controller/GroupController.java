@@ -51,7 +51,7 @@ public class GroupController {
      * @param req
      * @return
      */
-    @GetMapping("/find/{groupId}")
+    @GetMapping("/find")
     public DeveloperResult<GroupInfoDTO> findGroup(@RequestBody FindGroupRequestDTO req){
         return groupService.findById(req);
     }

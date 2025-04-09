@@ -138,7 +138,8 @@ public class FriendServiceImpl implements FriendService {
             privateMessage.setReceiverId(req.getFriendId());
             privateMessage.setMessageContentType(0);
             privateMessage.setSendTime(new Date());
-            messageClient.insertMessage(MessageMainTypeEnum.PRIVATE_MESSAGE.code(), privateMessage);
+            privateMessage.setSerialNo(serialNo);
+            messageClient.insertMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, privateMessage);
         } else {
             // 拒绝,如果拒绝理由不为空则回复消息
             message = req.getRefuseReason();
@@ -165,7 +166,7 @@ public class FriendServiceImpl implements FriendService {
         }
 
         boolean isSuccess = friendRepository.removeById(friend.getId());
-        messageClient.removeFriendChatMessage(MessageMainTypeEnum.PRIVATE_MESSAGE.code(), req.getFriendId());
+        messageClient.removeFriendChatMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, RemoveMessageRequestDTO.builder().targetId(req.getFriendId()).serialNo(serialNo).build());
 
         return DeveloperResult.success(serialNo, isSuccess);
     }

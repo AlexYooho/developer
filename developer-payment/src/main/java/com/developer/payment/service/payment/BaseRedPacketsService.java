@@ -12,6 +12,7 @@ import com.developer.payment.client.FriendClient;
 import com.developer.payment.client.GroupClient;
 import com.developer.payment.client.MessageClient;
 import com.developer.payment.dto.FriendInfoDTO;
+import com.developer.payment.dto.IsFriendDto;
 import com.developer.payment.dto.SelfJoinGroupInfoDTO;
 import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.payment.dto.SendChatMessageDTO;
@@ -103,12 +104,12 @@ public class BaseRedPacketsService {
                 return DeveloperResult.error(serialNo,"好友红包一次只能发一个");
             }
 
-            FriendInfoDTO isFriend = friendClient.isFriend(targetId, userId).getData();
+            FriendInfoDTO isFriend = friendClient.isFriend(IsFriendDto.builder().friendId(targetId).userId(userId).serialNo(serialNo).build()).getData();
             if (isFriend==null) {
                 return DeveloperResult.error(serialNo,"对方不是您的好友，无法发送红包！");
             }
         } else if(channel== PaymentChannelEnum.GROUP){
-            List<SelfJoinGroupInfoDTO> groupList = groupClient.getSelfJoinAllGroupInfo().getData();
+            List<SelfJoinGroupInfoDTO> groupList = groupClient.getSelfJoinAllGroupInfo(serialNo).getData();
             Optional<SelfJoinGroupInfoDTO> optional = groupList.stream().filter(x -> x.getGroupId().equals(targetId)).findAny();
             if(!optional.isPresent()){
                 return DeveloperResult.error(serialNo,"你不在群聊中,无法发送红包！");

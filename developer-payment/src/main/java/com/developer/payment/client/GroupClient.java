@@ -5,6 +5,7 @@ import com.developer.payment.dto.SelfJoinGroupInfoDTO;
 import com.developer.payment.interceptor.FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -12,6 +13,6 @@ import java.util.List;
 public interface GroupClient {
 
     @GetMapping("/group-module/api/group/get-self-join-all-group-info")
-    DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo();
+    DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo(@RequestParam("serial_no") String serialNo);
 
 }

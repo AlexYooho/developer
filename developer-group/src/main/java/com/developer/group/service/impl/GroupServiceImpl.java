@@ -162,7 +162,7 @@ public class GroupServiceImpl implements GroupService {
             return DeveloperResult.error(serialNo,"群聊人数不能大于"+DeveloperConstant.MAX_GROUP_MEMBER+"人");
         }
 
-        DeveloperResult<List<FriendInfoDTO>> developerResult = friendClient.friends();
+        DeveloperResult<List<FriendInfoDTO>> developerResult = friendClient.friends(serialNo);
         List<FriendInfoDTO> friends = (List<FriendInfoDTO>) developerResult.getData();
         List<FriendInfoDTO> friendsList = req.getFriendIds().stream().map(id -> friends.stream().filter(f -> f.getId().equals(id)).findFirst().get()).collect(Collectors.toList());
         if(friendsList.size()!=req.getFriendIds().size()){

@@ -41,7 +41,7 @@ public class FriendController {
      * @param req
      * @return
      */
-    @DeleteMapping("/delete/{friendId}")
+    @DeleteMapping("/delete")
     public DeveloperResult<Boolean> deleteFriend(@RequestBody DeleteFriendRequestDTO req){
         return friendService.deleteFriendByFriendId(req);
     }
