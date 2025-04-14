@@ -18,6 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 public class MessageDTO implements Serializable {
 
+    private String serialNo;
+
     private MessageMainTypeEnum messageMainTypeEnum;
 
     private MessageContentTypeEnum messageContentTypeEnum;

@@ -18,12 +18,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private VerifyCodeService verifyCodeService;
-
-    @Autowired
-    private SnowflakeNoUtil snowflakeNoUtil;
-
     /**
      * 用户注册
      * @param dto
@@ -39,8 +33,8 @@ public class UserController {
      * @return
      */
     @PutMapping("/modify/password")
-    public DeveloperResult<Boolean> modifyPassword(){
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+    public DeveloperResult<Boolean> modifyPassword(@RequestBody ModifyUserPasswordDTO req){
+        return userService.modifyUserPassword(req);
     }
 
     /**
@@ -91,15 +85,4 @@ public class UserController {
     public DeveloperResult<List<OnlineTerminalDTO>> onlineTerminal(@RequestBody FindOnlineTerminalRequestDTO req){
         return userService.findOnlineTerminal(req);
     }
-
-    /**
-     * 发送校验码
-     * @param req
-     * @return
-     */
-    @PostMapping("/send/code")
-    public DeveloperResult<Boolean> sendRegisterVerifyCode(@RequestBody SendRegisterVerifyCodeRequestDTO req){
-        return verifyCodeService.sendVerifyCode(req);
-    }
-
 }

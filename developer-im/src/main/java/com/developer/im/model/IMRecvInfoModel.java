@@ -10,6 +10,11 @@ import java.util.List;
 @Data
 public class IMRecvInfoModel {
 
+    /**
+     * 操作编号
+     */
+    private String serialNo;
+
     /*
      * 命令类型 IMCmdType
      */

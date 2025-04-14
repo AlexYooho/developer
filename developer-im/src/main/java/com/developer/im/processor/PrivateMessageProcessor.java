@@ -1,6 +1,7 @@
 package com.developer.im.processor;
 
 import com.developer.framework.constant.RedisKeyConstant;
+import com.developer.framework.model.DeveloperResult;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.enums.SendCodeType;
 import com.developer.im.model.IMRecvInfoModel;
@@ -22,7 +23,7 @@ public class PrivateMessageProcessor extends AbstractMessageProcessor<IMRecvInfo
     private RedisTemplate<String,Object> redisTemplate;
 
     @Override
-    public void handler(IMRecvInfoModel receiveMessageInfo, IMCmdType cmdType) {
+    public DeveloperResult<Boolean> handler(IMRecvInfoModel receiveMessageInfo, IMCmdType cmdType) {
         IMUserInfoModel sender = receiveMessageInfo.getSender();
         IMUserInfoModel receiver = receiveMessageInfo.getReceivers().get(0);
         log.info("接收消息,发送者:{},接收者:{},消息内容:{}",sender.getId(),receiver.getId(),receiveMessageInfo.getData());
@@ -37,11 +38,14 @@ public class PrivateMessageProcessor extends AbstractMessageProcessor<IMRecvInfo
             }else{
                 sendResult(receiveMessageInfo,SendCodeType.NOT_FIND_CHANNEL);
                 log.info("未找到channel,发送者:{},接收者:{},消息内容:{}",sender.getId(),receiver.getId(),receiveMessageInfo.getData());
+                return DeveloperResult.error(receiveMessageInfo.getSerialNo(),"未找到channel");
             }
         }catch (Exception ex){
             sendResult(receiveMessageInfo,SendCodeType.UNKONW_ERROR);
             log.info("发送异常,发送者:{},接收者:{},消息内容:{}",sender.getId(),receiver.getId(),receiveMessageInfo.getData());
+            return DeveloperResult.error(receiveMessageInfo.getSerialNo(),"发送异常");
         }
+        return DeveloperResult.success(receiveMessageInfo.getSerialNo());
     }
 
     /**

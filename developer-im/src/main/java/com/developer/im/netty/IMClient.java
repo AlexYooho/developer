@@ -1,6 +1,7 @@
 package com.developer.im.netty;
 
 import com.developer.framework.enums.MessageTerminalTypeEnum;
+import com.developer.framework.model.DeveloperResult;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMGroupMessageModel;
 import com.developer.im.model.IMPrivateMessageModel;
@@ -51,8 +52,8 @@ public class IMClient {
      *
      * @param message 私有消息
      */
-    public<T> void sendPrivateMessage(IMPrivateMessageModel<T> message, IMCmdType cmdType){
-        processors.sendPrivateMessage(message,cmdType);
+    public<T> DeveloperResult<Boolean> sendPrivateMessage(IMPrivateMessageModel<T> message, IMCmdType cmdType){
+        return processors.sendPrivateMessage(message,cmdType);
     }
 
     /**
@@ -60,8 +61,8 @@ public class IMClient {
      *
      * @param message 群聊消息
      */
-    public<T> void sendGroupMessage(IMGroupMessageModel<T> message){
-        processors.sendGroupMessage(message);
+    public<T> DeveloperResult<Boolean> sendGroupMessage(IMGroupMessageModel<T> message){
+        return processors.sendGroupMessage(message);
     }
 
 }

@@ -19,7 +19,6 @@ public class MessageController {
 
     /**
      * 发送消息
-     *
      * @param req
      * @return
      */
@@ -30,7 +29,6 @@ public class MessageController {
 
     /**
      * 撤回消息
-     *
      * @param req
      * @return
      */
@@ -41,7 +39,6 @@ public class MessageController {
 
     /**
      * 拉取消息
-     *
      * @param req
      * @return
      */
@@ -52,7 +49,6 @@ public class MessageController {
 
     /**
      * 消息已读
-     *
      * @param type
      * @param req
      * @return
@@ -74,7 +70,6 @@ public class MessageController {
 
     /**
      * 新增消息
-     *
      * @param type
      * @param dto
      * @return
@@ -97,7 +92,6 @@ public class MessageController {
 
     /**
      * 回复消息
-     *
      * @param type
      * @param messageId
      * @param dto
@@ -110,7 +104,6 @@ public class MessageController {
 
     /**
      * 收藏消息
-     *
      * @param type
      * @param req
      * @return
@@ -133,7 +126,6 @@ public class MessageController {
 
     /**
      * 消息点赞
-     *
      * @param type
      * @param req
      * @return
@@ -145,7 +137,6 @@ public class MessageController {
 
     /**
      * 消息取消点赞
-     *
      * @param type
      * @param req
      * @return

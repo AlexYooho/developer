@@ -14,6 +14,11 @@ import java.util.List;
 public class IMGroupMessageModel<T> {
 
     /**
+     * 操作编号
+     */
+    private String serialNo;
+
+    /**
      * 发送人
      */
     private IMUserInfoModel sender;

@@ -1,6 +1,7 @@
 package com.developer.im.processor;
 
 import com.developer.framework.constant.RedisKeyConstant;
+import com.developer.framework.model.DeveloperResult;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.enums.SendCodeType;
 import com.developer.im.model.IMRecvInfoModel;
@@ -27,7 +28,7 @@ public class GroupMessageProcessor extends AbstractMessageProcessor<IMRecvInfoMo
 
     @Async
     @Override
-    public void handler(IMRecvInfoModel recvInfo,IMCmdType cmdType) {
+    public DeveloperResult<Boolean> handler(IMRecvInfoModel recvInfo, IMCmdType cmdType) {
         IMUserInfoModel sender = recvInfo.getSender();
         List<IMUserInfoModel> receivers = recvInfo.getReceivers();
         log.info("接收到群消息,发送者:{},接收用户数量:{},内容:{}",sender.getId(),receivers.size(),recvInfo.getData());
@@ -44,12 +45,15 @@ public class GroupMessageProcessor extends AbstractMessageProcessor<IMRecvInfoMo
                 } else {
                     sendResult(recvInfo, receiver, SendCodeType.NOT_FIND_CHANNEL);
                     log.error("未找到channel,发送者:{},接收id:{},内容:{}", sender.getId(), receiver.getId(), recvInfo.getData());
+                    return DeveloperResult.error(recvInfo.getSerialNo(),"未找到channel");
                 }
             }catch (Exception e){
                 sendResult(recvInfo, receiver, SendCodeType.UNKONW_ERROR);
-                log.error("未找到channel,发送者:{},接收id:{},内容:{}", sender.getId(), receiver.getId(), recvInfo.getData());
+                log.error("发送群消息异常,发送者:{},接收id:{},内容:{}", sender.getId(), receiver.getId(), recvInfo.getData());
+                return DeveloperResult.error(recvInfo.getSerialNo(),"发送群消息异常");
             }
         }
+        return DeveloperResult.success(recvInfo.getSerialNo());
     }
 
 
