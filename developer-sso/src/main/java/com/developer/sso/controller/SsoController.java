@@ -27,12 +27,12 @@ public class SsoController {
         return sysUserService.Login(dto);
     }
 
-    @GetMapping("getAccessToken")
+    @PostMapping("getAccessToken")
     public  DeveloperResult<TokenDTO> getAccessToken(@RequestBody GetAccessTokenRequestDTO req){
         return  tokenService.getAccessToken(req);
     }
 
-    @GetMapping("refreshAccessToken")
+    @PostMapping("refreshAccessToken")
     public  DeveloperResult<TokenDTO> refreshAccessToken(@RequestBody RefreshAccessTokenRequestDTO req){
         return  tokenService.refreshAccessToken(req);
     }

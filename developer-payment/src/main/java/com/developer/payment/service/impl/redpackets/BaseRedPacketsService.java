@@ -1,4 +1,4 @@
-package com.developer.payment.service.payment;
+package com.developer.payment.service.impl.redpackets;
 
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.RedisKeyConstant;
@@ -52,9 +52,6 @@ public class BaseRedPacketsService {
 
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
-
-    @Autowired
-    private SnowflakeNoUtil snowflakeNoUtil;
 
     /**
      * 计算红包分配金额

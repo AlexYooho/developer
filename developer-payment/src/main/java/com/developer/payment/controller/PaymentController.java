@@ -7,7 +7,7 @@ import com.developer.framework.enums.PaymentTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.OpenRedPacketsRequestDTO;
 import com.developer.payment.dto.ReturnTransferRequestDTO;
-import com.developer.payment.service.register.PaymentTypeRegister;
+import com.developer.payment.service.processorFactory.PaymentTypeProcessorDispatchFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 public class PaymentController {
 
     @Autowired
-    private PaymentTypeRegister paymentTypeRegister;
+    private PaymentTypeProcessorDispatchFactory dispatchFactory;
 
     /**
      * 发红包
@@ -27,7 +27,7 @@ public class PaymentController {
      */
     @PostMapping("red-packets/send")
     public DeveloperResult<Boolean> sendRedPackets(@RequestBody SendRedPacketsDTO dto){
-        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.RED_PACKETS).doPay(PaymentInfoDTO.builder().sendRedPacketsDTO(dto).paymentTypeEnum(PaymentTypeEnum.RED_PACKETS).channel(dto.getPaymentChannel()).build());
+        return dispatchFactory.getInstance(PaymentTypeEnum.RED_PACKETS).doPay(PaymentInfoDTO.builder().sendRedPacketsDTO(dto).paymentTypeEnum(PaymentTypeEnum.RED_PACKETS).channel(dto.getPaymentChannel()).build());
     }
 
     /**
@@ -36,7 +36,7 @@ public class PaymentController {
      */
     @PostMapping("red-packets/open")
     public DeveloperResult<BigDecimal> openRedPackets(@RequestBody OpenRedPacketsRequestDTO req){
-        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.RED_PACKETS).amountCharged(req);
+        return dispatchFactory.getInstance(PaymentTypeEnum.RED_PACKETS).amountCharged(req);
     }
 
     /**
@@ -45,7 +45,7 @@ public class PaymentController {
      */
     @PostMapping("transfer")
     public DeveloperResult<Boolean> transfer(@RequestBody TransferInfoDTO dto){
-        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.TRANSFER).doPay(PaymentInfoDTO.builder().transferInfoDTO(dto).paymentTypeEnum(PaymentTypeEnum.RED_PACKETS).channel(dto.getPaymentChannel()).build());
+        return dispatchFactory.getInstance(PaymentTypeEnum.TRANSFER).doPay(PaymentInfoDTO.builder().transferInfoDTO(dto).paymentTypeEnum(PaymentTypeEnum.RED_PACKETS).channel(dto.getPaymentChannel()).build());
     }
 
     /**
@@ -54,7 +54,7 @@ public class PaymentController {
      */
     @PostMapping("confirm-receipt-transfer")
     public DeveloperResult<BigDecimal> confirmReceiptTransfer(@RequestBody OpenRedPacketsRequestDTO dto){
-        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.TRANSFER).amountCharged(dto);
+        return dispatchFactory.getInstance(PaymentTypeEnum.TRANSFER).amountCharged(dto);
     }
 
     /**
@@ -63,9 +63,6 @@ public class PaymentController {
      */
     @PostMapping("return-transfer")
     public DeveloperResult<Boolean> returnTransfer(@RequestBody ReturnTransferRequestDTO req){
-        return paymentTypeRegister.findPaymentTypeInstance(PaymentTypeEnum.TRANSFER).amountRefunded(req);
+        return dispatchFactory.getInstance(PaymentTypeEnum.TRANSFER).amountRefunded(req);
     }
-
-
-
 }

@@ -1,7 +1,8 @@
-package com.developer.payment.service.payment.transfer;
+package com.developer.payment.service.impl.transfer;
 
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.PaymentChannelEnum;
+import com.developer.framework.enums.PaymentTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.framework.utils.SnowflakeNoUtil;
@@ -22,7 +23,7 @@ import java.util.Date;
 import java.util.Objects;
 
 @Service
-public class TransferMoneyPaymentService implements PaymentService {
+public class TransferMoneyPaymentServiceImpl implements PaymentService {
 
     @Autowired
     private WalletService walletService;
@@ -32,6 +33,11 @@ public class TransferMoneyPaymentService implements PaymentService {
 
     @Autowired
     private SnowflakeNoUtil snowflakeNoUtil;
+
+    @Override
+    public PaymentTypeEnum paymentType() {
+        return PaymentTypeEnum.TRANSFER;
+    }
 
     /**
      * 发起转账

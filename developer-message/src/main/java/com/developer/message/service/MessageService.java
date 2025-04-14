@@ -18,7 +18,7 @@ public interface MessageService {
 
     /**
      * 加载消息
-     * @param minId
+     * @param req
      * @return
      */
     DeveloperResult<List<SendMessageResultDTO>> loadMessage(LoadMessageRequestDTO req);
@@ -46,9 +46,7 @@ public interface MessageService {
 
     /**
      * 查询历史记录
-     * @param friendId
-     * @param page
-     * @param size
+     * @param req
      * @return
      */
     DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req);

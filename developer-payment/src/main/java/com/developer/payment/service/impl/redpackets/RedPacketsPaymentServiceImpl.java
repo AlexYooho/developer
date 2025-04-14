@@ -1,7 +1,6 @@
-package com.developer.payment.service.payment.redpackets;
+package com.developer.payment.service.impl.redpackets;
 
-import com.developer.framework.enums.PaymentChannelEnum;
-import com.developer.framework.enums.RedPacketsTypeEnum;
+import com.developer.framework.enums.PaymentTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.framework.utils.SnowflakeNoUtil;
@@ -11,7 +10,7 @@ import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.service.PaymentService;
-import com.developer.payment.service.register.RedPacketsTypeRegister;
+import com.developer.payment.service.processorFactory.RedPacketsTypeProcessorDispatchFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +18,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Service
-public class RedPacketsPaymentService implements PaymentService {
-
-    @Autowired
-    private RedPacketsTypeRegister redPacketsTypeRegister;
+public class RedPacketsPaymentServiceImpl implements PaymentService {
 
     @Autowired
     private RedPacketsInfoRepository redPacketsInfoRepository;
@@ -30,12 +26,20 @@ public class RedPacketsPaymentService implements PaymentService {
     @Autowired
     private SnowflakeNoUtil snowflakeNoUtil;
 
+    @Autowired
+    private RedPacketsTypeProcessorDispatchFactory dispatchFactory;
+
+    @Override
+    public PaymentTypeEnum paymentType() {
+        return PaymentTypeEnum.RED_PACKETS;
+    }
+
     /**
      * 支付红包
      * @param dto
      */
     public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto){
-        return redPacketsTypeRegister.findInstance(dto.getSendRedPacketsDTO().getType()).sendRedPackets(dto.getSendRedPacketsDTO());
+        return dispatchFactory.getInstance(dto.getSendRedPacketsDTO().getType()).sendRedPackets(dto.getSendRedPacketsDTO());
     }
 
     /**
@@ -49,7 +53,7 @@ public class RedPacketsPaymentService implements PaymentService {
         if (po == null) {
             return DeveloperResult.error(serialNo,"红包不存在");
         }
-        return redPacketsTypeRegister.findInstance(po.getType()).openRedPackets(req.getSerialNo(), req.getRedPacketsId());
+        return dispatchFactory.getInstance(po.getType()).openRedPackets(req.getSerialNo(), req.getRedPacketsId());
     }
 
     /**

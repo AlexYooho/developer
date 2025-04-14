@@ -1,9 +1,5 @@
 package com.developer.payment;
 
-import com.developer.framework.enums.PaymentChannelEnum;
-import com.developer.framework.dto.PaymentInfoDTO;
-import com.developer.framework.dto.TransferInfoDTO;
-import com.developer.framework.enums.PaymentTypeEnum;
 import com.developer.payment.service.PaymentService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,13 +8,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.math.BigDecimal;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = PaymentApplication.class)
 public class PaymentTest {
 
-    @Qualifier("transferMoneyPaymentService")
+    @Qualifier("transferMoneyPaymentServiceImpl")
     @Autowired
     private PaymentService paymentService;
 

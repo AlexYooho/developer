@@ -1,8 +1,9 @@
-package com.developer.payment.service.payment.redpackets;
+package com.developer.payment.service.impl.redpackets;
 
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.PaymentChannelEnum;
+import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.framework.utils.SnowflakeNoUtil;
@@ -16,7 +17,6 @@ import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.repository.RedPacketsReceiveDetailsRepository;
 import com.developer.payment.service.RedPacketsService;
 import com.developer.payment.service.WalletService;
-import com.developer.payment.service.payment.BaseRedPacketsService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class LuckRedPacketsService extends BaseRedPacketsService implements RedPacketsService {
+public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements RedPacketsService {
 
     @Autowired
     private RedPacketsInfoRepository redPacketsInfoRepository;
@@ -47,6 +47,11 @@ public class LuckRedPacketsService extends BaseRedPacketsService implements RedP
 
     @Autowired
     private SnowflakeNoUtil snowflakeNoUtil;
+
+    @Override
+    public RedPacketsTypeEnum redPacketsType() {
+        return RedPacketsTypeEnum.LUCKY;
+    }
 
     /**
      * 发红包
