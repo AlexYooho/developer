@@ -18,18 +18,18 @@ public class GlobalExceptionProcessor {
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
     public DeveloperResult<String> processor(Exception e){
-        if(e instanceof RemoteInvokeException){
-            RemoteInvokeException invokeException = (RemoteInvokeException) e;
+        if(e.getCause() instanceof RemoteInvokeException){
+            RemoteInvokeException invokeException = (RemoteInvokeException) e.getCause();
             return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),invokeException.getCode(),invokeException.getErrMsg());
         }
 
-        if(e instanceof EmailException){
-            EmailException emailException = (EmailException) e;
+        if(e.getCause() instanceof EmailException){
+            EmailException emailException = (EmailException) e.getCause();
             return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),emailException.getCode(),emailException.getErrMsg());
         }
 
         log.error(e.toString());
-        throw new RuntimeException(e);
+        return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"服务器崩溃了");
         //return DeveloperResult.error("服务器出错辣~~~~,快速修复中,请耐心等待");
     }
 
