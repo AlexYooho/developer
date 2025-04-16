@@ -6,6 +6,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.MailUtil;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.message.dto.CheckVerifyCodeRequestDTO;
 import com.developer.message.dto.SendVerifyCodeRequestDTO;
 import com.developer.message.service.VerifyCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,14 +49,15 @@ public class VerifyCodeServiceImpl implements VerifyCodeService {
     }
 
     @Override
-    public DeveloperResult<Boolean> checkVerifyCode(VerifyCodeTypeEnum verifyCodeTypeEnum, String emailAccount, Integer verifyCode) {
-        String key = RedisKeyConstant.verifyCode(verifyCodeTypeEnum,emailAccount);
+    public DeveloperResult<Boolean> checkVerifyCode(CheckVerifyCodeRequestDTO req) {
+        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String key = RedisKeyConstant.verifyCode(req.getVerifyCodeTypeEnum(),req.getEmailAccount());
         Integer code = redisUtil.get(key, Integer.class);
-        if(code!=null && code.equals(verifyCode)){
+        if(code!=null && code.equals(req.getCode())){
             redisUtil.delete(key);
-            return DeveloperResult.success(snowflakeNoUtil.getSerialNo());
+            return DeveloperResult.success(serialNo);
         }else{
-            return DeveloperResult.error("验证码错误");
+            return DeveloperResult.error(serialNo,"验证码错误");
         }
     }
 }

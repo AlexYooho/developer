@@ -2,6 +2,7 @@ package com.developer.payment.service;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.FreezePayAmountRequestDTO;
+import com.developer.payment.dto.WalletRechargeRequestDTO;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.enums.WalletOperationTypeEnum;
 
@@ -29,6 +30,13 @@ public interface WalletService {
      * 创建钱包
      * @return
      */
-    DeveloperResult<Boolean> CreateWallet(String serialNo);
+    DeveloperResult<Boolean> createWallet(String serialNo);
+
+    /**
+     * 钱包金额充值
+     * @param req
+     * @return
+     */
+    DeveloperResult<Boolean> recharge(WalletRechargeRequestDTO req);
 
 }

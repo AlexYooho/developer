@@ -2,6 +2,7 @@ package com.developer.payment.controller;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.FreezePayAmountRequestDTO;
+import com.developer.payment.dto.WalletRechargeRequestDTO;
 import com.developer.payment.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class WalletController {
      */
     @PostMapping("create")
     public DeveloperResult<Boolean> CreateWallet(@RequestParam("serial_no") String serialNo){
-        return walletService.CreateWallet(serialNo);
+        return walletService.createWallet(serialNo);
     }
 
     /**
@@ -34,4 +35,8 @@ public class WalletController {
         return walletService.freezePaymentAmount(req);
     }
 
+    @PostMapping("recharge")
+    public DeveloperResult<Boolean> recharge(@RequestBody WalletRechargeRequestDTO req){
+        return walletService.recharge(req);
+    }
 }

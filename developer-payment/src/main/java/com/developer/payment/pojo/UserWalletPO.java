@@ -39,6 +39,12 @@ public class UserWalletPO {
     private BigDecimal balance;
 
     /**
+     * 支付密码
+     */
+    @TableField("payment_password")
+    private Integer paymentPassword;
+
+    /**
      * 冻结余额
      */
     @TableField("frozen_balance")

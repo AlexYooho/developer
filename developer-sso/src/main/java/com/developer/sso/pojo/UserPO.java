@@ -43,6 +43,9 @@ public class UserPO {
     @TableField(value = "type")
     private Integer type;
 
+    @TableField(value = "email")
+    private String email;
+
     @TableField(value = "signature")
     private String signature;
 

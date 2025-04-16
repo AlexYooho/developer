@@ -29,4 +29,9 @@ public class SelfUserInfoModel implements Serializable {
      * 终端类型
      */
     private Integer terminal;
+
+    /**
+     * 账户地址
+     */
+    private String emailAccount;
 }
