@@ -167,7 +167,7 @@ public class WalletServiceImpl implements WalletService {
         }
 
         // 验证码验证
-        DeveloperResult<Boolean> verifyCodeCheck = messageClient.verifyCodeCheck(CheckVerifyCodeRequestDTO.builder().serialNo(serialNo).verifyCodeTypeEnum(VerifyCodeTypeEnum.MODIFY_PASSWORD).code(req.getVerifyCode()).emailAccount(SelfUserInfoContext.selfUserInfo().getEmailAccount()).build());
+        DeveloperResult<Boolean> verifyCodeCheck = messageClient.verifyCodeCheck(CheckVerifyCodeRequestDTO.builder().serialNo(serialNo).verifyCodeTypeEnum(VerifyCodeTypeEnum.WALLET_RECHARGE).code(req.getVerifyCode()).emailAccount(SelfUserInfoContext.selfUserInfo().getEmailAccount()).build());
         if (!verifyCodeCheck.getIsSuccessful()) {
             return DeveloperResult.error(serialNo, verifyCodeCheck.getMsg());
         }

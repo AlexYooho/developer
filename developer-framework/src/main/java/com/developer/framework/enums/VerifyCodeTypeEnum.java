@@ -8,7 +8,9 @@ public enum VerifyCodeTypeEnum {
 
     REGISTER_ACCOUNT(0,"注册账号"),
 
-    MODIFY_PASSWORD(1,"修改密码");
+    MODIFY_PASSWORD(1,"修改密码"),
+
+    WALLET_RECHARGE(2,"钱包充值");
 
     @EnumValue
     private final Integer code;
