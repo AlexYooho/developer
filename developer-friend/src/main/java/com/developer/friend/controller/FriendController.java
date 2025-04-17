@@ -117,7 +117,7 @@ public class FriendController {
      * @param req
      * @return
      */
-    @GetMapping("is-friend")
+    @PostMapping("is-friend")
     public DeveloperResult<FriendInfoDTO> isFriend(@RequestBody IsFriendDto req){
         return friendService.isFriend(req);
     }

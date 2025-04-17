@@ -49,7 +49,7 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
 
     @Override
     public RedPacketsTypeEnum redPacketsType() {
-        return RedPacketsTypeEnum.LUCKY;
+        return RedPacketsTypeEnum.NORMAL;
     }
 
     /**

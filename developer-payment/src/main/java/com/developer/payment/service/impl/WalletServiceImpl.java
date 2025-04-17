@@ -38,16 +38,13 @@ public class WalletServiceImpl implements WalletService {
     @Autowired
     private SnowflakeNoUtil snowflakeNoUtil;
 
-    @Autowired
-    private MessageClient messageClient;
-
     /**
      * 发起交易
-     *
      * @param amount
      * @return
      */
     @Override
+    @GlobalTransactional(name = "wallet-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> doMoneyTransaction(String serialNo, Long userId, BigDecimal amount, TransactionTypeEnum transactionType, WalletOperationTypeEnum operationType) {
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
         if (walletInfo == null) {
@@ -89,7 +86,6 @@ public class WalletServiceImpl implements WalletService {
 
     /**
      * 冻结支付金额
-     *
      * @param req
      * @return
      */
@@ -112,7 +108,6 @@ public class WalletServiceImpl implements WalletService {
 
     /**
      * 创建钱包
-     *
      * @return
      */
     @Override
