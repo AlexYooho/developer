@@ -14,8 +14,8 @@ public class WalletRechargeRequestDTO {
     @JsonProperty("amount")
     private BigDecimal amount;
 
-    @JsonProperty("verify_code")
-    private Integer verifyCode;
+    //@JsonProperty("verify_code")
+    //private Integer verifyCode;
 
     @JsonProperty("payment_password")
     private Integer paymentPassword;

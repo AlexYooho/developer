@@ -142,7 +142,6 @@ public class WalletServiceImpl implements WalletService {
 
     /**
      * 钱包金额充值
-     *
      * @param req
      * @return
      */
@@ -159,17 +158,8 @@ public class WalletServiceImpl implements WalletService {
         if (req.getAmount().compareTo(new BigDecimal("1000000")) > 0) {
             return DeveloperResult.error(serialNo, "充值金额超过上限");
         }
-        if (req.getVerifyCode() == null) {
-            return DeveloperResult.error(serialNo, "验证码不能为空");
-        }
         if (req.getPaymentPassword() == null) {
             return DeveloperResult.error(serialNo, "支付密码不能为空");
-        }
-
-        // 验证码验证
-        DeveloperResult<Boolean> verifyCodeCheck = messageClient.verifyCodeCheck(CheckVerifyCodeRequestDTO.builder().serialNo(serialNo).verifyCodeTypeEnum(VerifyCodeTypeEnum.WALLET_RECHARGE).code(req.getVerifyCode()).emailAccount(SelfUserInfoContext.selfUserInfo().getEmailAccount()).build());
-        if (!verifyCodeCheck.getIsSuccessful()) {
-            return DeveloperResult.error(serialNo, verifyCodeCheck.getMsg());
         }
 
         // 钱包校验
@@ -195,20 +185,19 @@ public class WalletServiceImpl implements WalletService {
         walletRepository.updateById(walletInfo);
 
         // 交易流水
-        WalletTransactionRecordPO record = WalletTransactionRecordPO.builder()
+        walletTransactionRepository.save(WalletTransactionRecordPO.builder()
                 .walletId(walletInfo.getId())
                 .userId(userId)
                 .transactionType(TransactionTypeEnum.RECHARGE)
                 .amount(req.getAmount())
                 .beforeBalance(beforeBalance)
                 .afterBalance(walletInfo.getBalance())
-                .relatedUserId(0L)
+                .relatedUserId(userId)
                 .referenceId("")
                 .status(TransactionStatusEnum.SUCCESS)
                 .createdTime(new Date())
                 .updateTime(new Date())
-                .build();
-        walletTransactionRepository.save(record);
+                .build());
 
         return DeveloperResult.success(serialNo);
     }

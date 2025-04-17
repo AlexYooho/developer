@@ -35,6 +35,11 @@ public class WalletController {
         return walletService.freezePaymentAmount(req);
     }
 
+    /**
+     * 充值
+     * @param req
+     * @return
+     */
     @PostMapping("recharge")
     public DeveloperResult<Boolean> recharge(@RequestBody WalletRechargeRequestDTO req){
         return walletService.recharge(req);
