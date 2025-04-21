@@ -8,6 +8,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 @RefreshScope
@@ -17,8 +18,8 @@ public class SnowflakeNoUtil {
 
     private static final long MAX_SEQUENCE = 999999999999L; // 12 位序列号最大值
 
-    @Value("${machineId}")
-    private Integer machineId;
+//    @Value("${machineId}")
+//    private Integer machineId;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -41,7 +42,7 @@ public class SnowflakeNoUtil {
         redisUtil.setExpire(redisKey, 10, java.util.concurrent.TimeUnit.SECONDS);
 
         // 格式化机器 ID 和序列号
-        String machineIdStr = String.format("%03d", machineId);
+        String machineIdStr = String.format("%03d", ThreadLocalRandom.current().nextInt(100000,999999));
         String sequenceStr = String.format("%012d", sequence);
 
         return timestamp + machineIdStr + sequenceStr;

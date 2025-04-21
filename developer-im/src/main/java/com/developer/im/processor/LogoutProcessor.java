@@ -2,7 +2,9 @@ package com.developer.im.processor;
 
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.enums.MessageTerminalTypeEnum;
+import com.developer.framework.model.DeveloperResult;
 import com.developer.im.constant.ChannelAttrKey;
+import com.developer.im.enums.IMCmdType;
 import com.developer.im.netty.service.UserChannelCtxMap;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
@@ -32,5 +34,10 @@ public class LogoutProcessor  extends AbstractMessageProcessor<Object>{
             redisTemplate.delete(key);
             log.info("用户断开链接,userid:{},终端类型：{}",userId, MessageTerminalTypeEnum.fromCode(terminal).desc());
         }
+    }
+
+    @Override
+    public DeveloperResult<Boolean> handler(Object data, IMCmdType cmdType) {
+        return null;
     }
 }

@@ -3,6 +3,7 @@ package com.developer.im.processor;
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.developer.framework.constant.DeveloperConstant;
+import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.model.SelfUserInfoModel;
 import com.developer.im.config.ResourceServerConfiger;
 import com.developer.im.constant.ChannelAttrKey;
@@ -88,6 +89,11 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
         IMSendMessageInfoModel sendInfo = new IMSendMessageInfoModel();
         sendInfo.setCmd(IMCmdType.LOGIN.code());
         ctx.channel().writeAndFlush(sendInfo);
+    }
+
+    @Override
+    public DeveloperResult<Boolean> handler(IMLoginInfoModel data, IMCmdType cmdType) {
+        return null;
     }
 
     @Override

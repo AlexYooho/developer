@@ -2,6 +2,7 @@ package com.developer.im.processor;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.developer.framework.constant.DeveloperConstant;
+import com.developer.framework.model.DeveloperResult;
 import com.developer.im.constant.ChannelAttrKey;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
@@ -45,6 +46,11 @@ public class HeartbeatProcessor extends AbstractMessageProcessor<IMHeartbeatInfo
             String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID,userId.toString(),terminal.toString());
             redisTemplate.expire(key, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
         }
+    }
+
+    @Override
+    public DeveloperResult<Boolean> handler(IMHeartbeatInfoModel data, IMCmdType cmdType) {
+        return null;
     }
 
     @Override

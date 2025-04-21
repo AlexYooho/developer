@@ -5,7 +5,6 @@ import com.developer.framework.dto.MessageDTO;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.framework.processor.IMessageProcessor;
 import com.developer.im.service.AbstractMessageTypeService;
 import com.developer.im.service.MessageTypeServiceDispatchFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class IMProcessor implements IMessageProcessor {
+public class IMessageProcessor implements com.developer.framework.processor.IMessageProcessor {
 
     @Autowired
     private MessageTypeServiceDispatchFactory dispatchFactory;
