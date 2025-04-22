@@ -7,8 +7,10 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.framework.enums.RedPacketsTypeEnum;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -20,6 +22,8 @@ import java.util.Date;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("red_packets_info")
 public class RedPacketsInfoPO {
 

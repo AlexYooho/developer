@@ -7,10 +7,8 @@ import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
-import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.payment.client.FriendClient;
 import com.developer.payment.client.GroupClient;
-import com.developer.payment.client.MessageClient;
 import com.developer.payment.dto.FriendInfoDTO;
 import com.developer.payment.dto.IsFriendDto;
 import com.developer.payment.dto.SelfJoinGroupInfoDTO;
@@ -166,7 +164,7 @@ public class BaseRedPacketsService {
      * @param redPacketsInfoPO
      */
     public void updateRedPacketsCacheInfo(RedPacketsInfoPO redPacketsInfoPO){
-        String key = "redPackets:"+redPacketsInfoPO.getId();
+        String key = RedisKeyConstant.RED_PACKETS_INFO_KEY(redPacketsInfoPO.getId());
         redisUtil.set(key,redPacketsInfoPO,24, TimeUnit.HOURS);
     }
 
@@ -232,7 +230,7 @@ public class BaseRedPacketsService {
         redPacketsInfo.setStatus(RedPacketsStatusEnum.FINISHED);
         redPacketsInfo.setRemainingCount(0);
         redPacketsInfoRepository.updateById(redPacketsInfo);
-        return DeveloperResult.success(serialNo);
+        return DeveloperResult.success(serialNo,detailsPO.getReceiveAmount());
     }
 
     /**

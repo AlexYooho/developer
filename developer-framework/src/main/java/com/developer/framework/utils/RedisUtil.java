@@ -1,5 +1,6 @@
 package com.developer.framework.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class RedisUtil {
 
         try {
             String jsonValue = value.toString(); // 转换为 JSON 字符串
-            return objectMapper.readValue(jsonValue, clazz); // 使用 Jackson 转换为目标类型
+            return JSON.parseObject(jsonValue,clazz); // 使用 Jackson 转换为目标类型
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to convert value to type: " + clazz.getName(), e);
         }
@@ -71,11 +72,7 @@ public class RedisUtil {
      * @param value 要存储的值
      */
     public void set(String key, Object value,long timeOut, TimeUnit timeUnit) {
-        try{
-            redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(value),timeOut,timeUnit);
-        }catch (JsonProcessingException e){
-            e.printStackTrace();
-        }
+        redisTemplate.opsForValue().set(key, JSON.toJSON(value),timeOut,timeUnit);
     }
 
     public void set(String key, Object value) {
