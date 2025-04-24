@@ -127,8 +127,18 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
             return DeveloperResult.error(serialNo, "红包不存在");
         }
 
+        if (redPacketsInfo.getChannel() == PaymentChannelEnum.FRIEND) {
+            if (Objects.equals(redPacketsInfo.getSenderUserId(), SelfUserInfoContext.selfUserInfo().getUserId())) {
+                return DeveloperResult.error(serialNo, "无法领取自己发送的私聊红包");
+            }
+        }
+
         if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.FINISHED)) {
             return DeveloperResult.error(serialNo, "红包已领取完毕");
+        }
+
+        if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.REFUND)) {
+            return DeveloperResult.error(serialNo, "红包已退回");
         }
 
         if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.EXPIRED)) {
@@ -136,10 +146,6 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
         }
 
         if (redPacketsInfo.getChannel() == PaymentChannelEnum.FRIEND) {
-            if(Objects.equals(redPacketsInfo.getSenderUserId(), SelfUserInfoContext.selfUserInfo().getUserId())){
-                return  DeveloperResult.error(serialNo,"无法领取自己发送的私聊红包");
-            }
-
             DeveloperResult<BigDecimal> openResult = this.openPrivateChatRedPackets(serialNo, redPacketsInfo);
             if (!openResult.getIsSuccessful()) {
                 return openResult;
