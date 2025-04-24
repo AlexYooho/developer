@@ -50,7 +50,7 @@ public class RabbitMQUtil {
                 .processorType(messageType)
                 .build();
         rabbitTemplate.convertAndSend(exchange, routingKey, dto, processor -> {
-            processor.getMessageProperties().setHeader("x-delay", delayTime);
+            processor.getMessageProperties().setHeader("x-delay", delayTime*1000);
             return processor;
         });
     }

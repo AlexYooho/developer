@@ -191,7 +191,7 @@ public class BaseRedPacketsService {
      * @param delayRecoveryTime
      */
     public void redPacketsRecoveryEvent(String serialNo,Long redPacketsId,Integer delayRecoveryTime){
-        rabbitMQUtil.sendDelayMessage(serialNo,DeveloperMQConstant.MESSAGE_PAYMENT_EXCHANGE,DeveloperMQConstant.MESSAGE_PAYMENT_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_RETURN,redPacketsId,delayRecoveryTime);
+        rabbitMQUtil.sendDelayMessage(serialNo,DeveloperMQConstant.MESSAGE_DELAY_EXCHANGE,DeveloperMQConstant.MESSAGE_DELAY_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_RETURN,redPacketsId,delayRecoveryTime);
     }
 
     /**

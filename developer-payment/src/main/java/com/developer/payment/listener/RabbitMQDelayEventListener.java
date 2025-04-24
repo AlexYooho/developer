@@ -18,13 +18,10 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-/**
- * rabbitmq事件监听器
- */
 @Component
 @Slf4j
-@RabbitListener(queues = {DeveloperMQConstant.MESSAGE_PAYMENT_QUEUE})
-public class RabbitMQEventListener {
+@RabbitListener(queues = {DeveloperMQConstant.MESSAGE_DELAY_QUEUE})
+public class RabbitMQDelayEventListener {
 
     @Autowired
     private ProcessorDispatchFactory processorDispatchFactory;

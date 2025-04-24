@@ -17,6 +17,8 @@ public class DeveloperMQConstant {
 
     public static final String MESSAGE_CHAT_EXCHANGE = "message-chat-exchange";
 
+    public static final String MESSAGE_DELAY_EXCHANGE = "message-delay-exchange";
+
     // 路由键
     public static final String MESSAGE_IM_ROUTING_KEY ="message.im";
 
@@ -24,11 +26,15 @@ public class DeveloperMQConstant {
 
     public static final String MESSAGE_CHAT_ROUTING_KEY ="message.chat";
 
+    public static final String MESSAGE_DELAY_ROUTING_KEY = "message.delay";
+
     // 队列
     public static final String MESSAGE_IM_QUEUE="message-im-queue";
 
     public static final String MESSAGE_PAYMENT_QUEUE = "message-payment-queue";
 
     public static final String MESSAGE_CHAT_QUEUE="message-chat-queue";
+
+    public static final String MESSAGE_DELAY_QUEUE="message-delay-queue";
 
 }

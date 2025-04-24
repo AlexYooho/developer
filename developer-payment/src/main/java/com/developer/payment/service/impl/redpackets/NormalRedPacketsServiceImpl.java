@@ -96,8 +96,6 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
                     .createTime(new Date())
                     .updateTime(new Date()).build());
         }
-
-
         redPacketsReceiveDetailsRepository.saveBatch(list);
 
         // 处理钱包信息
@@ -110,7 +108,8 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
         sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel());
 
         // 红包过期退回金额
-        this.redPacketsRecoveryEvent(serialNo, redPacketsInfoPO.getId(), 60 * 60 * 24);
+        long redPacketExpireSeconds = (redPacketsInfoPO.getExpireTime().getTime() - new Date().getTime()) / 1000;
+        this.redPacketsRecoveryEvent(serialNo, redPacketsInfoPO.getId(), 10);
 
         return DeveloperResult.success(serialNo);
     }
