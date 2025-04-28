@@ -109,7 +109,7 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
 
         // 红包过期退回金额
         long redPacketExpireSeconds = (redPacketsInfoPO.getExpireTime().getTime() - new Date().getTime()) / 1000;
-        this.redPacketsRecoveryEvent(serialNo, redPacketsInfoPO.getId(), 10);
+        this.redPacketsRecoveryEvent(serialNo, redPacketsInfoPO.getId(), (int) redPacketExpireSeconds);
 
         return DeveloperResult.success(serialNo);
     }
@@ -163,7 +163,7 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
             // 更新红包缓存信息
             updateRedPacketsCacheInfo(redPacketsInfo);
 
-            return openResult;
+            return DeveloperResult.success(serialNo, openResult.getData());
         }
 
         BigDecimal openAmount;
@@ -196,12 +196,12 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
             }
         }
 
-        this.redPacketsRecoveryEvent(serialNo, redPacketsId, 60 * 60 * 24);
-
         // todo 发送红包领取提示事件给发红包发送人
         redPacketsReceiveNotifyMessage(serialNo, redPacketsInfo.getSenderUserId(), redPacketsInfo.getChannel());
 
+        // 更新红包缓存信息
+        updateRedPacketsCacheInfo(redPacketsInfo);
+
         return DeveloperResult.success(serialNo, openAmount);
     }
-
 }
