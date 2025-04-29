@@ -101,7 +101,7 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
         }
 
         // 5、推送红包消息
-        DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel());
+        DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel(),redPacketsInfoPO.getId());
         if(!sendMessageResult.getIsSuccessful()){
             return DeveloperResult.error(sendMessageResult.getSerialNo(),sendMessageResult.getMsg());
         }

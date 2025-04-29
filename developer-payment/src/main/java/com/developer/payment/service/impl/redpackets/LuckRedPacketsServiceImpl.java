@@ -63,25 +63,29 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
 
+        // 1、红包发送条件判断
         DeveloperResult<Boolean> result = sendConditionalJudgment(serialNo,dto.getType(),dto.getPaymentChannel(), dto.getTargetId(),userId,dto.getTotalCount(),dto.getRedPacketsAmount());
         if(!result.getIsSuccessful()){
             return DeveloperResult.error(serialNo,result.getMsg());
         }
 
-        // 保存红包信息,lucky明细在领取的时候新增,领取金额实时计算
+        // 2、红包信息入库,lucky明细在领取的时候新增,领取金额实时计算
         RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto);
         redPacketsInfoRepository.save(redPacketsInfoPO);
 
-        // 处理钱包信息
+        // 3、处理钱包信息
         DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo,userId,dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
         if(!walletResult.getIsSuccessful()){
             return walletResult;
         }
 
-        // 发送消息事件
-        sendRedPacketsMessage(serialNo,dto.getTargetId(),dto.getPaymentChannel());
+        // 4、推送红包消息
+        DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel());
+        if(!sendMessageResult.getIsSuccessful()){
+            return DeveloperResult.error(sendMessageResult.getSerialNo(),sendMessageResult.getMsg());
+        }
 
-        // 红包过期退回金额
+        // 5、红包过期退回金额
         long redPacketExpireSeconds = (redPacketsInfoPO.getExpireTime().getTime() - new Date().getTime()) / 1000;
         this.redPacketsRecoveryEvent(serialNo, redPacketsInfoPO.getId(), (int) redPacketExpireSeconds);
 

@@ -11,6 +11,7 @@ import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.message.client.FriendClient;
+import com.developer.message.client.PaymentClient;
 import com.developer.message.dto.*;
 import com.developer.message.param.IsFriendParam;
 import com.developer.message.pojo.PrivateMessagePO;
@@ -36,6 +37,9 @@ public class PrivateMessageServiceImpl implements MessageService {
 
     @Autowired
     private FriendClient friendClient;
+
+    @Autowired
+    private PaymentClient paymentClient;
 
     @Autowired
     private PrivateMessageRepository privateMessageRepository;
@@ -118,6 +122,12 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
+
+        // 同步修改红包消息状态
+        if(req.getMessageContentType()==MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER){
+            paymentClient.modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder().serialNo(serialNo).messageStatus(1).build());
+        }
+
         return DeveloperResult.success(serialNo,dto);
     }
 

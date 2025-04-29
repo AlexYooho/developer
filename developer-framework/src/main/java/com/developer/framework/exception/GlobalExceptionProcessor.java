@@ -29,7 +29,7 @@ public class GlobalExceptionProcessor {
         }
 
         log.error(e.toString());
-        return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"服务器崩溃了");
+        return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"服务器出错辣~~~~,快速修复中,请耐心等待");
         //return DeveloperResult.error("服务器出错辣~~~~,快速修复中,请耐心等待");
     }
 

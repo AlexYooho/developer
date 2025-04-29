@@ -16,8 +16,10 @@ import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.pojo.RedPacketsReceiveDetailsPO;
+import com.developer.payment.pojo.SendRedPacketsMessageLogPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.repository.RedPacketsReceiveDetailsRepository;
+import com.developer.payment.repository.SendRedPacketsMessageLogRepository;
 import com.developer.payment.utils.RabbitMQUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,9 @@ public class BaseRedPacketsService {
 
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
+
+    @Autowired
+    private SendRedPacketsMessageLogRepository sendRedPacketsMessageLogRepository;
 
     /**
      * 计算红包分配金额--平均分配
@@ -195,7 +200,7 @@ public class BaseRedPacketsService {
      * @param targetId
      * @param channelEnum
      */
-    public DeveloperResult sendRedPacketsMessage(String serialNo, Long targetId, PaymentChannelEnum channelEnum) {
+    public DeveloperResult sendRedPacketsMessage(String serialNo, Long targetId, PaymentChannelEnum channelEnum,Long redPacketsId) {
         if (channelEnum != PaymentChannelEnum.FRIEND && channelEnum != PaymentChannelEnum.GROUP) {
             return DeveloperResult.error(serialNo, "消息主类型不明确");
         }
@@ -210,7 +215,21 @@ public class BaseRedPacketsService {
                 .atUserIds(null)
                 .referenceId(0L)
                 .build();
-        return this.messageClient.sendMessage(messageMainTypeEnum, sendMessageRequest);
+        DeveloperResult result = this.messageClient.sendMessage(messageMainTypeEnum, sendMessageRequest);
+
+        // 发送延迟检查事件,红包消息是否发送成功
+        SendRedPacketsMessageLogPO log = SendRedPacketsMessageLogPO.builder()
+                .redPacketsId(redPacketsId)
+                .serialNo(serialNo)
+                .sendStatus(0)
+                .createTime(new Date())
+                .updateTime(new Date())
+                .remark("")
+                .build();
+        sendRedPacketsMessageLogRepository.save(log);
+
+        rabbitMQUtil.sendDelayMessage(serialNo, DeveloperMQConstant.MESSAGE_DELAY_EXCHANGE, DeveloperMQConstant.MESSAGE_DELAY_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_MESSAGE_SEND_CHECK, redPacketsId, 30);
+        return result;
     }
 
     /**
