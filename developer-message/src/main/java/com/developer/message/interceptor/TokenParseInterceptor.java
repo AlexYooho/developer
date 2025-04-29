@@ -30,8 +30,7 @@ public class TokenParseInterceptor {
                 .setSigningKey("developer".getBytes(StandardCharsets.UTF_8))
                 .parseClaimsJws(dto.getToken().replace("Bearer ",""))
                 .getBody();
-        PreAuthenticatedAuthenticationToken authentication =
-                new PreAuthenticatedAuthenticationToken(claims.getSubject(), dto.getToken(), null);
+        PreAuthenticatedAuthenticationToken authentication = new PreAuthenticatedAuthenticationToken(claims.getSubject(), dto.getToken(), null);
 
         authentication.setDetails(claims.get("selfUserInfoKey"));
 

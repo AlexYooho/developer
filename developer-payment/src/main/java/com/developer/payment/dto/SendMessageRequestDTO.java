@@ -1,4 +1,4 @@
-package com.developer.message.dto;
+package com.developer.payment.dto;
 
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
@@ -11,11 +11,10 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SendMessageRequestDTO {
-
     /**
      * 操作编号
      */
@@ -63,5 +62,4 @@ public class SendMessageRequestDTO {
      */
     @JsonProperty("reference_id")
     private Long referenceId;
-
 }

@@ -11,6 +11,7 @@ import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.service.PaymentService;
 import com.developer.payment.service.processorFactory.RedPacketsTypeProcessorDispatchFactory;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,7 @@ public class RedPacketsPaymentServiceImpl implements PaymentService {
      * 支付红包
      * @param dto
      */
+    @GlobalTransactional(name = "red-packets-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto){
         return dispatchFactory.getInstance(dto.getSendRedPacketsDTO().getType()).sendRedPackets(dto.getSendRedPacketsDTO());
     }

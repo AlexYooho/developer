@@ -62,23 +62,8 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
     public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
-        if (dto.getRedPacketsAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            return DeveloperResult.error(serialNo,"红包金额必须大于0");
-        }
 
-        if(dto.getPaymentChannel() != PaymentChannelEnum.GROUP){
-            return DeveloperResult.error(serialNo,"手气红包只支持群组发送");
-        }
-
-        if (dto.getTotalCount() <= 0) {
-            return DeveloperResult.error(serialNo,"红包数量必须大于0");
-        }
-
-        if (dto.getTargetId() <= 0) {
-            return DeveloperResult.error(serialNo,"请选择红包接收群");
-        }
-
-        DeveloperResult<Boolean> result = receiveTargetProcessor(serialNo,dto.getPaymentChannel(), dto.getTargetId(),userId,dto.getTotalCount());
+        DeveloperResult<Boolean> result = sendConditionalJudgment(serialNo,dto.getType(),dto.getPaymentChannel(), dto.getTargetId(),userId,dto.getTotalCount(),dto.getRedPacketsAmount());
         if(!result.getIsSuccessful()){
             return DeveloperResult.error(serialNo,result.getMsg());
         }
