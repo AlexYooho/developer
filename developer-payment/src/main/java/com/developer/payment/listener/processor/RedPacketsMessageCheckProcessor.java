@@ -46,7 +46,7 @@ public class RedPacketsMessageCheckProcessor implements IMessageProcessor {
 
         // 未发送成功,做逻辑补偿,回滚红包数据以及钱包余额
         RedPacketsInfoPO redPacketsInfoPO = redPacketsInfoRepository.getById(dto.parseData(Long.class));
-        DeveloperResult<Boolean> operationWalletResult = walletService.doMoneyTransaction(dto.serialNo, SelfUserInfoContext.selfUserInfo().getUserId(), redPacketsInfoPO.getSendAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
+        DeveloperResult<Boolean> operationWalletResult = walletService.doMoneyTransaction(dto.serialNo, redPacketsInfoPO.getSenderUserId(), redPacketsInfoPO.getSendAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
         if(!operationWalletResult.getIsSuccessful()){
             return DeveloperResult.error(dto.serialNo,"钱包余额回滚异常");
         }
@@ -56,6 +56,8 @@ public class RedPacketsMessageCheckProcessor implements IMessageProcessor {
 
         log.setSendStatus(2);
         sendRedPacketsMessageLogRepository.updateById(log);
+
+        // 推送消息--红包退回
 
         return DeveloperResult.success(dto.serialNo);
     }

@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -64,14 +65,19 @@ public class BaseRedPacketsService {
      * @param totalCount
      * @return
      */
-    public List<BigDecimal> distributeRedPacketsAmount(BigDecimal totalAmount, Integer totalCount) {
+    public BigDecimal distributeRedPacketsAmount(BigDecimal totalAmount, Integer totalCount) {
         List<BigDecimal> list = new ArrayList<>();
-        if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            return list;
+        if(Objects.equals(totalAmount, BigDecimal.ZERO)){
+            return BigDecimal.ZERO;
         }
 
         if (totalCount <= 0) {
-            return list;
+            return BigDecimal.ZERO;
+        }
+
+        if (totalCount == 1) {
+            list.add(totalAmount);
+            return totalAmount;
         }
 
         // 计算每个红包的金额，并保留两位小数
@@ -90,7 +96,7 @@ public class BaseRedPacketsService {
             remainingAmount = remainingAmount.subtract(BigDecimal.valueOf(0.01));
         }
 
-        return list;
+        return list.get(ThreadLocalRandom.current().nextInt(list.size()));
     }
 
     /**
@@ -148,10 +154,11 @@ public class BaseRedPacketsService {
      */
     public RedPacketsInfoPO buildRedPacketsInfo(SendRedPacketsDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        return RedPacketsInfoPO.builder()
+        RedPacketsInfoPO model = RedPacketsInfoPO.builder()
                 .senderUserId(userId)
                 .totalCount(dto.getTotalCount())
                 .remainingCount(dto.getTotalCount())
+                .receiveTargetId(dto.getTargetId())
                 .type(dto.getType())
                 .status(RedPacketsStatusEnum.PENDING)
                 .messageId(dto.getMessageId())
@@ -164,6 +171,7 @@ public class BaseRedPacketsService {
                 .createTime(new Date())
                 .updateTime(new Date())
                 .build();
+        return model;
     }
 
     /**
@@ -178,7 +186,7 @@ public class BaseRedPacketsService {
             return redisUtil.get(key, RedPacketsInfoPO.class);
         }
 
-        RedPacketsInfoPO redPacketsInfoPO = redPacketsInfoRepository.getById(redPacketsId);
+        RedPacketsInfoPO redPacketsInfoPO = redPacketsInfoRepository.findById(redPacketsId);
         redisUtil.set(key, redPacketsInfoPO, 24, TimeUnit.HOURS);
 
         return redPacketsInfoPO;
@@ -200,13 +208,24 @@ public class BaseRedPacketsService {
      * @param targetId
      * @param channelEnum
      */
-    public DeveloperResult sendRedPacketsMessage(String serialNo, Long targetId, PaymentChannelEnum channelEnum,Long redPacketsId) {
+    public DeveloperResult sendRedPacketsMessage(String serialNo, Long targetId, PaymentChannelEnum channelEnum, Long redPacketsId) {
         if (channelEnum != PaymentChannelEnum.FRIEND && channelEnum != PaymentChannelEnum.GROUP) {
             return DeveloperResult.error(serialNo, "消息主类型不明确");
         }
 
+        SendRedPacketsMessageLogPO log = SendRedPacketsMessageLogPO.builder()
+                .redPacketsId(redPacketsId)
+                .serialNo(serialNo)
+                .sendStatus(0)
+                .createTime(new Date())
+                .updateTime(new Date())
+                .remark("")
+                .build();
+        sendRedPacketsMessageLogRepository.save(log);
+
         MessageMainTypeEnum messageMainTypeEnum = channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE;
         SendMessageRequestDTO sendMessageRequest = SendMessageRequestDTO.builder()
+                .serialNo(serialNo)
                 .receiverId(targetId)
                 .messageContent("红包来啦")
                 .messageMainType(messageMainTypeEnum)
@@ -218,16 +237,6 @@ public class BaseRedPacketsService {
         DeveloperResult result = this.messageClient.sendMessage(messageMainTypeEnum, sendMessageRequest);
 
         // 发送延迟检查事件,红包消息是否发送成功
-        SendRedPacketsMessageLogPO log = SendRedPacketsMessageLogPO.builder()
-                .redPacketsId(redPacketsId)
-                .serialNo(serialNo)
-                .sendStatus(0)
-                .createTime(new Date())
-                .updateTime(new Date())
-                .remark("")
-                .build();
-        sendRedPacketsMessageLogRepository.save(log);
-
         rabbitMQUtil.sendDelayMessage(serialNo, DeveloperMQConstant.MESSAGE_DELAY_EXCHANGE, DeveloperMQConstant.MESSAGE_DELAY_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_MESSAGE_SEND_CHECK, redPacketsId, 30);
         return result;
     }
@@ -236,10 +245,11 @@ public class BaseRedPacketsService {
      * 红包回收事件
      *
      * @param redPacketsId
-     * @param delayRecoveryTime
+     * @param expireTime
      */
-    public void redPacketsRecoveryEvent(String serialNo, Long redPacketsId, Integer delayRecoveryTime) {
-        rabbitMQUtil.sendDelayMessage(serialNo, DeveloperMQConstant.MESSAGE_DELAY_EXCHANGE, DeveloperMQConstant.MESSAGE_DELAY_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_RETURN, redPacketsId, delayRecoveryTime);
+    public void redPacketsRecoveryEvent(String serialNo, Long redPacketsId, Long expireTime) {
+        Integer redPacketExpireSeconds = Math.toIntExact((expireTime - new Date().getTime()) / 1000);
+        rabbitMQUtil.sendDelayMessage(serialNo, DeveloperMQConstant.MESSAGE_DELAY_EXCHANGE, DeveloperMQConstant.MESSAGE_DELAY_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_RETURN, redPacketsId, redPacketExpireSeconds);
     }
 
     /**
@@ -248,29 +258,18 @@ public class BaseRedPacketsService {
      * @param redPacketsInfo
      * @return
      */
-    public DeveloperResult<BigDecimal> openPrivateChatRedPackets(String serialNo, RedPacketsInfoPO redPacketsInfo) {
-        RedPacketsReceiveDetailsPO detailsPO;
-        List<RedPacketsReceiveDetailsPO> list = redPacketsReceiveDetailsRepository.findList(redPacketsInfo.getId());
-        if (list.isEmpty()) {
-            // 手气红包
-            detailsPO = RedPacketsReceiveDetailsPO.builder()
-                    .createTime(new Date())
-                    .redPacketsId(redPacketsInfo.getId())
-                    .receiveTime(new Date())
-                    .status(RedPacketsReceiveStatusEnum.SUCCESS)
-                    .receiveAmount(redPacketsInfo.getRemainingAmount())
-                    .updateTime(new Date())
-                    .receiveUserId(SelfUserInfoContext.selfUserInfo().getUserId())
-                    .build();
-            redPacketsReceiveDetailsRepository.save(detailsPO);
-        } else {
-            detailsPO = list.get(0);
-            detailsPO.setReceiveUserId(SelfUserInfoContext.selfUserInfo().getUserId());
-            detailsPO.setReceiveTime(new Date());
-            detailsPO.setReceiveAmount(redPacketsInfo.getRemainingAmount());
-            detailsPO.setStatus(RedPacketsReceiveStatusEnum.SUCCESS);
-            redPacketsReceiveDetailsRepository.updateById(detailsPO);
-        }
+    public BigDecimal openPrivateChatRedPackets(RedPacketsInfoPO redPacketsInfo) {
+        BigDecimal amount = this.distributeRedPacketsAmount(redPacketsInfo.getRemainingAmount(), redPacketsInfo.getRemainingCount());
+        RedPacketsReceiveDetailsPO detailsPO = RedPacketsReceiveDetailsPO.builder()
+                .redPacketsId(redPacketsInfo.getId())
+                .receiveUserId(SelfUserInfoContext.selfUserInfo().getUserId())
+                .receiveAmount(amount)
+                .receiveTime(new Date())
+                .status(RedPacketsReceiveStatusEnum.SUCCESS)
+                .createTime(new Date())
+                .updateTime(new Date())
+                .build();
+        redPacketsReceiveDetailsRepository.save(detailsPO);
 
         // 处理红包主表
         redPacketsInfo.setUpdateTime(new Date());
@@ -279,7 +278,7 @@ public class BaseRedPacketsService {
         redPacketsInfo.setStatus(RedPacketsStatusEnum.FINISHED);
         redPacketsInfo.setRemainingCount(0);
         redPacketsInfoRepository.updateById(redPacketsInfo);
-        return DeveloperResult.success(serialNo, detailsPO.getReceiveAmount());
+        return detailsPO.getReceiveAmount();
     }
 
     /**
@@ -290,7 +289,7 @@ public class BaseRedPacketsService {
                 .receiverId(targetId)
                 .messageContent(SelfUserInfoContext.selfUserInfo().getNickName() + "领取了你的红包")
                 .messageMainType(channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE)
-                .messageContentType(MessageContentTypeEnum.RED_PACKETS)
+                .messageContentType(MessageContentTypeEnum.TEXT)
                 .groupId(targetId)
                 .build();
         rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE, DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE, dto);

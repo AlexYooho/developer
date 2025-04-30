@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -55,6 +56,7 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
 
     /**
      * 发红包
+     *
      * @param dto
      * @return
      */
@@ -64,9 +66,9 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
         String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
 
         // 1、红包发送条件判断
-        DeveloperResult<Boolean> result = sendConditionalJudgment(serialNo,dto.getType(),dto.getPaymentChannel(), dto.getTargetId(),userId,dto.getTotalCount(),dto.getRedPacketsAmount());
-        if(!result.getIsSuccessful()){
-            return DeveloperResult.error(serialNo,result.getMsg());
+        DeveloperResult<Boolean> result = sendConditionalJudgment(serialNo, dto.getType(), dto.getPaymentChannel(), dto.getTargetId(), userId, dto.getTotalCount(), dto.getRedPacketsAmount());
+        if (!result.getIsSuccessful()) {
+            return DeveloperResult.error(serialNo, result.getMsg());
         }
 
         // 2、红包信息入库,lucky明细在领取的时候新增,领取金额实时计算
@@ -74,80 +76,75 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
         redPacketsInfoRepository.save(redPacketsInfoPO);
 
         // 3、处理钱包信息
-        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo,userId,dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
-        if(!walletResult.getIsSuccessful()){
+        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo, userId, dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
+        if (!walletResult.getIsSuccessful()) {
             return walletResult;
         }
 
         // 4、推送红包消息
         DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel(), redPacketsInfoPO.getId());
-        if(!sendMessageResult.getIsSuccessful()){
-            return DeveloperResult.error(sendMessageResult.getSerialNo(),sendMessageResult.getMsg());
+        if (!sendMessageResult.getIsSuccessful()) {
+            return DeveloperResult.error(sendMessageResult.getSerialNo(), sendMessageResult.getMsg());
         }
 
         // 5、红包过期退回金额
         long redPacketExpireSeconds = (redPacketsInfoPO.getExpireTime().getTime() - new Date().getTime()) / 1000;
-        this.redPacketsRecoveryEvent(serialNo, redPacketsInfoPO.getId(), (int) redPacketExpireSeconds);
+        this.redPacketsRecoveryEvent(serialNo, redPacketsInfoPO.getId(), redPacketsInfoPO.getExpireTime().getTime());
 
         return DeveloperResult.success(serialNo);
     }
 
     /**
      * 打开红包
+     *
      * @param redPacketsId
      * @return
      */
     @Override
-    public DeveloperResult<BigDecimal> openRedPackets(String serialNo,Long redPacketsId) {
+    public DeveloperResult<BigDecimal> openRedPackets(String serialNo, Long redPacketsId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         RedPacketsInfoPO redPacketsInfo = findRedPacketsCacheInfo(redPacketsId);
         if (redPacketsInfo == null) {
-            return DeveloperResult.error(serialNo,"红包不存在");
+            return DeveloperResult.error(serialNo, "红包不存在");
         }
 
         if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.FINISHED)) {
-            return DeveloperResult.error(serialNo,"红包已领取完毕");
+            return DeveloperResult.error(serialNo, "红包已领取完毕");
         }
 
         if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.EXPIRED)) {
-            return DeveloperResult.error(serialNo,"红包已过期无法领取");
+            return DeveloperResult.error(serialNo, "红包已过期无法领取");
         }
 
         if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.REFUND)) {
             return DeveloperResult.error(serialNo, "红包已退回");
         }
 
-        if(redPacketsInfo.getChannel()==PaymentChannelEnum.FRIEND){
-            DeveloperResult<BigDecimal> openResult = this.openPrivateChatRedPackets(serialNo,redPacketsInfo);
-            if(!openResult.getIsSuccessful()){
-                return openResult;
-            }
+        if (redPacketsInfo.getChannel() == PaymentChannelEnum.FRIEND) {
+            BigDecimal amount = this.openPrivateChatRedPackets(redPacketsInfo);
 
             // todo 增加钱包余额
-            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo,userId,openResult.getData(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
-            if(!walletResult.getIsSuccessful()){
+            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo, userId, amount, TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
+            if (!walletResult.getIsSuccessful()) {
                 return DeveloperResult.error(walletResult.getMsg());
             }
 
-            // 红包过期退回金额
-            this.redPacketsRecoveryEvent(serialNo,redPacketsId,60*60*24);
-
             // todo 发送红包领取提示事件给发红包发送人
-            redPacketsReceiveNotifyMessage(serialNo,redPacketsInfo.getSenderUserId(),redPacketsInfo.getChannel());
+            redPacketsReceiveNotifyMessage(serialNo, redPacketsInfo.getSenderUserId(), redPacketsInfo.getChannel());
 
-            return openResult;
+            return DeveloperResult.success(serialNo, amount);
         }
 
         BigDecimal openAmount;
         // 生成分布式锁的key,基于红包Id
         String lockKey = RedisKeyConstant.OPEN_RED_PACKETS_LOCK_KEY(redPacketsId);
         RLock lock = redissonClient.getLock(lockKey);
-        try{
-            if(lock.tryLock(30,5, TimeUnit.SECONDS)){
-                BigDecimal amount = distributeRedPacketsAmount(redPacketsInfo.getSendAmount(), redPacketsInfo.getRemainingCount()).get(0);
+        try {
+            if (lock.tryLock(30, 5, TimeUnit.SECONDS)) {
+                BigDecimal amount = distributeRedPacketsAmount(redPacketsInfo.getSendAmount(), redPacketsInfo.getRemainingCount());
                 redPacketsInfo.setRemainingAmount(redPacketsInfo.getRemainingAmount().subtract(amount));
                 redPacketsInfo.setRemainingCount(redPacketsInfo.getRemainingCount() - 1);
-                if(redPacketsInfo.getRemainingCount()==0){
+                if (redPacketsInfo.getRemainingCount() == 0) {
                     redPacketsInfo.setStatus(RedPacketsStatusEnum.FINISHED);
                     // 更新红包缓存信息
                     updateRedPacketsCacheInfo(redPacketsInfo);
@@ -165,35 +162,34 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
                         .build());
                 updateRedPacketsCacheInfo(redPacketsInfo);
                 openAmount = amount;
-            }else{
-                return DeveloperResult.error(serialNo,"领取失败请重试！");
+            } else {
+                return DeveloperResult.error(serialNo, "领取失败请重试！");
             }
-        }catch (InterruptedException ex) {
+        } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            return DeveloperResult.error(serialNo,"领取失败请重试！");
-        }finally {
+            return DeveloperResult.error(serialNo, "领取失败请重试！");
+        } finally {
             // 释放锁
-            if(lock.isHeldByCurrentThread()){
+            if (lock.isHeldByCurrentThread()) {
                 lock.unlock();
             }
         }
 
-        this.redPacketsRecoveryEvent(serialNo,redPacketsId,60*60*24);
-
         // todo 发送红包领取提示事件给发红包发送人
-        redPacketsReceiveNotifyMessage(serialNo,redPacketsInfo.getSenderUserId(),redPacketsInfo.getChannel());
+        redPacketsReceiveNotifyMessage(serialNo, redPacketsInfo.getSenderUserId(), redPacketsInfo.getChannel());
 
-        return DeveloperResult.success(serialNo,openAmount);
+        return DeveloperResult.success(serialNo, openAmount);
     }
 
     /**
      * 计算红包分配金额
+     *
      * @param totalAmount
      * @param totalCount
      * @return
      */
     @Override
-    public List<BigDecimal> distributeRedPacketsAmount(BigDecimal totalAmount, Integer totalCount) {
+    public BigDecimal distributeRedPacketsAmount(BigDecimal totalAmount, Integer totalCount) {
         if (totalCount <= 0) {
             throw new IllegalArgumentException("红包个数必须大于零");
         }
@@ -219,6 +215,6 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
         // 剩余的金额放到最后一个红包
         list.add(remainingAmount.setScale(2, RoundingMode.DOWN));
 
-        return list;
+        return list.get(ThreadLocalRandom.current().nextInt(list.size()));
     }
 }

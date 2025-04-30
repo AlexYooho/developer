@@ -83,3 +83,14 @@ create table wallet_transaction_record
 )
     comment '钱包交易表';
 
+create table send_red_packets_message_log(
+    id               bigint auto_increment comment 'id'
+        primary key,
+    red_packets_id   bigint         not null comment '红包id',
+    serial_no        varchar(200)   not null comment '操作编号',
+    send_status      int            not null comment '消息发送状态0-默认 1-发送成功 2-失败',
+    created_time     datetime(3)    not null comment '创建时间',
+    updated_time     datetime(3)    not null comment '修改时间',
+    remark           varchar(200)   null     comment '备注'
+) comment '发送红包消息日志表'
+

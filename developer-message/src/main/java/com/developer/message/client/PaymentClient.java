@@ -21,7 +21,7 @@ public interface PaymentClient {
     @PostMapping("/payment-module/api/wallet/freeze-pay-amount")
     DeveloperResult<Boolean> freezePaymentAmount(@RequestBody FreezePayAmountRequestDTO req);
 
-    @PostMapping("/payment-module/api/payment/modify-red-packets-message-status")
+    @PostMapping("/payment-module/api/log/modify-red-packets-message-status")
     DeveloperResult<Boolean> modifyRedPacketsMessageStatus(@RequestBody ModifyRedPacketsMessageStatusRequestDTO req);
 
 }

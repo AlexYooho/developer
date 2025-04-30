@@ -125,7 +125,10 @@ public class PrivateMessageServiceImpl implements MessageService {
 
         // 同步修改红包消息状态
         if(req.getMessageContentType()==MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER){
-            paymentClient.modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder().serialNo(serialNo).messageStatus(1).build());
+            DeveloperResult<Boolean> modifyResult = paymentClient.modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder().serialNo(serialNo).messageStatus(1).build());
+            if(!modifyResult.getIsSuccessful()){
+                return DeveloperResult.error(serialNo, modifyResult.getMsg());
+            }
         }
 
         return DeveloperResult.success(serialNo,dto);

@@ -15,4 +15,8 @@ public class RedPacketsReceiveDetailsRepository extends ServiceImpl<RedPacketsRe
         return this.lambdaQuery().eq(RedPacketsReceiveDetailsPO::getRedPacketsId,redPacketsId).list();
     }
 
+    public RedPacketsReceiveDetailsPO find(Long redPacketsId){
+        return this.lambdaQuery().eq(RedPacketsReceiveDetailsPO::getRedPacketsId,redPacketsId).one();
+    }
+
 }

@@ -40,6 +40,12 @@ public class RedPacketsInfoPO {
     private Long senderUserId;
 
     /**
+     * 接收目标id
+     */
+    @TableField("receive_target_id")
+    private Long receiveTargetId;
+
+    /**
      * 红包个数
      */
     @TableField("total_count")
