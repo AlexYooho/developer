@@ -135,7 +135,7 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
         } else {
             // 群聊红包
             // 判断当前用户是否已经领取过该红包了
-            RedPacketsReceiveDetailsPO redPacketsDetails = redPacketsReceiveDetailsRepository.find(redPacketsId);
+            RedPacketsReceiveDetailsPO redPacketsDetails = redPacketsReceiveDetailsRepository.find(redPacketsId,SelfUserInfoContext.selfUserInfo().getUserId());
             if(redPacketsDetails!=null){
                 return DeveloperResult.error(serialNo, "无法重复领取同一个红包");
             }
