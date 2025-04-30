@@ -6,10 +6,7 @@ import com.developer.message.dto.GroupInfoDTO;
 import com.developer.message.dto.SelfJoinGroupInfoDTO;
 import com.developer.message.interceptor.FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,9 +14,9 @@ import java.util.List;
 public interface GroupInfoClient {
 
     @GetMapping("/group-module/api/group/get-self-join-all-group-info")
-    DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo(@RequestParam("serialNo") String serialNo);
+    DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo(@RequestParam("serial_no") String serialNo);
 
-    @GetMapping("/group-module/api/group/find")
+    @PostMapping("/group-module/api/group/find")
     DeveloperResult<GroupInfoDTO> findGroup(@RequestBody FindGroupRequestDTO req);
 
 }

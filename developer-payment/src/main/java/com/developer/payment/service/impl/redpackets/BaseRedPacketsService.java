@@ -230,7 +230,7 @@ public class BaseRedPacketsService {
                 .messageContent("红包来啦")
                 .messageMainType(messageMainTypeEnum)
                 .messageContentType(MessageContentTypeEnum.RED_PACKETS)
-                .groupId(0L)
+                .groupId(targetId)
                 .atUserIds(null)
                 .referenceId(0L)
                 .build();

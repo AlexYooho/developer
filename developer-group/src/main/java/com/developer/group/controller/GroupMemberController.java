@@ -21,7 +21,7 @@ public class GroupMemberController {
      * 获取群成员id
      * @return
      */
-    @GetMapping("/get-group-member-user-id")
+    @PostMapping("/get-group-member-user-id")
     public DeveloperResult<List<Long>> findGroupMemberUserId(@RequestBody FindGroupMemberUserIdRequestDTO req){
         return groupMemberService.findGroupMember(req);
     }

@@ -129,11 +129,12 @@ public class GroupMessageServiceImpl implements MessageService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
-        GroupInfoDTO groupInfoDTO = groupInfoClient.findGroup(FindGroupRequestDTO.builder().groupId(req.getGroupId()).serialNo(serialNo).build()).getData();
-        if (Objects.isNull(groupInfoDTO)) {
-            return DeveloperResult.error(serialNo, "群聊不存在");
+        DeveloperResult<GroupInfoDTO> findGroupResult = groupInfoClient.findGroup(FindGroupRequestDTO.builder().groupId(req.getGroupId()).serialNo(serialNo).build());
+        if (!findGroupResult.getIsSuccessful()) {
+            return DeveloperResult.error(serialNo, findGroupResult.getMsg());
         }
 
+        GroupInfoDTO groupInfoDTO = findGroupResult.getData();
         if (groupInfoDTO.getDeleted()) {
             return DeveloperResult.error(serialNo, "群已解散");
         }
