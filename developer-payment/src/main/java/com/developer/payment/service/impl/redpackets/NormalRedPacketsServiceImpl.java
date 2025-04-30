@@ -4,6 +4,7 @@ import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.enums.RedPacketsTypeEnum;
+import com.developer.framework.exception.DeveloperBusinessException;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.framework.utils.SnowflakeNoUtil;
@@ -67,23 +68,23 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
         // 1、红包发送条件判断
         DeveloperResult<Boolean> result = sendConditionalJudgment(serialNo, dto.getType(), dto.getPaymentChannel(), dto.getTargetId(), userId, dto.getTotalCount(), dto.getRedPacketsAmount());
         if (!result.getIsSuccessful()) {
-            return DeveloperResult.error(serialNo, result.getMsg());
+            throw new DeveloperBusinessException(serialNo,result.getMsg());
         }
 
-        // 2、处理钱包信息
-        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo, userId, dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
-        if (!walletResult.getIsSuccessful()) {
-            return walletResult;
-        }
-
-        // 3、红包信息入库
+        // 2、红包信息入库
         RedPacketsInfoPO redPacketsInfoPO = buildRedPacketsInfo(dto);
         redPacketsInfoRepository.save(redPacketsInfoPO);
+
+        // 3、处理钱包信息
+        DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo, userId, dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
+        if (!walletResult.getIsSuccessful()) {
+            throw new DeveloperBusinessException(serialNo,walletResult.getMsg());
+        }
 
         // 4、推送红包消息
         DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel(), redPacketsInfoPO.getId());
         if (!sendMessageResult.getIsSuccessful()) {
-            return DeveloperResult.error(sendMessageResult.getSerialNo(), sendMessageResult.getMsg());
+            throw new DeveloperBusinessException(serialNo,sendMessageResult.getMsg());
         }
 
         // 5、推送红包过期延迟检查事件
@@ -109,13 +110,13 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
             return DeveloperResult.error(serialNo, "红包已经空了");
         }
 
-        if (redPacketsInfo.getChannel() == PaymentChannelEnum.FRIEND && Objects.equals(redPacketsInfo.getSenderUserId(), SelfUserInfoContext.selfUserInfo().getUserId())) {
-            return DeveloperResult.error(serialNo, "无法领取自己发送的私聊红包");
-        }
-
         BigDecimal openAmount;
         // 1、私聊红包
         if (redPacketsInfo.getChannel() == PaymentChannelEnum.FRIEND) {
+
+            if (Objects.equals(redPacketsInfo.getSenderUserId(), SelfUserInfoContext.selfUserInfo().getUserId())) {
+                return DeveloperResult.error(serialNo, "无法领取自己发送的私聊红包");
+            }
 
             // 判断是否领取人为当前用户
             if(!SelfUserInfoContext.selfUserInfo().getUserId().equals(redPacketsInfo.getReceiveTargetId())){
@@ -123,11 +124,14 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
             }
 
             openAmount = this.openPrivateChatRedPackets(redPacketsInfo);
+            if(Objects.equals(openAmount, BigDecimal.ZERO)){{
+                return DeveloperResult.error(serialNo, "手速慢啦,红包抢光啦！");
+            }}
 
             // 增加钱包余额
             DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo, SelfUserInfoContext.selfUserInfo().getUserId(), openAmount, TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
             if (!walletResult.getIsSuccessful()) {
-                return DeveloperResult.error(serialNo, walletResult.getMsg());
+                throw new DeveloperBusinessException(serialNo,walletResult.getMsg());
             }
 
         } else {
@@ -150,6 +154,12 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
                         return DeveloperResult.error(serialNo, "手速慢啦,红包抢光啦！");
                     }
 
+                    // 更新红包信息
+                    redPacketsInfo.setRemainingAmount(redPacketsInfo.getRemainingAmount().subtract(openAmount));
+                    redPacketsInfo.setRemainingCount(redPacketsInfo.getRemainingCount() - 1);
+                    redPacketsInfo.setStatus(redPacketsInfo.getRemainingCount() == 0 ? RedPacketsStatusEnum.FINISHED : redPacketsInfo.getStatus());
+                    redPacketsInfoRepository.updateById(redPacketsInfo);
+
                     // 记录领取明细
                     RedPacketsReceiveDetailsPO detailsPO = RedPacketsReceiveDetailsPO.builder()
                             .redPacketsId(redPacketsInfo.getId())
@@ -166,7 +176,7 @@ public class NormalRedPacketsServiceImpl extends BaseRedPacketsService implement
                 }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
-                return DeveloperResult.error(serialNo, "领取失败请重试！");
+                throw new DeveloperBusinessException(serialNo,"领取失败请重试！");
             } finally {
                 // 释放锁
                 if (lock.isHeldByCurrentThread()) {

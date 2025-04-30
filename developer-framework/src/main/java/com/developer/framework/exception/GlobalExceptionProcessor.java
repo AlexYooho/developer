@@ -28,6 +28,11 @@ public class GlobalExceptionProcessor {
             return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),emailException.getCode(),emailException.getErrMsg());
         }
 
+        if(e.getCause() instanceof DeveloperBusinessException){
+            DeveloperBusinessException exception = (DeveloperBusinessException) e.getCause();
+            return DeveloperResult.error(exception.getSerialNo(),500, exception.getMessage());
+        }
+
         log.error(e.toString());
         return DeveloperResult.error(snowflakeNoUtil.getSerialNo(),500,"服务器出错辣~~~~,快速修复中,请耐心等待");
         //return DeveloperResult.error("服务器出错辣~~~~,快速修复中,请耐心等待");

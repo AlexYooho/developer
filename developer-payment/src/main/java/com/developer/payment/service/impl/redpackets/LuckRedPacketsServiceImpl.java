@@ -4,6 +4,7 @@ import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.PaymentChannelEnum;
 import com.developer.framework.enums.RedPacketsTypeEnum;
+import com.developer.framework.exception.DeveloperBusinessException;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.framework.utils.SnowflakeNoUtil;
@@ -24,10 +25,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -78,17 +76,16 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
         // 3、处理钱包信息
         DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo, userId, dto.getRedPacketsAmount(), TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.EXPENDITURE);
         if (!walletResult.getIsSuccessful()) {
-            return walletResult;
+            throw new DeveloperBusinessException(serialNo,walletResult.getMsg());
         }
 
         // 4、推送红包消息
         DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel(), redPacketsInfoPO.getId());
         if (!sendMessageResult.getIsSuccessful()) {
-            return DeveloperResult.error(sendMessageResult.getSerialNo(), sendMessageResult.getMsg());
+            throw new DeveloperBusinessException(serialNo,sendMessageResult.getMsg());
         }
 
         // 5、红包过期退回金额
-        long redPacketExpireSeconds = (redPacketsInfoPO.getExpireTime().getTime() - new Date().getTime()) / 1000;
         this.redPacketsRecoveryEvent(serialNo, redPacketsInfoPO.getId(), redPacketsInfoPO.getExpireTime().getTime());
 
         return DeveloperResult.success(serialNo);
@@ -109,73 +106,82 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
         }
 
         if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.FINISHED)) {
-            return DeveloperResult.error(serialNo, "红包已领取完毕");
-        }
-
-        if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.EXPIRED)) {
-            return DeveloperResult.error(serialNo, "红包已过期无法领取");
-        }
-
-        if (redPacketsInfo.getStatus().equals(RedPacketsStatusEnum.REFUND)) {
-            return DeveloperResult.error(serialNo, "红包已退回");
-        }
-
-        if (redPacketsInfo.getChannel() == PaymentChannelEnum.FRIEND) {
-            BigDecimal amount = this.openPrivateChatRedPackets(redPacketsInfo);
-
-            // todo 增加钱包余额
-            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo, userId, amount, TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
-            if (!walletResult.getIsSuccessful()) {
-                return DeveloperResult.error(walletResult.getMsg());
-            }
-
-            // todo 发送红包领取提示事件给发红包发送人
-            redPacketsReceiveNotifyMessage(serialNo, redPacketsInfo.getSenderUserId(), redPacketsInfo.getChannel());
-
-            return DeveloperResult.success(serialNo, amount);
+            return DeveloperResult.error(serialNo, "红包已经空了");
         }
 
         BigDecimal openAmount;
-        // 生成分布式锁的key,基于红包Id
-        String lockKey = RedisKeyConstant.OPEN_RED_PACKETS_LOCK_KEY(redPacketsId);
-        RLock lock = redissonClient.getLock(lockKey);
-        try {
-            if (lock.tryLock(30, 5, TimeUnit.SECONDS)) {
-                BigDecimal amount = distributeRedPacketsAmount(redPacketsInfo.getSendAmount(), redPacketsInfo.getRemainingCount());
-                redPacketsInfo.setRemainingAmount(redPacketsInfo.getRemainingAmount().subtract(amount));
-                redPacketsInfo.setRemainingCount(redPacketsInfo.getRemainingCount() - 1);
-                if (redPacketsInfo.getRemainingCount() == 0) {
-                    redPacketsInfo.setStatus(RedPacketsStatusEnum.FINISHED);
-                    // 更新红包缓存信息
-                    updateRedPacketsCacheInfo(redPacketsInfo);
-                    redPacketsInfoRepository.updateById(redPacketsInfo);
-                }
+        if (redPacketsInfo.getChannel() == PaymentChannelEnum.FRIEND) {
 
-                redPacketsReceiveDetailsRepository.save(RedPacketsReceiveDetailsPO.builder()
-                        .redPacketsId(redPacketsId)
-                        .receiveUserId(userId)
-                        .receiveAmount(amount)
-                        .receiveTime(new Date())
-                        .status(RedPacketsReceiveStatusEnum.SUCCESS)
-                        .createTime(new Date())
-                        .updateTime(new Date())
-                        .build());
-                updateRedPacketsCacheInfo(redPacketsInfo);
-                openAmount = amount;
-            } else {
-                return DeveloperResult.error(serialNo, "领取失败请重试！");
+            if (Objects.equals(redPacketsInfo.getSenderUserId(), userId)) {
+                return DeveloperResult.error(serialNo, "无法领取自己发送的私聊红包");
             }
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            return DeveloperResult.error(serialNo, "领取失败请重试！");
-        } finally {
-            // 释放锁
-            if (lock.isHeldByCurrentThread()) {
-                lock.unlock();
+
+            // 判断是否领取人为当前用户
+            if (!userId.equals(redPacketsInfo.getReceiveTargetId())) {
+                return DeveloperResult.error(serialNo, "不是给你的红包哦");
+            }
+
+            openAmount = this.openPrivateChatRedPackets(redPacketsInfo);
+            if(Objects.equals(openAmount, BigDecimal.ZERO)){{
+                return DeveloperResult.error(serialNo, "手速慢啦,红包抢光啦！");
+            }}
+
+            // 增加钱包余额
+            DeveloperResult<Boolean> walletResult = walletService.doMoneyTransaction(serialNo, userId, openAmount, TransactionTypeEnum.RED_PACKET, WalletOperationTypeEnum.INCOME);
+            if (!walletResult.getIsSuccessful()) {
+                throw new DeveloperBusinessException(serialNo,walletResult.getMsg());
+            }
+
+        } else {
+            // 群聊红包
+            // 判断当前用户是否已经领取过该红包了
+            RedPacketsReceiveDetailsPO redPacketsDetails = redPacketsReceiveDetailsRepository.find(redPacketsId);
+            if(redPacketsDetails!=null){
+                return DeveloperResult.error(serialNo, "无法重复领取同一个红包");
+            }
+
+            // 生成分布式锁的key,基于红包Id
+            String lockKey = RedisKeyConstant.OPEN_RED_PACKETS_LOCK_KEY(redPacketsId);
+            RLock lock = redissonClient.getLock(lockKey);
+            try {
+                if (lock.tryLock(30, 5, TimeUnit.SECONDS)) {
+                    openAmount = distributeRedPacketsAmount(redPacketsInfo.getSendAmount(), redPacketsInfo.getRemainingCount());
+                    if (Objects.equals(openAmount, BigDecimal.ZERO)) {
+                        return DeveloperResult.error(serialNo, "手速慢啦,红包抢光啦！");
+                    }
+
+                    // 更新红包信息
+                    redPacketsInfo.setRemainingAmount(redPacketsInfo.getRemainingAmount().subtract(openAmount));
+                    redPacketsInfo.setRemainingCount(redPacketsInfo.getRemainingCount() - 1);
+                    redPacketsInfo.setStatus(redPacketsInfo.getRemainingCount() == 0 ? RedPacketsStatusEnum.FINISHED : redPacketsInfo.getStatus());
+                    redPacketsInfoRepository.updateById(redPacketsInfo);
+                    redPacketsReceiveDetailsRepository.save(RedPacketsReceiveDetailsPO.builder()
+                            .redPacketsId(redPacketsId)
+                            .receiveUserId(userId)
+                            .receiveAmount(openAmount)
+                            .receiveTime(new Date())
+                            .status(RedPacketsReceiveStatusEnum.SUCCESS)
+                            .createTime(new Date())
+                            .updateTime(new Date())
+                            .build());
+                } else {
+                    return DeveloperResult.error(serialNo, "手速慢啦,红包抢光啦！");
+                }
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new DeveloperBusinessException(serialNo,"领取失败请重试！");
+            } finally {
+                // 释放锁
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
             }
         }
 
-        // todo 发送红包领取提示事件给发红包发送人
+        //更新红包缓存信息
+        updateRedPacketsCacheInfo(redPacketsInfo);
+
+        // 发送红包领取提示事件给发红包发送人
         redPacketsReceiveNotifyMessage(serialNo, redPacketsInfo.getSenderUserId(), redPacketsInfo.getChannel());
 
         return DeveloperResult.success(serialNo, openAmount);
@@ -191,11 +197,11 @@ public class LuckRedPacketsServiceImpl extends BaseRedPacketsService implements 
     @Override
     public BigDecimal distributeRedPacketsAmount(BigDecimal totalAmount, Integer totalCount) {
         if (totalCount <= 0) {
-            throw new IllegalArgumentException("红包个数必须大于零");
+            throw new DeveloperBusinessException("","红包个数必须大于零！");
         }
 
         if (totalAmount.compareTo(BigDecimal.valueOf(0.01).multiply(BigDecimal.valueOf(totalCount))) < 0) {
-            throw new IllegalArgumentException("总金额不足以分配每个红包最少 0.01 元");
+            throw new DeveloperBusinessException("","总金额不足以分配每个红包最少 0.01 元！");
         }
 
         List<BigDecimal> list = new ArrayList<>();

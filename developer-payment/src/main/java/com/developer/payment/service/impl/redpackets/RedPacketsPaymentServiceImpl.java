@@ -39,6 +39,7 @@ public class RedPacketsPaymentServiceImpl implements PaymentService {
      * 支付红包
      * @param dto
      */
+    @Override
     @GlobalTransactional(name = "red-packets-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto){
         return dispatchFactory.getInstance(dto.getSendRedPacketsDTO().getType()).sendRedPackets(dto.getSendRedPacketsDTO());
@@ -49,6 +50,7 @@ public class RedPacketsPaymentServiceImpl implements PaymentService {
      * @param req
      */
     @Override
+    @GlobalTransactional(name = "red-packets-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<BigDecimal> amountCharged(OpenRedPacketsRequestDTO req) {
         String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         RedPacketsInfoPO po = redPacketsInfoRepository.getById(req.getRedPacketsId());
@@ -64,6 +66,7 @@ public class RedPacketsPaymentServiceImpl implements PaymentService {
      * @return
      */
     @Override
+    @GlobalTransactional(name = "red-packets-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> amountRefunded(ReturnTransferRequestDTO req) {
         String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         RedPacketsInfoPO redPacketsInfo = redPacketsInfoRepository.getById(req.getRedPacketsId());

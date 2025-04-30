@@ -235,6 +235,9 @@ public class BaseRedPacketsService {
                 .referenceId(0L)
                 .build();
         DeveloperResult result = this.messageClient.sendMessage(messageMainTypeEnum, sendMessageRequest);
+        if(!result.getIsSuccessful()){
+            return result;
+        }
 
         // 发送延迟检查事件,红包消息是否发送成功
         rabbitMQUtil.sendDelayMessage(serialNo, DeveloperMQConstant.MESSAGE_DELAY_EXCHANGE, DeveloperMQConstant.MESSAGE_DELAY_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_MESSAGE_SEND_CHECK, redPacketsId, 30);
@@ -260,6 +263,10 @@ public class BaseRedPacketsService {
      */
     public BigDecimal openPrivateChatRedPackets(RedPacketsInfoPO redPacketsInfo) {
         BigDecimal amount = this.distributeRedPacketsAmount(redPacketsInfo.getRemainingAmount(), redPacketsInfo.getRemainingCount());
+        if(Objects.equals(amount, BigDecimal.ZERO)){
+            return amount;
+        }
+
         RedPacketsReceiveDetailsPO detailsPO = RedPacketsReceiveDetailsPO.builder()
                 .redPacketsId(redPacketsInfo.getId())
                 .receiveUserId(SelfUserInfoContext.selfUserInfo().getUserId())
