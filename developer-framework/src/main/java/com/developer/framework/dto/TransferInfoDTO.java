@@ -1,9 +1,9 @@
 package com.developer.framework.dto;
 
 import com.developer.framework.enums.PaymentChannelEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -21,14 +21,10 @@ public class TransferInfoDTO implements Serializable {
     private BigDecimal transferAmount;
 
     /**
-     * 转账对象id
+     * 转账对象
      */
-    private Long toUserId;
-
-    /**
-     * 转账对象群组id
-     */
-    private Long toGroupId;
+    @JsonProperty("target_id")
+    private Long targetId;
 
     /**
      * 支付渠道

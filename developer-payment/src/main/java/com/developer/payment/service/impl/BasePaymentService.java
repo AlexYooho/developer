@@ -1,4 +1,4 @@
-package com.developer.payment.service.impl.redpackets;
+package com.developer.payment.service.impl;
 
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.RedisKeyConstant;
@@ -16,7 +16,7 @@ import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.pojo.RedPacketsReceiveDetailsPO;
-import com.developer.payment.pojo.SendRedPacketsMessageLogPO;
+import com.developer.payment.pojo.SendPaymentMessageLogPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.repository.RedPacketsReceiveDetailsRepository;
 import com.developer.payment.repository.SendRedPacketsMessageLogRepository;
@@ -32,7 +32,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class BaseRedPacketsService {
+public class BasePaymentService {
 
     @Autowired
     private FriendClient friendClient;
@@ -67,7 +67,7 @@ public class BaseRedPacketsService {
      */
     public BigDecimal distributeRedPacketsAmount(BigDecimal totalAmount, Integer totalCount) {
         List<BigDecimal> list = new ArrayList<>();
-        if(Objects.equals(totalAmount, BigDecimal.ZERO)){
+        if (Objects.equals(totalAmount, BigDecimal.ZERO)) {
             return BigDecimal.ZERO;
         }
 
@@ -100,46 +100,46 @@ public class BaseRedPacketsService {
     }
 
     /**
-     * 判断是否可以发送红包
+     * 支付基础条件判断
      *
-     * @param channel
-     * @param targetId
+     * @param serialNo
      * @return
      */
-    public DeveloperResult<Boolean> sendConditionalJudgment(String serialNo, RedPacketsTypeEnum redPacketsType, PaymentChannelEnum channel, Long targetId, Long userId, Integer redPacketsCount, BigDecimal redPacketsAmount) {
-        if (redPacketsAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            return DeveloperResult.error(serialNo, "红包金额必须大于0");
-        }
-
-        if (redPacketsCount <= 0) {
-            return DeveloperResult.error(serialNo, "红包数量必须大于0");
+    public DeveloperResult<Boolean> paymentCommentConditionalJudgment(String serialNo, PaymentTypeEnum paymentTypeEnum, PaymentChannelEnum paymentChannelEnum,RedPacketsTypeEnum redPacketsTypeEnum, BigDecimal paymentAmount, Long targetId,Long userId, Integer redPacketsCount) {
+        // 基础条件
+        if (paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return DeveloperResult.error(serialNo, "金额最低0.01");
         }
 
         if (targetId <= 0) {
-            return DeveloperResult.error(serialNo, "请指定红包发送目标");
+            return DeveloperResult.error(serialNo, "错误的接收对象");
         }
 
-        if (channel == PaymentChannelEnum.FRIEND) {
-            if (redPacketsCount > 1) {
-                return DeveloperResult.error(serialNo, "好友红包一次只能发一个");
-            }
+        // 红包发送条件
+        if (paymentTypeEnum == PaymentTypeEnum.RED_PACKETS && paymentChannelEnum == PaymentChannelEnum.FRIEND && redPacketsCount > 1) {
+            return DeveloperResult.error(serialNo, "好友红包一次只能发一个");
+        }
 
-            if (redPacketsType == RedPacketsTypeEnum.LUCKY) {
-                return DeveloperResult.error(serialNo, "手气红包只支持群组发送");
-            }
+        if (paymentTypeEnum == PaymentTypeEnum.RED_PACKETS && paymentChannelEnum == PaymentChannelEnum.FRIEND && redPacketsTypeEnum == RedPacketsTypeEnum.LUCKY) {
+            return DeveloperResult.error(serialNo,"手气红包只支持群聊发送");
+        }
 
+        // 红包、转账通用条件
+        if(paymentChannelEnum == PaymentChannelEnum.FRIEND) {
             FriendInfoDTO isFriend = friendClient.isFriend(IsFriendDto.builder().friendId(targetId).userId(userId).serialNo(serialNo).build()).getData();
             if (isFriend == null) {
-                return DeveloperResult.error(serialNo, "对方不是您的好友，无法发送红包！");
+                return DeveloperResult.error(serialNo, "对方不是您的好友");
             }
-        } else if (channel == PaymentChannelEnum.GROUP) {
+        }
+
+        if(paymentChannelEnum == PaymentChannelEnum.GROUP){
             List<SelfJoinGroupInfoDTO> groupList = groupClient.getSelfJoinAllGroupInfo(serialNo).getData();
             Optional<SelfJoinGroupInfoDTO> optional = groupList.stream().filter(x -> x.getGroupId().equals(targetId)).findAny();
             if (!optional.isPresent()) {
-                return DeveloperResult.error(serialNo, "你不在群聊中,无法发送红包！");
+                return DeveloperResult.error(serialNo, "你不在群聊中");
             } else {
                 if (!optional.get().getQuit()) {
-                    return DeveloperResult.error(serialNo, "你不在群聊中,无法发送红包！");
+                    return DeveloperResult.error(serialNo, "你不在群聊中");
                 }
             }
         }
@@ -208,51 +208,50 @@ public class BaseRedPacketsService {
      * @param targetId
      * @param channelEnum
      */
-    public DeveloperResult sendRedPacketsMessage(String serialNo, Long targetId, PaymentChannelEnum channelEnum, Long redPacketsId) {
-        if (channelEnum != PaymentChannelEnum.FRIEND && channelEnum != PaymentChannelEnum.GROUP) {
+    public DeveloperResult sendRedPacketsMessage(String serialNo, Long targetId, PaymentChannelEnum channelEnum, Long transactionId,PaymentTypeEnum paymentTypeEnum,String messageContent,MessageContentTypeEnum messageContentTypeEnum) {
+        if(channelEnum == null || !channelEnum.isSupportType()){
             return DeveloperResult.error(serialNo, "消息主类型不明确");
         }
 
-        SendRedPacketsMessageLogPO log = SendRedPacketsMessageLogPO.builder()
-                .redPacketsId(redPacketsId)
+        sendRedPacketsMessageLogRepository.save(SendPaymentMessageLogPO.builder()
+                .transactionId(transactionId)
                 .serialNo(serialNo)
                 .sendStatus(0)
+                .paymentType(paymentTypeEnum)
                 .createTime(new Date())
                 .updateTime(new Date())
                 .remark("")
-                .build();
-        sendRedPacketsMessageLogRepository.save(log);
+                .build());
 
-        MessageMainTypeEnum messageMainTypeEnum = channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE;
-        SendMessageRequestDTO sendMessageRequest = SendMessageRequestDTO.builder()
+        MessageMainTypeEnum messageMainTypeEnum = channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : channelEnum == PaymentChannelEnum.SCAN_CODE ? MessageMainTypeEnum.SYSTEM_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE;
+        DeveloperResult result = this.messageClient.sendMessage(messageMainTypeEnum, SendMessageRequestDTO.builder()
                 .serialNo(serialNo)
                 .receiverId(targetId)
-                .messageContent("红包来啦")
+                .messageContent(messageContent)
                 .messageMainType(messageMainTypeEnum)
-                .messageContentType(MessageContentTypeEnum.RED_PACKETS)
+                .messageContentType(messageContentTypeEnum)
                 .groupId(targetId)
                 .atUserIds(null)
                 .referenceId(0L)
-                .build();
-        DeveloperResult result = this.messageClient.sendMessage(messageMainTypeEnum, sendMessageRequest);
-        if(!result.getIsSuccessful()){
+                .build());
+        if (!result.getIsSuccessful()) {
             return result;
         }
 
         // 发送延迟检查事件,红包消息是否发送成功
-        rabbitMQUtil.sendDelayMessage(serialNo, DeveloperMQConstant.MESSAGE_DELAY_EXCHANGE, DeveloperMQConstant.MESSAGE_DELAY_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_MESSAGE_SEND_CHECK, redPacketsId, 30);
+        rabbitMQUtil.sendDelayMessage(serialNo, DeveloperMQConstant.MESSAGE_DELAY_EXCHANGE, DeveloperMQConstant.MESSAGE_DELAY_ROUTING_KEY, ProcessorTypeEnum.TRANSACTION_MESSAGE_SEND_CHECK, TransactionExpiredCheckDTO.builder().serialNo(serialNo).paymentTypeEnum(paymentTypeEnum).transactionId(transactionId).build(), 30);
         return result;
     }
 
     /**
-     * 红包回收事件
+     * 交易过期检查资金退回事件
      *
-     * @param redPacketsId
+     * @param transactionId
      * @param expireTime
      */
-    public void redPacketsRecoveryEvent(String serialNo, Long redPacketsId, Long expireTime) {
-        Integer redPacketExpireSeconds = Math.toIntExact((expireTime - new Date().getTime()) / 1000);
-        rabbitMQUtil.sendDelayMessage(serialNo, DeveloperMQConstant.MESSAGE_DELAY_EXCHANGE, DeveloperMQConstant.MESSAGE_DELAY_ROUTING_KEY, ProcessorTypeEnum.RED_PACKETS_RETURN, redPacketsId, redPacketExpireSeconds);
+    public void transactionExpiredCheckEvent(String serialNo,PaymentTypeEnum paymentTypeEnum, Long transactionId, Long expireTime) {
+        Integer expiredSeconds = Math.toIntExact((expireTime - new Date().getTime()) / 1000);
+        rabbitMQUtil.sendDelayMessage(serialNo, DeveloperMQConstant.MESSAGE_DELAY_EXCHANGE, DeveloperMQConstant.MESSAGE_DELAY_ROUTING_KEY, ProcessorTypeEnum.TRANSACTION_EXPIRED_CHECK, TransactionExpiredCheckDTO.builder().serialNo(serialNo).paymentTypeEnum(paymentTypeEnum).transactionId(transactionId).build(), expiredSeconds);
     }
 
     /**
@@ -263,7 +262,7 @@ public class BaseRedPacketsService {
      */
     public BigDecimal openPrivateChatRedPackets(RedPacketsInfoPO redPacketsInfo) {
         BigDecimal amount = this.distributeRedPacketsAmount(redPacketsInfo.getRemainingAmount(), redPacketsInfo.getRemainingCount());
-        if(Objects.equals(amount, BigDecimal.ZERO)){
+        if (Objects.equals(amount, BigDecimal.ZERO)) {
             return amount;
         }
 

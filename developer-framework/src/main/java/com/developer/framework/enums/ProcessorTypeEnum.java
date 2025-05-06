@@ -14,9 +14,9 @@ public enum ProcessorTypeEnum {
 
     MESSAGE(3,"消息"),
 
-    RED_PACKETS_RETURN(4,"红包退回"),
+    TRANSACTION_EXPIRED_CHECK(4,"交易过期检查"),
 
-    RED_PACKETS_MESSAGE_SEND_CHECK(5,"红包消息发送检测");
+    TRANSACTION_MESSAGE_SEND_CHECK(5,"交易消息发送检测");
 
     @EnumValue
     private final Integer code;

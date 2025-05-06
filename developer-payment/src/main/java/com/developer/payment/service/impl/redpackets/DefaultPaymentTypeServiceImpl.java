@@ -4,12 +4,13 @@ import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.service.RedPacketsService;
+import com.developer.payment.service.impl.BasePaymentService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 @Service
-public class DefaultRedPacketsTypeServiceImpl extends BaseRedPacketsService implements RedPacketsService {
+public class DefaultPaymentTypeServiceImpl extends BasePaymentService implements RedPacketsService {
     @Override
     public RedPacketsTypeEnum redPacketsType() {
         return null;

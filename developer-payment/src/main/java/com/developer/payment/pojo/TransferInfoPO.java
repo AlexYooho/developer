@@ -37,13 +37,37 @@ public class TransferInfoPO {
      * 转账金额
      */
     @TableField("transfer_amount")
-    private BigDecimal TransferAmount;
+    private BigDecimal transferAmount;
 
     /**
      * 转账状态
      */
     @TableField("transfer_status")
     private TransferStatusEnum transferStatus;
+
+    /**
+     * 转账时间
+     */
+    @TableField("transfer_time")
+    private Date transferTime;
+
+    /**
+     * 过期时间
+     */
+    @TableField("expire_time")
+    private Date expireTime;
+
+    /**
+     * 退回时间
+     */
+    @TableField("return_time")
+    private Date returnTime;
+
+    /**
+     * 退回金额
+     */
+    @TableField("return_amount")
+    private BigDecimal returnAmount;
 
     /**
      * 创建时间

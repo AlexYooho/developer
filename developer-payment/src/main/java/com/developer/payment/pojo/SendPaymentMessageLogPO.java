@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.developer.framework.enums.PaymentTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,8 +16,8 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("send_red_packets_message_log")
-public class SendRedPacketsMessageLogPO {
+@TableName("send_payment_message_log")
+public class SendPaymentMessageLogPO {
 
     /**
      * id
@@ -27,8 +28,8 @@ public class SendRedPacketsMessageLogPO {
     /**
      * 红包id
      */
-    @TableField("red_packets_id")
-    private Long redPacketsId;
+    @TableField("transaction_id")
+    private Long transactionId;
 
     /**
      * 操作编号
@@ -41,6 +42,12 @@ public class SendRedPacketsMessageLogPO {
      */
     @TableField("send_status")
     private Integer sendStatus;
+
+    /**
+     * 支付类型
+     */
+    @TableField("payment_type")
+    private PaymentTypeEnum paymentType;
 
     /**
      * 创建时间
