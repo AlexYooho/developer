@@ -17,6 +17,7 @@ import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.repository.SendRedPacketsMessageLogRepository;
 import com.developer.payment.repository.TransferInfoRepository;
 import com.developer.payment.service.WalletService;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,7 @@ public class TransactionMessageCheckProcessor implements IMessageProcessor {
     }
 
     @Override
+    @GlobalTransactional(name = "transaction-message-send-check-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> processor(RabbitMQMessageBodyDTO dto) {
         SendPaymentMessageLogPO log = sendRedPacketsMessageLogRepository.findBySerialNo(dto.serialNo);
         if(log==null){

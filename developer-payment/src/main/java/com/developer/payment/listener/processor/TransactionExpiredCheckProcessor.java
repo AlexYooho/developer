@@ -15,6 +15,7 @@ import com.developer.payment.pojo.TransferInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.repository.TransferInfoRepository;
 import com.developer.payment.service.WalletService;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +39,7 @@ public class TransactionExpiredCheckProcessor implements IMessageProcessor {
     private TransferInfoRepository transferInfoRepository;
 
     @Override
+    @GlobalTransactional(name = "transaction-expired-check-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> processor(RabbitMQMessageBodyDTO dto) {
         TransactionExpiredCheckDTO transactionExpiredCheckDTO = dto.parseData(TransactionExpiredCheckDTO.class);
         Long userId = 0L;

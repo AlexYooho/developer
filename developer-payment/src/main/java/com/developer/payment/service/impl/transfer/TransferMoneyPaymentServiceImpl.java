@@ -18,6 +18,7 @@ import com.developer.payment.repository.TransferInfoRepository;
 import com.developer.payment.service.PaymentService;
 import com.developer.payment.service.WalletService;
 import com.developer.payment.service.impl.BasePaymentService;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,7 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
      * @return
      */
     @Override
+    @GlobalTransactional(name = "transfer-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto) {
         String serialNo = snowflakeNoUtil.getSerialNo(dto.getTransferInfoDTO().getSerialNo());
 
@@ -62,7 +64,6 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
         if (dto.getTransferInfoDTO().getTransferAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new DeveloperBusinessException(serialNo, "转账金额必须大于0");
         }
-
 
         // 2、转账信息入库
         TransferInfoPO transferInfoPO = TransferInfoPO.builder()
@@ -103,6 +104,7 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
      * @return
      */
     @Override
+    @GlobalTransactional(name = "transfer-confirm-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<BigDecimal> amountCharged(OpenRedPacketsRequestDTO req) {
         String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         TransferInfoPO transferInfo = transferInfoRepository.getById(req.getRedPacketsId());
@@ -125,7 +127,7 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
         // 增加钱包余额
         DeveloperResult<Boolean> transactionResult = walletService.doMoneyTransaction(serialNo, SelfUserInfoContext.selfUserInfo().getUserId(), transferInfo.getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.INCOME);
         if (!transactionResult.getIsSuccessful()) {
-            return DeveloperResult.error(serialNo, transactionResult.getMsg());
+            throw new DeveloperBusinessException(serialNo,transactionResult.getMsg());
         }
 
         return DeveloperResult.success(serialNo, transferInfo.getTransferAmount());
@@ -138,6 +140,7 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
      * @return
      */
     @Override
+    @GlobalTransactional(name = "transfer-return-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> amountRefunded(ReturnTransferRequestDTO req) {
         String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
         TransferInfoPO transferInfo = transferInfoRepository.getById(req.getRedPacketsId());
@@ -156,7 +159,7 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
         // 增加钱包余额
         DeveloperResult<Boolean> transactionResult = walletService.doMoneyTransaction(serialNo, transferInfo.getUserId(), transferInfo.getTransferAmount(), TransactionTypeEnum.TRANSFER, WalletOperationTypeEnum.INCOME);
         if (!transactionResult.getIsSuccessful()) {
-            return DeveloperResult.error(serialNo, transactionResult.getMsg());
+            throw new DeveloperBusinessException(serialNo,transactionResult.getMsg());
         }
 
         return DeveloperResult.success(serialNo);
