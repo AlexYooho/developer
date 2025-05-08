@@ -1,7 +1,6 @@
 package com.developer.im.netty.service;
 
 import com.developer.im.constant.ChannelAttrKey;
-import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMSendMessageInfoModel;
 import com.developer.im.processor.AbstractMessageProcessor;
@@ -12,9 +11,6 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 

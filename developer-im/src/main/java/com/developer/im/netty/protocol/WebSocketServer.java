@@ -55,7 +55,7 @@ public class WebSocketServer implements IMServer {
                     @Override
                     protected void initChannel(Channel channel) throws Exception {
                         ChannelPipeline pipeline = channel.pipeline();
-                        pipeline.addLast(new IdleStateHandler(120,0,0, TimeUnit.SECONDS));
+                        pipeline.addLast(new IdleStateHandler(300,0,0, TimeUnit.SECONDS));
                         pipeline.addLast("http-codec", new HttpServerCodec());
                         pipeline.addLast("aggregator", new HttpObjectAggregator(65535));
                         pipeline.addLast("http-chunked", new ChunkedWriteHandler());
@@ -75,7 +75,7 @@ public class WebSocketServer implements IMServer {
             this.ready = true;
             log.info("websocket server 初始化完成,端口：{}",port);
             // 等待服务端口关闭
-            //channel.closeFuture().sync();
+            channel.closeFuture().sync();
         } catch (InterruptedException e) {
             log.info("websocket server 初始化异常",e);
         }

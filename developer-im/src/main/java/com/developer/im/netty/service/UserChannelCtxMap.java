@@ -1,6 +1,9 @@
 package com.developer.im.netty.service;
 
+import com.developer.framework.utils.RedisUtil;
 import io.netty.channel.ChannelHandlerContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,9 +22,7 @@ public class UserChannelCtxMap {
     public static void removeChannelCtx(Long userId,Integer terminal){
         if(userId!=null && terminal!=null && channelMap.containsKey(userId)){
             Map<Integer, ChannelHandlerContext> userChannelMap = channelMap.get(userId);
-            if(userChannelMap.containsKey(terminal)){
-                userChannelMap.remove(terminal);
-            }
+            userChannelMap.remove(terminal);
         }
     }
 

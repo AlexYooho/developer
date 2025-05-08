@@ -33,14 +33,12 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
 
     @Override
     public void handler(ChannelHandlerContext ctx, IMLoginInfoModel loginInfo) {
-
         OAuth2AccessToken oAuth2AccessToken = null;
         IMSendMessageInfoModel sendMessageInfo = new IMSendMessageInfoModel();
         sendMessageInfo.setCmd(IMCmdType.FORCE_LOGOUT.code());
         try {
             oAuth2AccessToken = ResourceServerConfiger.resourceServerSecurityConfigurer.getTokenStore().readAccessToken(loginInfo.getAccessToken());
-            Date now = new Date();
-            if(oAuth2AccessToken.getExpiration().compareTo(now)<0){
+            if(oAuth2AccessToken.getExpiration().compareTo(new Date())<0){
                 sendMessageInfo.setData("用户token已过期,强制下线重新登录");
                 ctx.channel().writeAndFlush(sendMessageInfo);
                 ctx.channel().close();
@@ -71,8 +69,6 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
             return;
         }
 
-        // 绑定用户和channel
-        UserChannelCtxMap.addChannelCtx(userId,terminal,ctx);
         // 设置用户id属性
         AttributeKey<Long> userIdAttr = AttributeKey.valueOf(ChannelAttrKey.USER_ID);
         ctx.channel().attr(userIdAttr).set(userId);
@@ -82,6 +78,10 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
         // 初始化心跳次数
         AttributeKey<Long> hearBbeatAttr = AttributeKey.valueOf(ChannelAttrKey.HEARTBEAT_TIMES);
         ctx.channel().attr(hearBbeatAttr).set(0L);
+
+        // 绑定用户和channel
+        UserChannelCtxMap.addChannelCtx(userId,terminal,ctx);
+
         // 在redis上记录每个user的channelId，15秒没有心跳，则自动过期
         String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
         redisTemplate.opsForValue().set(key, IMStartServer.serverId, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
