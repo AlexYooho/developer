@@ -1,5 +1,7 @@
 package com.developer.message.dto;
 
+import com.developer.framework.enums.MessageContentTypeEnum;
+import com.developer.framework.enums.MessageStatusEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -28,13 +30,13 @@ public class MessageInsertDTO {
     private String messageContent;
 
     @JsonProperty("message_content_type")
-    private Integer messageContentType;
+    private MessageContentTypeEnum messageContentType;
 
     @JsonProperty("at_user_ids")
     private List<Long> atUserIds;
 
     @JsonProperty("message_status")
-    private Integer messageStatus;
+    private MessageStatusEnum messageStatus;
 
     @JsonProperty("send_time")
     private Date sendTime;

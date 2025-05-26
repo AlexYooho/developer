@@ -4,7 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.dto.MessageDTO;
+import com.developer.framework.dto.ChatMessageDTO;
 import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
@@ -399,8 +399,10 @@ public class GroupMessageServiceImpl implements MessageService {
         return groupMessage;
     }
 
-    private MessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime) {
-        return MessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
+    private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime) {
+        return ChatMessageDTO
+                .builder()
+                .messageMainTypeEnum(messageMainTypeEnum)
                 .messageContentTypeEnum(messageContentTypeEnum)
                 .messageId(messageId)
                 .groupId(groupId)
@@ -409,8 +411,9 @@ public class GroupMessageServiceImpl implements MessageService {
                 .messageContent(messageContent)
                 .receiverIds(receiverIds)
                 .atUserIds(atUserIds)
-                .messageStatus(messageStatus.code())
+                .messageStatus(messageStatus)
                 .terminalType(terminalType)
-                .sendTime(sendTime).build();
+                .sendTime(sendTime)
+                .build();
     }
 }

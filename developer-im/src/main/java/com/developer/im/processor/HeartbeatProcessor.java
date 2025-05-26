@@ -29,7 +29,7 @@ public class HeartbeatProcessor extends AbstractMessageProcessor<IMHeartbeatInfo
     @Override
     public void handler(ChannelHandlerContext ctx, IMHeartbeatInfoModel data) {
         // 响应ws
-        IMSendMessageInfoModel sendMessageInfo = new IMSendMessageInfoModel();
+        IMSendMessageInfoModel<Object> sendMessageInfo = new IMSendMessageInfoModel<Object>();
         sendMessageInfo.setCmd(IMCmdType.HEART_BEAT.code());
         ctx.channel().writeAndFlush(sendMessageInfo);
 

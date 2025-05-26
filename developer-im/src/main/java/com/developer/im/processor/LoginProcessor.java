@@ -34,7 +34,7 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
     @Override
     public void handler(ChannelHandlerContext ctx, IMLoginInfoModel loginInfo) {
         OAuth2AccessToken oAuth2AccessToken = null;
-        IMSendMessageInfoModel sendMessageInfo = new IMSendMessageInfoModel();
+        IMSendMessageInfoModel<Object> sendMessageInfo = new IMSendMessageInfoModel<Object>();
         sendMessageInfo.setCmd(IMCmdType.FORCE_LOGOUT.code());
         try {
             oAuth2AccessToken = ResourceServerConfiger.resourceServerSecurityConfigurer.getTokenStore().readAccessToken(loginInfo.getAccessToken());
@@ -76,8 +76,8 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
         AttributeKey<Integer> terminalAttr = AttributeKey.valueOf(ChannelAttrKey.TERMINAL_TYPE);
         ctx.channel().attr(terminalAttr).set(terminal);
         // 初始化心跳次数
-        AttributeKey<Long> hearBbeatAttr = AttributeKey.valueOf(ChannelAttrKey.HEARTBEAT_TIMES);
-        ctx.channel().attr(hearBbeatAttr).set(0L);
+        AttributeKey<Long> heartbeatAttr = AttributeKey.valueOf(ChannelAttrKey.HEARTBEAT_TIMES);
+        ctx.channel().attr(heartbeatAttr).set(0L);
 
         // 绑定用户和channel
         UserChannelCtxMap.addChannelCtx(userId,terminal,ctx);
@@ -86,7 +86,7 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
         String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
         redisTemplate.opsForValue().set(key, IMStartServer.serverId, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
         // 响应ws
-        IMSendMessageInfoModel sendInfo = new IMSendMessageInfoModel();
+        IMSendMessageInfoModel<Object> sendInfo = new IMSendMessageInfoModel<Object>();
         sendInfo.setCmd(IMCmdType.LOGIN.code());
         ctx.channel().writeAndFlush(sendInfo);
     }

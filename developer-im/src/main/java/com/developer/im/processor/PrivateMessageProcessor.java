@@ -4,10 +4,7 @@ import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.enums.SendCodeType;
-import com.developer.im.model.IMRecvInfoModel;
-import com.developer.im.model.IMSendMessageInfoModel;
-import com.developer.im.model.IMUserInfoModel;
-import com.developer.im.model.SendResultModel;
+import com.developer.im.model.*;
 import com.developer.im.netty.service.UserChannelCtxMap;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
@@ -17,18 +14,18 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class PrivateMessageProcessor extends AbstractMessageProcessor<IMRecvInfoModel> {
+public class PrivateMessageProcessor extends AbstractMessageProcessor<IMChatPrivateMessageModel> {
 
     @Autowired
     private RedisTemplate<String,Object> redisTemplate;
 
     @Override
-    public DeveloperResult<Boolean> handler(IMRecvInfoModel receiveMessageInfo, IMCmdType cmdType) {
+    public DeveloperResult<Boolean> handler(IMChatPrivateMessageModel receiveMessageInfo, IMCmdType cmdType) {
         IMUserInfoModel sender = receiveMessageInfo.getSender();
-        IMUserInfoModel receiver = receiveMessageInfo.getReceivers().get(0);
-        log.info("接收消息,发送者:{},接收者:{},消息内容:{}",sender.getId(),receiver.getId(),receiveMessageInfo.getData());
+        IMUserInfoModel receiver = receiveMessageInfo.getMessageReceiver();
+        log.info("接收消息,发送者:{},接收者:{},消息内容:{}",sender.getSenderId(),receiver.getSenderId(),receiveMessageInfo.getData());
         try{
-            ChannelHandlerContext channelCtx = UserChannelCtxMap.getChannelCtx(receiver.getId(), receiver.getTerminal().code());
+            ChannelHandlerContext channelCtx = UserChannelCtxMap.getChannelCtx(receiver.getSenderId(), receiver.getTerminal().code());
             if(channelCtx!=null){
                 IMSendMessageInfoModel sendMessageInfo = new IMSendMessageInfoModel();
                 sendMessageInfo.setCmd(cmdType.code());
@@ -37,12 +34,12 @@ public class PrivateMessageProcessor extends AbstractMessageProcessor<IMRecvInfo
                 sendResult(receiveMessageInfo,SendCodeType.SUCCESS);
             }else{
                 sendResult(receiveMessageInfo,SendCodeType.NOT_FIND_CHANNEL);
-                log.info("未找到channel,发送者:{},接收者:{},消息内容:{}",sender.getId(),receiver.getId(),receiveMessageInfo.getData());
+                log.info("未找到channel,发送者:{},接收者:{},消息内容:{}",sender.getSenderId(),receiver.getSenderId(),receiveMessageInfo.getData());
                 return DeveloperResult.error(receiveMessageInfo.getSerialNo(),"未找到channel");
             }
         }catch (Exception ex){
             sendResult(receiveMessageInfo,SendCodeType.UNKONW_ERROR);
-            log.info("发送异常,发送者:{},接收者:{},消息内容:{}",sender.getId(),receiver.getId(),receiveMessageInfo.getData());
+            log.info("发送异常,发送者:{},接收者:{},消息内容:{}",sender.getSenderId(),receiver.getSenderId(),receiveMessageInfo.getData());
             return DeveloperResult.error(receiveMessageInfo.getSerialNo(),"发送异常");
         }
         return DeveloperResult.success(receiveMessageInfo.getSerialNo());
@@ -53,11 +50,11 @@ public class PrivateMessageProcessor extends AbstractMessageProcessor<IMRecvInfo
      * @param receiveMessageInfo
      * @param sendCode
      */
-    private void sendResult(IMRecvInfoModel receiveMessageInfo, SendCodeType sendCode){
+    private void sendResult(IMChatPrivateMessageModel receiveMessageInfo, SendCodeType sendCode){
         if(receiveMessageInfo.getSendResult()){
             SendResultModel sendResult = new SendResultModel();
             sendResult.setSender(receiveMessageInfo.getSender());
-            sendResult.setReceiver(receiveMessageInfo.getReceivers().get(0));
+            sendResult.setReceiver(receiveMessageInfo.getMessageReceiver());
             sendResult.setCode(sendCode);
             sendResult.setData(receiveMessageInfo.getData());
             String key = RedisKeyConstant.IM_RESULT_PRIVATE_QUEUE;

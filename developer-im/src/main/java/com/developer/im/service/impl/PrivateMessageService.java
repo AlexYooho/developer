@@ -1,12 +1,11 @@
 package com.developer.im.service.impl;
 
-import com.developer.framework.dto.MessageDTO;
+import com.developer.framework.dto.ChatMessageDTO;
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.framework.utils.BeanUtils;
 import com.developer.im.dto.PrivateMessageDTO;
 import com.developer.im.enums.IMCmdType;
-import com.developer.im.model.IMPrivateMessageModel;
+import com.developer.im.model.IMChatMessageBaseModel;
 import com.developer.im.model.IMUserInfoModel;
 import com.developer.im.netty.IMClient;
 import com.developer.im.service.AbstractMessageTypeService;
@@ -25,20 +24,16 @@ public class PrivateMessageService extends AbstractMessageTypeService {
     }
 
     @Override
-    public DeveloperResult<Boolean> handler(MessageDTO dto) {
-        PrivateMessageDTO privateMessageDTO = BeanUtils.copyProperties(dto, PrivateMessageDTO.class);
-        privateMessageDTO = privateMessageDTO == null ? new PrivateMessageDTO() : privateMessageDTO;
-        privateMessageDTO.setReceiverId(dto.getReceiverIds().get(0));
-        privateMessageDTO.setId(dto.getMessageId());
-        privateMessageDTO.setMessageContentType(dto.getMessageContentTypeEnum().code());
-
-        IMPrivateMessageModel<PrivateMessageDTO> sendMessage = new IMPrivateMessageModel<>();
-        sendMessage.setSerialNo(dto.getSerialNo());
-        sendMessage.setSender(new IMUserInfoModel(dto.getSendId(), dto.getTerminalType()));
-        sendMessage.setReceiverId(dto.getReceiverIds().get(0));
-        sendMessage.setData(privateMessageDTO);
-        sendMessage.setSendToSelf(false);
-        sendMessage.setSendResult(false);
-        return imClients.sendPrivateMessage(sendMessage, IMCmdType.PRIVATE_MESSAGE);
+    public DeveloperResult<Boolean> handler(ChatMessageDTO dto) {
+        IMChatMessageBaseModel<PrivateMessageDTO> model = new IMChatMessageBaseModel<>();
+        model.setSerialNo(dto.getSerialNo());
+        model.setSender(new IMUserInfoModel(dto.getSendId(),dto.getTerminalType(), dto.getSendNickName()));
+        model.setSendToSelf(false);
+        model.setSendResult(false);
+        model.setMessageId(dto.getMessageId());
+        model.setMessageContent(dto.getMessageContent());
+        model.setMessageContentType(dto.getMessageContentTypeEnum().code());
+        model.setData(new PrivateMessageDTO(dto.getFriendUserId()));
+        return imClients.sendPrivateMessage(model, IMCmdType.PRIVATE_MESSAGE);
     }
 }

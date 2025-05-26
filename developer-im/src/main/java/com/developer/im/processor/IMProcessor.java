@@ -4,11 +4,10 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.model.DeveloperResult;
+import com.developer.im.dto.GroupMessageDTO;
+import com.developer.im.dto.PrivateMessageDTO;
 import com.developer.im.enums.IMCmdType;
-import com.developer.im.model.IMGroupMessageModel;
-import com.developer.im.model.IMPrivateMessageModel;
-import com.developer.im.model.IMRecvInfoModel;
-import com.developer.im.model.IMUserInfoModel;
+import com.developer.im.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -27,11 +26,11 @@ public class IMProcessor {
      * @param message
      * @param <T>
      */
-    public <T> DeveloperResult<Boolean> sendPrivateMessage(IMPrivateMessageModel<T> message, IMCmdType cmdType) {
+    public <T> DeveloperResult<Boolean> sendPrivateMessage(IMChatMessageBaseModel<PrivateMessageDTO> message, IMCmdType cmdType) {
         DeveloperResult<Boolean> result = null;
-        for (Integer terminal : message.getRecvTerminals()) {
+        for (Integer terminal : message.getReceiveTerminals()) {
             // 获取对方连接的channelId
-            String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, message.getReceiverId().toString(), terminal.toString());
+            String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, message.getData().getReceiverId().toString(), terminal.toString());
             Integer serverId = (Integer) redisTemplate.opsForValue().get(key);
 
             if (serverId == null || serverId <= 0) {
@@ -40,12 +39,12 @@ public class IMProcessor {
 
             // 如果对方在线
             String sendKey = String.join(":", RedisKeyConstant.IM_MESSAGE_PRIVATE_QUEUE, serverId.toString());
-            IMRecvInfoModel recvInfo = new IMRecvInfoModel();
+            IMChatPrivateMessageModel recvInfo = new IMChatPrivateMessageModel();
             recvInfo.setSerialNo(message.getSerialNo());
             recvInfo.setCmd(cmdType.code());
             recvInfo.setSendResult(message.getSendResult());
             recvInfo.setSender(message.getSender());
-            recvInfo.setReceivers(Collections.singletonList(new IMUserInfoModel(message.getReceiverId(), MessageTerminalTypeEnum.fromCode(terminal))));
+            recvInfo.setMessageReceiver(new IMUserInfoModel(message.getData().getReceiverId(), MessageTerminalTypeEnum.fromCode(terminal),""));
             recvInfo.setData(message.getData());
             AbstractMessageProcessor processor = ProcessorFactory.getHandler(cmdType);
             result = processor.handler(recvInfo, cmdType);
@@ -59,14 +58,14 @@ public class IMProcessor {
      * @param message
      * @param <T>
      */
-    public <T> DeveloperResult<Boolean> sendGroupMessage(IMGroupMessageModel<T> message) {
+    public <T> DeveloperResult<Boolean> sendGroupMessage(IMChatMessageBaseModel<GroupMessageDTO> message) {
         DeveloperResult<Boolean> result = null;
         // 根据群聊每个成员所连的IM-server，进行分组
         HashMap<String, IMUserInfoModel> sendMap = new HashMap<>();
-        for (Integer terminal : message.getRecvTerminals()) {
-            message.getRecvIds().stream().forEach(id -> {
+        for (Integer terminal : message.getReceiveTerminals()) {
+            message.getData().getReceiverIds().stream().forEach(id -> {
                 String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, id.toString(), terminal.toString());
-                sendMap.put(key, new IMUserInfoModel(id, MessageTerminalTypeEnum.fromCode(terminal)));
+                sendMap.put(key, new IMUserInfoModel(id, MessageTerminalTypeEnum.fromCode(terminal),""));
             });
         }
 
@@ -89,9 +88,9 @@ public class IMProcessor {
         ;
         // 逐个server发送
         for (Map.Entry<Integer, List<IMUserInfoModel>> entry : serverMap.entrySet()) {
-            IMRecvInfoModel recvInfo = new IMRecvInfoModel();
+            IMChatGroupMessageModel recvInfo = new IMChatGroupMessageModel();
             recvInfo.setCmd(IMCmdType.GROUP_MESSAGE.code());
-            recvInfo.setReceivers(new LinkedList<>(entry.getValue()));
+            recvInfo.setMessageReceiverList(new LinkedList<>(entry.getValue()));
             recvInfo.setSender(message.getSender());
             recvInfo.setSendResult(message.getSendResult());
             recvInfo.setData(message.getData());
@@ -116,7 +115,7 @@ public class IMProcessor {
         for (Long id : userIds) {
             for (Integer terminal : MessageTerminalTypeEnum.codes()) {
                 String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, id.toString(), terminal.toString());
-                userMap.put(key, new IMUserInfoModel(id, MessageTerminalTypeEnum.fromCode(terminal)));
+                userMap.put(key, new IMUserInfoModel(id, MessageTerminalTypeEnum.fromCode(terminal),""));
             }
         }
         // 批量拉取
@@ -127,7 +126,7 @@ public class IMProcessor {
             // serverid有值表示用户在线
             if (serverIds.get(idx++) != null) {
                 IMUserInfoModel userInfo = entry.getValue();
-                List<MessageTerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getId(), o -> new LinkedList<>());
+                List<MessageTerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getSenderId(), o -> new LinkedList<>());
                 terminals.add(userInfo.getTerminal());
             }
         }

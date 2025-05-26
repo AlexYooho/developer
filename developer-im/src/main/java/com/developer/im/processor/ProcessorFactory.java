@@ -8,22 +8,23 @@ public class ProcessorFactory {
     public static AbstractMessageProcessor getHandler(IMCmdType cmd){
         AbstractMessageProcessor handler = null;
         switch (cmd){
-            case LOGIN:
-                handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(LoginProcessor.class);
+            case LOGIN: // 登录
+                handler = SpringContext.getApplicationContext().getBean(LoginProcessor.class);
                 break;
-            case HEART_BEAT:
-                handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(HeartbeatProcessor.class);
+            case LOGOUT: // 登出
+                handler = SpringContext.getApplicationContext().getBean(LogoutProcessor.class);
                 break;
-            case PRIVATE_MESSAGE:
+            case HEART_BEAT: // 心跳
+                handler = SpringContext.getApplicationContext().getBean(HeartbeatProcessor.class);
+                break;
+            case PRIVATE_MESSAGE: // 消息
             case SYSTEM_MESSAGE:
             case SUBSCRIBE_MESSAGE:
-                handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(PrivateMessageProcessor.class);
+                handler = SpringContext.getApplicationContext().getBean(PrivateMessageProcessor.class);
                 break;
-            case GROUP_MESSAGE:
-                handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(GroupMessageProcessor.class);
+            case GROUP_MESSAGE: // 群消息
+                handler = SpringContext.getApplicationContext().getBean(GroupMessageProcessor.class);
                 break;
-            case LOGOUT:
-                handler = (AbstractMessageProcessor) SpringContext.getApplicationContext().getBean(LogoutProcessor.class);
             default:
                 break;
         }

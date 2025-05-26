@@ -5,7 +5,7 @@ import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.dto.MessageDTO;
+import com.developer.framework.dto.ChatMessageDTO;
 import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
@@ -217,7 +217,7 @@ public class FriendServiceImpl implements FriendService {
         return RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
-                .data(MessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
+                .data(ChatMessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
                         .messageContentTypeEnum(messageContentTypeEnum)
                         .messageId(messageId)
                         .groupId(groupId)
@@ -226,7 +226,7 @@ public class FriendServiceImpl implements FriendService {
                         .messageContent(messageContent)
                         .receiverIds(receiverIds)
                         .atUserIds(atUserIds)
-                        .messageStatus(messageStatus.code())
+                        .messageStatus(messageStatus)
                         .terminalType(terminalType)
                         .sendTime(sendTime).build())
                 .build();

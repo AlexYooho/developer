@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.developer.framework.enums.MessageContentTypeEnum;
+import com.developer.framework.enums.MessageStatusEnum;
 import lombok.Builder;
 import lombok.Data;
 
@@ -41,13 +43,13 @@ public class PrivateMessagePO {
      * 消息类型 0:文字 1:图片 2:文件 3:语音  10:撤回消息
      */
     @TableField("type")
-    private Integer messageContentType;
+    private MessageContentTypeEnum messageContentType;
 
     /**
      * 状态
      */
     @TableField("status")
-    private Integer messageStatus;
+    private MessageStatusEnum messageStatus;
 
 
     /**
