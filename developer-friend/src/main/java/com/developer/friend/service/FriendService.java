@@ -11,7 +11,7 @@ public interface FriendService {
      * 获取好友列表
      * @return
      */
-    DeveloperResult<List<FriendInfoDTO>> findFriendList(String serialNo);
+    DeveloperResult<List<FriendInfoDTO>> findFriendList();
 
     /**
      * 是否是好友
@@ -51,7 +51,7 @@ public interface FriendService {
      * 获取好友添加数
      * @return
      */
-    DeveloperResult<Integer> findFriendAddRequestCount(String serialNo);
+    DeveloperResult<Integer> findFriendAddRequestCount();
 
     /**
      * 获取新好友添加列表
@@ -63,7 +63,7 @@ public interface FriendService {
      * 更新好友添加请求状态
      * @return
      */
-    DeveloperResult<Boolean> updateAddFriendRecordStatus(String serialNo);
+    DeveloperResult<Boolean> updateAddFriendRecordStatus();
 
     /**
      * 批量修改好友信息

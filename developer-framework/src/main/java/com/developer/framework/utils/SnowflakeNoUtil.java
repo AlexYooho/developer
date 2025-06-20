@@ -18,9 +18,6 @@ public class SnowflakeNoUtil {
 
     private static final long MAX_SEQUENCE = 999999999999L; // 12 位序列号最大值
 
-//    @Value("${machineId}")
-//    private Integer machineId;
-
     @Autowired
     private RedisUtil redisUtil;
 

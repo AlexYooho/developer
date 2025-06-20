@@ -61,8 +61,8 @@ public class GroupController {
      * @return
      */
     @GetMapping("/list")
-    public DeveloperResult<List<GroupInfoDTO>> findGroups(@RequestParam("serial_no") String serialNo){
-        return groupService.findGroupList(serialNo);
+    public DeveloperResult<List<GroupInfoDTO>> findGroups(){
+        return groupService.findGroupList();
     }
 
     /**
@@ -110,7 +110,7 @@ public class GroupController {
      * @return
      */
     @GetMapping("get-self-join-all-group-info")
-    public DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo(@RequestParam("serial_no") String serialNo){
-        return groupService.findSelfJoinAllGroupInfo(serialNo);
+    public DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo(){
+        return groupService.findSelfJoinAllGroupInfo();
     }
 }

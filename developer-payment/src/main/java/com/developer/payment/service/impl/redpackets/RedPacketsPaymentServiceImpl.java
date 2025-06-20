@@ -3,7 +3,7 @@ package com.developer.payment.service.impl.redpackets;
 import com.developer.framework.enums.PaymentTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
-import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.payment.dto.OpenRedPacketsRequestDTO;
 import com.developer.payment.dto.ReturnTransferRequestDTO;
 import com.developer.payment.enums.RedPacketsStatusEnum;
@@ -23,9 +23,6 @@ public class RedPacketsPaymentServiceImpl implements PaymentService {
 
     @Autowired
     private RedPacketsInfoRepository redPacketsInfoRepository;
-
-    @Autowired
-    private SnowflakeNoUtil snowflakeNoUtil;
 
     @Autowired
     private RedPacketsTypeProcessorDispatchFactory dispatchFactory;
@@ -52,7 +49,7 @@ public class RedPacketsPaymentServiceImpl implements PaymentService {
     @Override
     @GlobalTransactional(name = "open-red-packets-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<BigDecimal> amountCharged(OpenRedPacketsRequestDTO req) {
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         RedPacketsInfoPO po = redPacketsInfoRepository.getById(req.getRedPacketsId());
         if (po == null) {
             return DeveloperResult.error(serialNo,"红包不存在");
@@ -68,7 +65,7 @@ public class RedPacketsPaymentServiceImpl implements PaymentService {
     @Override
     @GlobalTransactional(name = "return-red-packets-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> amountRefunded(ReturnTransferRequestDTO req) {
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         RedPacketsInfoPO redPacketsInfo = redPacketsInfoRepository.getById(req.getRedPacketsId());
         if (redPacketsInfo == null) {
             return DeveloperResult.error(serialNo,"红包不存在");

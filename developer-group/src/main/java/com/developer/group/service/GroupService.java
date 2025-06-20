@@ -38,7 +38,7 @@ public interface GroupService {
      * 查询群聊列表
      * @return
      */
-    DeveloperResult<List<GroupInfoDTO>> findGroupList(String serialNo);
+    DeveloperResult<List<GroupInfoDTO>> findGroupList();
 
     /**
      * 邀请进群
@@ -71,6 +71,6 @@ public interface GroupService {
      * 获取当前用户所加入的群信息
      * @return
      */
-    DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo(String serialNo);
+    DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo();
 
 }

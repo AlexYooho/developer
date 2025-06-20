@@ -9,7 +9,7 @@ import com.developer.framework.dto.ChatMessageDTO;
 import com.developer.framework.enums.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
-import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.friend.client.MessageClient;
 import com.developer.friend.dto.*;
 import com.developer.friend.enums.*;
@@ -40,13 +40,10 @@ public class FriendServiceImpl implements FriendService {
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
 
-    @Autowired
-    private SnowflakeNoUtil snowflakeNoUtil;
-
     @Override
-    public DeveloperResult<List<FriendInfoDTO>> findFriendList(String serialNo) {
+    public DeveloperResult<List<FriendInfoDTO>> findFriendList() {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        serialNo = snowflakeNoUtil.getSerialNo(serialNo);
+        String serialNo = SerialNoHolder.getSerialNo();
         List<FriendPO> friendList = friendRepository.findFriendByUserId(userId);
         List<FriendInfoDTO> list = friendList.stream().map(x -> {
             FriendInfoDTO rep = new FriendInfoDTO();
@@ -60,7 +57,7 @@ public class FriendServiceImpl implements FriendService {
 
     @Override
     public DeveloperResult<FriendInfoDTO> isFriend(IsFriendDto dto) {
-        String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         FriendPO friend = friendRepository.findByFriendId(dto.getFriendId(), dto.getUserId());
         if (friend == null) {
             return DeveloperResult.error(serialNo, "对方不是你的好友");
@@ -76,7 +73,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public DeveloperResult<FriendInfoDTO> findFriend(FindFriendRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         DeveloperResult<FriendInfoDTO> friendInfo = this.isFriend(new IsFriendDto(serialNo, req.getFriendId(), userId));
         if (!friendInfo.getIsSuccessful()) {
             return DeveloperResult.error(serialNo, friendInfo.getMsg());
@@ -88,7 +85,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public DeveloperResult<Boolean> sendAddFriendRequest(SendAddFriendInfoRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         FriendPO friend = friendRepository.findByFriendId(req.getFriendId(), userId);
         if (!ObjectUtil.isEmpty(friend)) {
             return DeveloperResult.error(serialNo, "对方已是你好友");
@@ -118,7 +115,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public DeveloperResult<Boolean> processFriendRequest(ProcessAddFriendRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
         if (Objects.equals(userId, req.getFriendId())) {
             return DeveloperResult.error(serialNo, "不允许添加自己为好友");
@@ -159,7 +156,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public DeveloperResult<Boolean> deleteFriendByFriendId(DeleteFriendRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         FriendPO friend = friendRepository.findByFriendId(req.getFriendId(), userId);
         if (ObjectUtil.isEmpty(friend)) {
             return DeveloperResult.error(serialNo, "对方不是你的好友");
@@ -172,8 +169,8 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public DeveloperResult<Integer> findFriendAddRequestCount(String serialNo) {
-        serialNo = snowflakeNoUtil.getSerialNo(serialNo);
+    public DeveloperResult<Integer> findFriendAddRequestCount() {
+        String serialNo = SerialNoHolder.getSerialNo();
         List<FriendApplicationRecordPO> list = friendApplicationRecordPORepository.findRecordByStatus(SelfUserInfoContext.selfUserInfo().getUserId(), AddFriendStatusEnum.SENT);
         return DeveloperResult.success(serialNo);
     }
@@ -181,21 +178,21 @@ public class FriendServiceImpl implements FriendService {
     @Override
     public DeveloperResult<List<NewFriendListDTO>> findNewFriendList(String serialNo) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        serialNo = serialNo.isEmpty() ? snowflakeNoUtil.getSerialNo() : serialNo;
+        serialNo = serialNo.isEmpty() ? SerialNoHolder.getSerialNo() : serialNo;
         List<NewFriendListDTO> list = new ArrayList<>();
         return DeveloperResult.success(serialNo, list);
     }
 
     @Override
-    public DeveloperResult<Boolean> updateAddFriendRecordStatus(String serialNo) {
-        serialNo = snowflakeNoUtil.getSerialNo(serialNo);
+    public DeveloperResult<Boolean> updateAddFriendRecordStatus() {
+        String serialNo = SerialNoHolder.getSerialNo();
         boolean isSuccess = friendApplicationRecordPORepository.updateStatusSentToViewed(SelfUserInfoContext.selfUserInfo().getUserId());
         return DeveloperResult.success(serialNo, isSuccess);
     }
 
     @Override
     public DeveloperResult<Boolean> modifyFriendList(BatchModifyFriendListRequestDTO req) {
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         List<FriendPO> friendPOS = BeanUtils.copyProperties(req.getList(), FriendPO.class);
         boolean isSuccess = friendRepository.updateBatchById(friendPOS);
         if (!isSuccess) {

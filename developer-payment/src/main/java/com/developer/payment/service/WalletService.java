@@ -30,7 +30,7 @@ public interface WalletService {
      * 创建钱包
      * @return
      */
-    DeveloperResult<Boolean> createWallet(String serialNo);
+    DeveloperResult<Boolean> createWallet();
 
     /**
      * 钱包金额充值

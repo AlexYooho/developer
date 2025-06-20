@@ -42,8 +42,8 @@ public class UserController {
      * @return
      */
     @GetMapping("selfInfo")
-    public DeveloperResult<UserInfoDTO> getSelfUserInfo(@RequestParam("serial_no") String serialNo){
-        return userService.findSelfUserInfo(serialNo);
+    public DeveloperResult<UserInfoDTO> getSelfUserInfo(){
+        return userService.findSelfUserInfo();
     }
 
     /**
@@ -51,7 +51,7 @@ public class UserController {
      * @param req
      * @return
      */
-    @GetMapping("/find")
+    @PostMapping("/find")
     public DeveloperResult<UserInfoDTO> findById(@RequestBody FindUserRequestDTO req){
         return userService.findUserInfoById(req);
     }
@@ -78,11 +78,14 @@ public class UserController {
 
     /**
      * 获取在线终端
-     * @param req
+     * @param
      * @return
      */
     @GetMapping("/online/terminal")
-    public DeveloperResult<List<OnlineTerminalDTO>> onlineTerminal(@RequestBody FindOnlineTerminalRequestDTO req){
+    public DeveloperResult<List<OnlineTerminalDTO>> onlineTerminal(@RequestParam(value = "serial_no",required = false,defaultValue = "") String serialNo,@RequestParam("user_ids") String userIds){
+        FindOnlineTerminalRequestDTO req = new FindOnlineTerminalRequestDTO();
+        req.setSerialNo(serialNo);
+        req.setUserIds(userIds);
         return userService.findOnlineTerminal(req);
     }
 }

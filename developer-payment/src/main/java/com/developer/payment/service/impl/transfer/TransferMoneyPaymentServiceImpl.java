@@ -7,7 +7,7 @@ import com.developer.framework.exception.DeveloperBusinessException;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.framework.utils.DateTimeUtils;
-import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.payment.dto.OpenRedPacketsRequestDTO;
 import com.developer.payment.dto.ReturnTransferRequestDTO;
 import com.developer.payment.enums.TransactionTypeEnum;
@@ -36,8 +36,6 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
     @Autowired
     private TransferInfoRepository transferInfoRepository;
 
-    @Autowired
-    private SnowflakeNoUtil snowflakeNoUtil;
 
     @Override
     public PaymentTypeEnum paymentType() {
@@ -53,7 +51,7 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
     @Override
     @GlobalTransactional(name = "transfer-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto) {
-        String serialNo = snowflakeNoUtil.getSerialNo(dto.getTransferInfoDTO().getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
 
         // 1、转账条件判断
         DeveloperResult<Boolean> judgmentResult = paymentCommentConditionalJudgment(dto.getTransferInfoDTO().getSerialNo(), PaymentTypeEnum.TRANSFER, dto.getTransferInfoDTO().getPaymentChannel(), null, dto.getTransferInfoDTO().getTransferAmount(), dto.getTransferInfoDTO().getTargetId(), SelfUserInfoContext.selfUserInfo().getUserId(), 0);
@@ -106,7 +104,7 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
     @Override
     @GlobalTransactional(name = "transfer-confirm-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<BigDecimal> amountCharged(OpenRedPacketsRequestDTO req) {
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         TransferInfoPO transferInfo = transferInfoRepository.getById(req.getRedPacketsId());
         if (transferInfo == null) {
             return DeveloperResult.error(serialNo, "转账记录不存在");
@@ -142,7 +140,7 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
     @Override
     @GlobalTransactional(name = "transfer-return-transaction-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> amountRefunded(ReturnTransferRequestDTO req) {
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         TransferInfoPO transferInfo = transferInfoRepository.getById(req.getRedPacketsId());
         if (transferInfo == null) {
             return DeveloperResult.error(serialNo, "转账记录不存在");

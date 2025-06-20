@@ -1,7 +1,7 @@
 package com.developer.sso.service;
 
 import com.developer.framework.model.DeveloperResult;
-import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.sso.client.OAuthClient;
 import com.developer.sso.dto.LoginDTO;
 import com.developer.sso.dto.TokenDTO;
@@ -12,9 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 @Service
@@ -25,9 +23,6 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Autowired
     private OAuthClient oAuthClient;
-
-    @Autowired
-    private SnowflakeNoUtil snowflakeNoUtil;
 
     @Override
     public UserInfo getUserByUserName(String userName) {
@@ -45,7 +40,7 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public DeveloperResult<TokenDTO> Login(LoginDTO dto) {
-        String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         try {
             Map<String, Object> response = oAuthClient.getToken("password", dto.getAccount(), dto.getPassword(), "client_dev", "dev");
             TokenDTO tokenDTO = TokenDTO.builder().accessToken(response.get("access_token").toString()).refreshToken(response.get("refresh_token").toString()).build();

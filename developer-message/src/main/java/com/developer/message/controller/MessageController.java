@@ -32,19 +32,22 @@ public class MessageController {
      * @param req
      * @return
      */
-    @PostMapping("/{type}/recall")
-    public DeveloperResult<Boolean> recallMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody RecallMessageRequestDTO req) {
-        return messageTypeProcessorDispatchFactory.getInstance(type).recallMessage(req);
+    @PostMapping("/{type}/withdraw")
+    public DeveloperResult<Boolean> withdrawMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody RecallMessageRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).withdrawMessage(req);
     }
 
     /**
      * 拉取消息
-     * @param req
+     * @param
      * @return
      */
-    @GetMapping("/{type}/loadMessage")
-    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody LoadMessageRequestDTO req) {
-        return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(req);
+    @GetMapping("/{type}/loadMessage/{min_id}")
+    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("min_id") Long minId,@RequestParam(value = "serial_no",required = false,defaultValue = "") String serialNo) {
+        LoadMessageRequestDTO dto = new LoadMessageRequestDTO();
+        dto.setMinId(minId);
+        dto.setSerialNo(serialNo);
+        return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(dto);
     }
 
     /**

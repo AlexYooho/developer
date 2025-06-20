@@ -22,8 +22,8 @@ public class FriendController {
      * @return
      */
     @GetMapping("/list")
-    public DeveloperResult<List<FriendInfoDTO>> friendList(@RequestParam("serial_no") String serialNo){
-        return friendService.findFriendList(serialNo);
+    public DeveloperResult<List<FriendInfoDTO>> friendList(){
+        return friendService.findFriendList();
     }
 
     /**
@@ -90,8 +90,8 @@ public class FriendController {
      * @return
      */
     @GetMapping("/friendAddRequestCount")
-    public DeveloperResult<Integer> friendAddRequestCount(@RequestParam("serial_no") String serialNo){
-        return friendService.findFriendAddRequestCount(serialNo);
+    public DeveloperResult<Integer> friendAddRequestCount(){
+        return friendService.findFriendAddRequestCount();
     }
 
     /**
@@ -108,8 +108,8 @@ public class FriendController {
      * @return
      */
     @PutMapping("/update/friend/applicant/record/status")
-    public DeveloperResult<Boolean> updateAddFriendRecordStatus(@RequestParam("serial_no") String serialNo){
-        return friendService.updateAddFriendRecordStatus(serialNo);
+    public DeveloperResult<Boolean> updateAddFriendRecordStatus(){
+        return friendService.updateAddFriendRecordStatus();
     }
 
     /**

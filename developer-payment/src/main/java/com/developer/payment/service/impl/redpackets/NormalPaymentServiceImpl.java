@@ -9,6 +9,7 @@ import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.framework.exception.DeveloperBusinessException;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.SendRedPacketsDTO;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
@@ -64,7 +65,7 @@ public class NormalPaymentServiceImpl extends BasePaymentService implements RedP
     @Override
     public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = snowflakeNoUtil.getSerialNo(dto.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
 
         // 1、红包发送条件判断
         DeveloperResult<Boolean> result = paymentCommentConditionalJudgment(serialNo, PaymentTypeEnum.RED_PACKETS,dto.getPaymentChannel(),dto.getType(),dto.getRedPacketsAmount(),dto.getTargetId(),userId,dto.getTotalCount());

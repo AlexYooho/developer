@@ -2,11 +2,8 @@ package com.developer.payment.service.impl;
 
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.CurrencyEnum;
-import com.developer.framework.enums.VerifyCodeTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.framework.utils.SnowflakeNoUtil;
-import com.developer.payment.client.MessageClient;
-import com.developer.payment.dto.CheckVerifyCodeRequestDTO;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.payment.dto.FreezePayAmountRequestDTO;
 import com.developer.payment.dto.WalletRechargeRequestDTO;
 import com.developer.payment.enums.TransactionStatusEnum;
@@ -19,7 +16,6 @@ import com.developer.payment.repository.UserWalletRepository;
 import com.developer.payment.repository.WalletTransactionRecordRepository;
 import com.developer.payment.service.WalletService;
 import io.seata.spring.annotation.GlobalTransactional;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,8 +31,6 @@ public class WalletServiceImpl implements WalletService {
     @Autowired
     private WalletTransactionRecordRepository walletTransactionRepository;
 
-    @Autowired
-    private SnowflakeNoUtil snowflakeNoUtil;
 
     /**
      * 发起交易
@@ -92,7 +86,7 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public DeveloperResult<Boolean> freezePaymentAmount(FreezePayAmountRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
 
         if (walletInfo.getBalance().compareTo(req.getAmount()) < 0) {
@@ -111,9 +105,9 @@ public class WalletServiceImpl implements WalletService {
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> createWallet(String serialNo) {
+    public DeveloperResult<Boolean> createWallet() {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        serialNo = snowflakeNoUtil.getSerialNo(serialNo);
+        String serialNo = SerialNoHolder.getSerialNo();
         UserWalletPO walletInfo = walletRepository.findByUserId(userId);
         if (walletInfo != null) {
             return DeveloperResult.error(serialNo, "用户已开通钱包");
@@ -143,7 +137,7 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @GlobalTransactional(name = "wallet-recharge-tx", rollbackFor = Exception.class)
     public DeveloperResult<Boolean> recharge(WalletRechargeRequestDTO req) {
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
 
         // 验证入参

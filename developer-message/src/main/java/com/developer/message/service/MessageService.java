@@ -42,7 +42,7 @@ public interface MessageService {
      * @param req
      * @return
      */
-    DeveloperResult<Boolean> recallMessage(RecallMessageRequestDTO req);
+    DeveloperResult<Boolean> withdrawMessage(RecallMessageRequestDTO req);
 
     /**
      * 查询历史记录

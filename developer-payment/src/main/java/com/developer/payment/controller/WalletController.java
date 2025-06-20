@@ -21,8 +21,8 @@ public class WalletController {
      * @return
      */
     @PostMapping("create")
-    public DeveloperResult<Boolean> CreateWallet(@RequestParam("serial_no") String serialNo){
-        return walletService.createWallet(serialNo);
+    public DeveloperResult<Boolean> CreateWallet(){
+        return walletService.createWallet();
     }
 
     /**

@@ -21,7 +21,7 @@ public interface UserService {
      * 获取当前用户信息
      * @return
      */
-    DeveloperResult<UserInfoDTO> findSelfUserInfo(String serialNo);
+    DeveloperResult<UserInfoDTO> findSelfUserInfo();
 
     /**
      * 根据userId查找用户信息

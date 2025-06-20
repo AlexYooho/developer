@@ -7,7 +7,7 @@ import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.RedisUtil;
-import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.message.dto.MessageLikeRequestDTO;
 import com.developer.message.dto.MessageLikeEventDTO;
 import com.developer.message.pojo.GroupMessagePO;
@@ -42,13 +42,10 @@ public class MessageLikeServiceImpl implements MessageLikeService {
     @Autowired
     private RabbitMQUtil rabbitMQUtil;
 
-    @Autowired
-    private SnowflakeNoUtil snowflakeNoUtil;
-
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> like(MessageLikeRequestDTO req, MessageMainTypeEnum messageMainTypeEnum) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         String lockKey = RedisKeyConstant.MESSAGE_LIKE_KEY(messageMainTypeEnum, req.getMessageId(), userId);
         String messageLikeStatusKey = RedisKeyConstant.MESSAGE_LIKE_USER_KEY(messageMainTypeEnum, req.getMessageId(), userId);
         String messageLikeCountKey = RedisKeyConstant.MESSAGE_LIKE_MESSAGE_KEY(messageMainTypeEnum,req.getMessageId());

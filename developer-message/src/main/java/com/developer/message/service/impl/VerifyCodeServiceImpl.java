@@ -5,7 +5,7 @@ import com.developer.framework.enums.VerifyCodeTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.MailUtil;
 import com.developer.framework.utils.RedisUtil;
-import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.message.dto.CheckVerifyCodeRequestDTO;
 import com.developer.message.dto.SendVerifyCodeRequestDTO;
 import com.developer.message.service.VerifyCodeService;
@@ -24,12 +24,9 @@ public class VerifyCodeServiceImpl implements VerifyCodeService {
     @Autowired
     private RedisUtil redisUtil;
 
-    @Autowired
-    private SnowflakeNoUtil snowflakeNoUtil;
-
     @Override
     public DeveloperResult<Boolean> sendVerifyCode(SendVerifyCodeRequestDTO req) {
-        String serialNo = !StringUtils.hasText(req.getSerialNo()) ? snowflakeNoUtil.getSerialNo() : req.getSerialNo();
+        String serialNo = !StringUtils.hasText(req.getSerialNo()) ? SerialNoHolder.getSerialNo() : req.getSerialNo();
         if(!mailUtil.verifyEmailAddress(req.getEmailAddress())){
             return DeveloperResult.error(serialNo,500,"请输入正确的邮箱");
         }
@@ -45,12 +42,12 @@ public class VerifyCodeServiceImpl implements VerifyCodeService {
     public DeveloperResult<Integer> getVerifyCode(VerifyCodeTypeEnum verifyCodeTypeEnum, String emailAccount) {
         String key = RedisKeyConstant.verifyCode(verifyCodeTypeEnum,emailAccount);
         Integer verifyCode = redisUtil.get(key, Integer.class);
-        return DeveloperResult.success(snowflakeNoUtil.getSerialNo(),verifyCode);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(),verifyCode);
     }
 
     @Override
     public DeveloperResult<Boolean> checkVerifyCode(CheckVerifyCodeRequestDTO req) {
-        String serialNo = snowflakeNoUtil.getSerialNo(req.getSerialNo());
+        String serialNo = SerialNoHolder.getSerialNo();
         String key = RedisKeyConstant.verifyCode(req.getVerifyCodeTypeEnum(),req.getEmailAccount());
         Integer code = redisUtil.get(key, Integer.class);
         if(code!=null && code.equals(req.getCode())){
