@@ -21,10 +21,10 @@ public interface FriendService {
 
     /**
      *  通过用户id查询好友
-     * @param req
+     * @param friendId
      * @return
      */
-    DeveloperResult<FriendInfoDTO> findFriend(FindFriendRequestDTO req);
+    DeveloperResult<FriendInfoDTO> findFriend(Long friendId);
 
     /**
      * 发送添加好友请求
@@ -42,10 +42,10 @@ public interface FriendService {
 
     /**
      * 通过好友id删除好友
-     * @param req
+     * @param friendId
      * @return
      */
-    DeveloperResult<Boolean> deleteFriendByFriendId(DeleteFriendRequestDTO req);
+    DeveloperResult<Boolean> deleteFriendByFriendId(Long friendId);
 
     /**
      * 获取好友添加数
@@ -57,7 +57,7 @@ public interface FriendService {
      * 获取新好友添加列表
      * @return
      */
-    DeveloperResult<List<NewFriendListDTO>> findNewFriendList(String serialNo);
+    DeveloperResult<List<NewFriendListDTO>> findNewFriendList();
 
     /**
      * 更新好友添加请求状态

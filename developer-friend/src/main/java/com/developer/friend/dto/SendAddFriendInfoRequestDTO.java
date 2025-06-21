@@ -6,10 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 public class SendAddFriendInfoRequestDTO {
-
-    @JsonProperty("serial_no")
-    private String serialNo;
-
     @JsonProperty("friend_id")
     private Long friendId;
 

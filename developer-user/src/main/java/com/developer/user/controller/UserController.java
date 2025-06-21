@@ -82,9 +82,8 @@ public class UserController {
      * @return
      */
     @GetMapping("/online/terminal")
-    public DeveloperResult<List<OnlineTerminalDTO>> onlineTerminal(@RequestParam(value = "serial_no",required = false,defaultValue = "") String serialNo,@RequestParam("user_ids") String userIds){
+    public DeveloperResult<List<OnlineTerminalDTO>> onlineTerminal(@RequestParam("user_ids") String userIds){
         FindOnlineTerminalRequestDTO req = new FindOnlineTerminalRequestDTO();
-        req.setSerialNo(serialNo);
         req.setUserIds(userIds);
         return userService.findOnlineTerminal(req);
     }

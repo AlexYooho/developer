@@ -28,22 +28,22 @@ public class FriendController {
 
     /**
      * 通过好友id查询好友信息
-     * @param req
+     * @param friendId
      * @return
      */
-    @GetMapping("/find")
-    public DeveloperResult<FriendInfoDTO> findFriend(@RequestBody FindFriendRequestDTO req){
-        return friendService.findFriend(req);
+    @GetMapping("/find/{friend_id}")
+    public DeveloperResult<FriendInfoDTO> findFriend(@PathVariable("friend_id") Long friendId){
+        return friendService.findFriend(friendId);
     }
 
     /**
      * 通过好友id删除好友
-     * @param req
+     * @param friendId
      * @return
      */
-    @DeleteMapping("/delete")
-    public DeveloperResult<Boolean> deleteFriend(@RequestBody DeleteFriendRequestDTO req){
-        return friendService.deleteFriendByFriendId(req);
+    @DeleteMapping("/delete/{friend_id}")
+    public DeveloperResult<Boolean> deleteFriend(@PathVariable("friend_id") Long friendId){
+        return friendService.deleteFriendByFriendId(friendId);
     }
 
     /**
@@ -99,8 +99,8 @@ public class FriendController {
      * @return
      */
     @GetMapping("/new/list")
-    public DeveloperResult<List<NewFriendListDTO>> newFriendList(@RequestParam("serial_no") String serialNo){
-        return friendService.findNewFriendList(serialNo);
+    public DeveloperResult<List<NewFriendListDTO>> newFriendList(){
+        return friendService.findNewFriendList();
     }
 
     /**

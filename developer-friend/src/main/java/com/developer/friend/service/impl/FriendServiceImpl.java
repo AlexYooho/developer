@@ -71,10 +71,10 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public DeveloperResult<FriendInfoDTO> findFriend(FindFriendRequestDTO req) {
+    public DeveloperResult<FriendInfoDTO> findFriend(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
-        DeveloperResult<FriendInfoDTO> friendInfo = this.isFriend(new IsFriendDto(serialNo, req.getFriendId(), userId));
+        DeveloperResult<FriendInfoDTO> friendInfo = this.isFriend(new IsFriendDto(friendId, userId));
         if (!friendInfo.getIsSuccessful()) {
             return DeveloperResult.error(serialNo, friendInfo.getMsg());
         }
@@ -154,16 +154,16 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public DeveloperResult<Boolean> deleteFriendByFriendId(DeleteFriendRequestDTO req) {
+    public DeveloperResult<Boolean> deleteFriendByFriendId(Long friendId) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
-        FriendPO friend = friendRepository.findByFriendId(req.getFriendId(), userId);
+        FriendPO friend = friendRepository.findByFriendId(friendId, userId);
         if (ObjectUtil.isEmpty(friend)) {
             return DeveloperResult.error(serialNo, "对方不是你的好友");
         }
 
         boolean isSuccess = friendRepository.removeById(friend.getId());
-        messageClient.removeFriendChatMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, RemoveMessageRequestDTO.builder().targetId(req.getFriendId()).serialNo(serialNo).build());
+        messageClient.removeFriendChatMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, RemoveMessageRequestDTO.builder().targetId(friendId).serialNo(serialNo).build());
 
         return DeveloperResult.success(serialNo, isSuccess);
     }
@@ -176,9 +176,9 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
-    public DeveloperResult<List<NewFriendListDTO>> findNewFriendList(String serialNo) {
+    public DeveloperResult<List<NewFriendListDTO>> findNewFriendList() {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        serialNo = serialNo.isEmpty() ? SerialNoHolder.getSerialNo() : serialNo;
+        String serialNo = SerialNoHolder.getSerialNo();
         List<NewFriendListDTO> list = new ArrayList<>();
         return DeveloperResult.success(serialNo, list);
     }

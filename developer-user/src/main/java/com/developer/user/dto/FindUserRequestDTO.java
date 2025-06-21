@@ -6,9 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 public class FindUserRequestDTO {
 
-    @JsonProperty("serial_no")
-    private String serialNo;
-
     @JsonProperty("user_id")
     private String userId;
 

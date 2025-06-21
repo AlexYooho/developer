@@ -6,9 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 public class ModifyUserPasswordDTO {
 
-    @JsonProperty("serial_no")
-    private String serialNo;
-
     private String oldPassword;
 
     private String newPassword;

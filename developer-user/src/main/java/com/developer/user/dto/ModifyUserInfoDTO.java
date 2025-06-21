@@ -6,9 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 public class ModifyUserInfoDTO {
 
-    @JsonProperty("serial_no")
-    private String serialNo;
-
     private Long id;
 
     private String username;
