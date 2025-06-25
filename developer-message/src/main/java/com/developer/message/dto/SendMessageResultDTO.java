@@ -1,5 +1,7 @@
 package com.developer.message.dto;
 
+import com.developer.framework.enums.MessageContentTypeEnum;
+import com.developer.framework.enums.MessageStatusEnum;
 import lombok.Data;
 
 import java.util.Date;
@@ -12,9 +14,9 @@ public class SendMessageResultDTO {
 
     private String messageContent;
 
-    private Integer messageContentType;
+    private MessageContentTypeEnum messageContentType;
 
-    private Integer messageStatus;
+    private MessageStatusEnum messageStatus;
 
     private String sendNickName;
 

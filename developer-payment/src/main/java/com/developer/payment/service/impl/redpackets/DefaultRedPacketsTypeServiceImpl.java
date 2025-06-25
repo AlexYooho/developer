@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
 @Service
-public class DefaultPaymentTypeServiceImpl extends BasePaymentService implements RedPacketsService {
+public class DefaultRedPacketsTypeServiceImpl extends BasePaymentService implements RedPacketsService {
     @Override
     public RedPacketsTypeEnum redPacketsType() {
         return null;

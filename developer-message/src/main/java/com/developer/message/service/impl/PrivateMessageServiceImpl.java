@@ -73,12 +73,12 @@ public class PrivateMessageServiceImpl implements MessageService {
         String serialNo = SerialNoHolder.getSerialNo();
         String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
         Long maxMessageId = redisUtil.get(key, Long.class) == null ? 0L:redisUtil.get(key, Long.class);
-        if(req.getMinId().equals(maxMessageId)){
+        if(maxMessageId != 0L && req.getMinId().equals(maxMessageId)){
             return DeveloperResult.success(serialNo,list);
         }
 
         List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(req.getMinId(), userId);
-        List<Long> ids = messages.stream().filter(x -> !x.getSendId().equals(userId) && x.getMessageStatus().equals(MessageStatusEnum.UNSEND.code()))
+        List<Long> ids = messages.stream().filter(x -> !x.getSendId().equals(userId) && x.getMessageStatus().equals(MessageStatusEnum.UNSEND))
                 .map(PrivateMessagePO::getId)
                 .collect(Collectors.toList());
         if (!ids.isEmpty()) {

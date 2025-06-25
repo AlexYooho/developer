@@ -16,9 +16,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class SendRedPacketsDTO {
 
-    @JsonProperty("serial_no")
-    private String serialNo;
-
     /**
      * 红包金额
      */

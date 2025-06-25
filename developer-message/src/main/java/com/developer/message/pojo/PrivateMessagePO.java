@@ -40,7 +40,7 @@ public class PrivateMessagePO {
     private String messageContent;
 
     /**
-     * 消息类型 0:文字 1:图片 2:文件 3:语音  10:撤回消息
+     * 消息类型 0:文字 1:图片 2:文件 3:红包 4:转账
      */
     @TableField("type")
     private MessageContentTypeEnum messageContentType;

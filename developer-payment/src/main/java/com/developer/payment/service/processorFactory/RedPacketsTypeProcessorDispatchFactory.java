@@ -2,7 +2,7 @@ package com.developer.payment.service.processorFactory;
 
 import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.payment.service.RedPacketsService;
-import com.developer.payment.service.impl.redpackets.DefaultPaymentTypeServiceImpl;
+import com.developer.payment.service.impl.redpackets.DefaultRedPacketsTypeServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -16,7 +16,7 @@ public class RedPacketsTypeProcessorDispatchFactory {
     private ApplicationContext context;
 
     @Autowired
-    private DefaultPaymentTypeServiceImpl defaultService;
+    private DefaultRedPacketsTypeServiceImpl defaultService;
 
     public RedPacketsService getInstance(RedPacketsTypeEnum redPacketsTypeEnum){
         Map<String, RedPacketsService> beansMap = context.getBeansOfType(RedPacketsService.class);

@@ -96,9 +96,9 @@ public class GroupMessageServiceImpl implements MessageService {
             if (vo == null) {
                 return null;
             }
-            Integer messageStatus = unreadMessageList.stream().anyMatch(z ->
+            MessageStatusEnum messageStatus = unreadMessageList.stream().anyMatch(z ->
                     Objects.equals(z.getGroupId(), x.getGroupId()) && Objects.equals(z.getMessageId(), x.getId())
-            ) ? MessageStatusEnum.UNSEND.code() : MessageStatusEnum.READED.code();
+            ) ? MessageStatusEnum.UNSEND : MessageStatusEnum.READED;
 
             vo.setMessageStatus(messageStatus);
 

@@ -224,7 +224,7 @@ public class BasePaymentService {
                 .build());
 
         MessageMainTypeEnum messageMainTypeEnum = channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : channelEnum == PaymentChannelEnum.SCAN_CODE ? MessageMainTypeEnum.SYSTEM_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE;
-        DeveloperResult result = this.messageClient.sendMessage(messageMainTypeEnum, SendMessageRequestDTO.builder()
+        DeveloperResult result = this.messageClient.sendMessage(serialNo,messageMainTypeEnum, SendMessageRequestDTO.builder()
                 .serialNo(serialNo)
                 .receiverId(targetId)
                 .messageContent(messageContent)
