@@ -12,9 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class IsFriendParam {
 
-    @JsonProperty("serial_no")
-    private String serialNo;
-
     @JsonProperty("friend_id")
     private Long friendId;
 

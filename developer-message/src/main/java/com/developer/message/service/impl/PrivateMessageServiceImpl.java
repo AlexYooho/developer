@@ -103,7 +103,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
-        DeveloperResult<FriendInfoDTO> friend = friendClient.isFriend(IsFriendParam.builder().serialNo(serialNo).friendId(req.getReceiverId()).userId(userId).build());
+        DeveloperResult<FriendInfoDTO> friend = friendClient.isFriend(IsFriendParam.builder().friendId(req.getReceiverId()).userId(userId).build());
         if(!friend.getIsSuccessful()){
             return DeveloperResult.error(serialNo,friend.getMsg());
         }
