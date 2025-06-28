@@ -12,7 +12,7 @@ import java.util.List;
 @FeignClient(name="developer-gateway",contextId = "developer-friend",configuration = {FeignRequestInterceptor.class})
 public interface FriendClient {
 
-    @GetMapping("/friend-module/api/friend/is-friend")
+    @PostMapping("/friend-module/api/friend/is-friend")
     DeveloperResult<FriendInfoDTO> isFriend(@RequestBody IsFriendParam param);
 
     @GetMapping("/friend-module/api/friend/list")
