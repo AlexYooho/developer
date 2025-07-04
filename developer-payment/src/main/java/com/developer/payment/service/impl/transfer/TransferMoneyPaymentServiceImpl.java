@@ -10,6 +10,7 @@ import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.SerialNoHolder;
 import com.developer.payment.dto.OpenRedPacketsRequestDTO;
 import com.developer.payment.dto.ReturnTransferRequestDTO;
+import com.developer.payment.dto.SendRedPacketsResultDTO;
 import com.developer.payment.enums.TransactionTypeEnum;
 import com.developer.payment.enums.TransferStatusEnum;
 import com.developer.payment.enums.WalletOperationTypeEnum;
@@ -50,7 +51,7 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
      */
     @Override
     @GlobalTransactional(name = "transfer-transaction-tx", rollbackFor = Exception.class)
-    public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto) {
+    public DeveloperResult<SendRedPacketsResultDTO> doPay(PaymentInfoDTO dto) {
         String serialNo = SerialNoHolder.getSerialNo();
 
         // 1、转账条件判断

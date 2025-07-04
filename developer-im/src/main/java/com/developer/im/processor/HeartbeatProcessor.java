@@ -30,7 +30,7 @@ public class HeartbeatProcessor extends AbstractMessageProcessor<IMHeartbeatInfo
     public void handler(ChannelHandlerContext ctx, IMHeartbeatInfoModel data) {
         // 响应ws
         IMSendMessageInfoModel<Object> sendMessageInfo = new IMSendMessageInfoModel<Object>();
-        sendMessageInfo.setCmd(IMCmdType.HEART_BEAT.code());
+        sendMessageInfo.setCmd(IMCmdType.HEART_BEAT);
         ctx.channel().writeAndFlush(sendMessageInfo);
 
         // 设置属性
@@ -49,7 +49,7 @@ public class HeartbeatProcessor extends AbstractMessageProcessor<IMHeartbeatInfo
     }
 
     @Override
-    public DeveloperResult<Boolean> handler(IMHeartbeatInfoModel data, IMCmdType cmdType) {
+    public DeveloperResult<Boolean> handler(IMHeartbeatInfoModel data) {
         return null;
     }
 

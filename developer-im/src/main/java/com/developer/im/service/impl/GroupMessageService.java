@@ -27,15 +27,19 @@ public class GroupMessageService extends AbstractMessageTypeService {
 
     @Override
     public DeveloperResult<Boolean> handler(ChatMessageDTO dto) {
-        IMChatMessageBaseModel<GroupMessageDTO> model = new IMChatMessageBaseModel<>();
+        IMChatMessageBaseModel model = new IMChatMessageBaseModel();
         model.setSerialNo(dto.getSerialNo());
-        model.setSender(new IMUserInfoModel(dto.getSendId(),dto.getTerminalType(),dto.getSendNickName()));
-        model.setSendToSelf(false);
-        model.setSendResult(false);
         model.setMessageId(dto.getMessageId());
         model.setMessageContent(dto.getMessageContent());
-        model.setMessageContentType(dto.getMessageContentTypeEnum().code());
-        model.setData(new GroupMessageDTO());
+        model.setMessageContentType(dto.getMessageContentTypeEnum());
+        model.setMessageStatus(dto.getMessageStatus());
+        model.setSendToSelf(true);
+        model.setSender(new IMUserInfoModel(dto.getSendId(),dto.getTerminalType(),dto.getSendNickName()));
+        model.setSendTime(dto.getSendTime());
+        model.setSendResult(false);
+        model.setGroupId(dto.getGroupId());
+        model.setAtUserIds(dto.getAtUserIds());
+        model.setReceiverIds(dto.getReceiverIds());
 
         return imClients.sendGroupMessage(model);
     }

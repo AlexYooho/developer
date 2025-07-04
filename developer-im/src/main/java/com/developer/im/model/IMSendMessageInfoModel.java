@@ -1,5 +1,6 @@
 package com.developer.im.model;
 
+import com.developer.im.enums.IMCmdType;
 import lombok.Data;
 
 /**
@@ -12,7 +13,7 @@ public class IMSendMessageInfoModel<T> {
     /**
      * 命令
      */
-    private Integer cmd;
+    private IMCmdType cmd;
 
     /**
      * 发送消息体

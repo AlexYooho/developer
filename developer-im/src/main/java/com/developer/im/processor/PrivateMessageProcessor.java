@@ -20,29 +20,29 @@ public class PrivateMessageProcessor extends AbstractMessageProcessor<IMChatPriv
     private RedisTemplate<String,Object> redisTemplate;
 
     @Override
-    public DeveloperResult<Boolean> handler(IMChatPrivateMessageModel receiveMessageInfo, IMCmdType cmdType) {
-        IMUserInfoModel sender = receiveMessageInfo.getSender();
-        IMUserInfoModel receiver = receiveMessageInfo.getMessageReceiver();
-        log.info("接收消息,发送者:{},接收者:{},消息内容:{}",sender.getSenderId(),receiver.getSenderId(),receiveMessageInfo.getData());
+    public DeveloperResult<Boolean> handler(IMChatPrivateMessageModel messageBody) {
+        IMUserInfoModel sender = messageBody.getSender();
+        IMUserInfoModel receiver = messageBody.getMessageReceiver();
+        log.info("接收消息,发送者:{},接收者:{},消息内容:{}",sender.getSenderId(),receiver.getSenderId(),messageBody.getData());
         try{
             ChannelHandlerContext channelCtx = UserChannelCtxMap.getChannelCtx(receiver.getSenderId(), receiver.getTerminal().code());
             if(channelCtx!=null){
-                IMSendMessageInfoModel sendMessageInfo = new IMSendMessageInfoModel();
-                sendMessageInfo.setCmd(cmdType.code());
-                sendMessageInfo.setData(receiveMessageInfo.getData());
+                IMSendMessageInfoModel<IMChatPrivateMessageModel> sendMessageInfo = new IMSendMessageInfoModel<>();
+                sendMessageInfo.setCmd(messageBody.getCmd());
+                sendMessageInfo.setData(messageBody);
                 channelCtx.channel().writeAndFlush(sendMessageInfo);
-                sendResult(receiveMessageInfo,SendCodeType.SUCCESS);
+                sendResult(messageBody,SendCodeType.SUCCESS);
             }else{
-                sendResult(receiveMessageInfo,SendCodeType.NOT_FIND_CHANNEL);
-                log.info("未找到channel,发送者:{},接收者:{},消息内容:{}",sender.getSenderId(),receiver.getSenderId(),receiveMessageInfo.getData());
-                return DeveloperResult.error(receiveMessageInfo.getSerialNo(),"未找到channel");
+                sendResult(messageBody,SendCodeType.NOT_FIND_CHANNEL);
+                log.info("未找到channel,发送者:{},接收者:{},消息内容:{}",sender.getSenderId(),receiver.getSenderId(),messageBody.getData());
+                return DeveloperResult.error(messageBody.getSerialNo(),"未找到channel");
             }
         }catch (Exception ex){
-            sendResult(receiveMessageInfo,SendCodeType.UNKONW_ERROR);
-            log.info("发送异常,发送者:{},接收者:{},消息内容:{}",sender.getSenderId(),receiver.getSenderId(),receiveMessageInfo.getData());
-            return DeveloperResult.error(receiveMessageInfo.getSerialNo(),"发送异常");
+            sendResult(messageBody,SendCodeType.UNKONW_ERROR);
+            log.info("发送异常,发送者:{},接收者:{},消息内容:{}",sender.getSenderId(),receiver.getSenderId(),messageBody.getData());
+            return DeveloperResult.error(messageBody.getSerialNo(),"发送异常");
         }
-        return DeveloperResult.success(receiveMessageInfo.getSerialNo());
+        return DeveloperResult.success(messageBody.getSerialNo());
     }
 
     /**

@@ -25,48 +25,48 @@ public class GroupMessageProcessor extends AbstractMessageProcessor<IMChatGroupM
 
     @Async
     @Override
-    public DeveloperResult<Boolean> handler(IMChatGroupMessageModel recvInfo, IMCmdType cmdType) {
-        IMUserInfoModel sender = recvInfo.getSender();
-        List<IMUserInfoModel> receivers = recvInfo.getMessageReceiverList();
-        log.info("接收到群消息,发送者:{},接收用户数量:{},内容:{}",sender.getSenderId(),receivers.size(),recvInfo.getData());
+    public DeveloperResult<Boolean> handler(IMChatGroupMessageModel messageBody) {
+        IMUserInfoModel sender = messageBody.getSender();
+        List<IMUserInfoModel> receivers = messageBody.getMessageReceiverList();
+        log.info("接收到群消息,发送者:{},接收用户数量:{},内容:{}",sender.getSenderId(),receivers.size(),messageBody.getData());
         for (IMUserInfoModel receiver : receivers) {
             try {
                 ChannelHandlerContext channelCtx = UserChannelCtxMap.getChannelCtx(receiver.getSenderId(), receiver.getTerminal().code());
                 if (channelCtx != null) {
                     // 推送消息到用户
-                    IMSendMessageInfoModel sendMessageInfo = new IMSendMessageInfoModel();
-                    sendMessageInfo.setCmd(IMCmdType.GROUP_MESSAGE.code());
-                    sendMessageInfo.setData(recvInfo.getData());
+                    IMSendMessageInfoModel<IMChatGroupMessageModel> sendMessageInfo = new IMSendMessageInfoModel<>();
+                    sendMessageInfo.setCmd(messageBody.getCmd());
+                    sendMessageInfo.setData(messageBody);
                     channelCtx.channel().writeAndFlush(sendMessageInfo);
-                    sendResult(recvInfo, receiver, SendCodeType.SUCCESS);
+                    sendResult(messageBody, receiver, SendCodeType.SUCCESS);
                 } else {
-                    sendResult(recvInfo, receiver, SendCodeType.NOT_FIND_CHANNEL);
-                    log.error("未找到channel,发送者:{},接收id:{},内容:{}", sender.getSenderId(), receiver.getSenderId(), recvInfo.getData());
-                    return DeveloperResult.error(recvInfo.getSerialNo(),"未找到channel");
+                    sendResult(messageBody, receiver, SendCodeType.NOT_FIND_CHANNEL);
+                    log.error("未找到channel,发送者:{},接收id:{},内容:{}", sender.getSenderId(), receiver.getSenderId(), messageBody.getData());
+                    return DeveloperResult.error(messageBody.getSerialNo(),"未找到channel");
                 }
             }catch (Exception e){
-                sendResult(recvInfo, receiver, SendCodeType.UNKONW_ERROR);
-                log.error("发送群消息异常,发送者:{},接收id:{},内容:{}", sender.getSenderId(), receiver.getSenderId(), recvInfo.getData());
-                return DeveloperResult.error(recvInfo.getSerialNo(),"发送群消息异常");
+                sendResult(messageBody, receiver, SendCodeType.UNKONW_ERROR);
+                log.error("发送群消息异常,发送者:{},接收id:{},内容:{}", sender.getSenderId(), receiver.getSenderId(), messageBody.getData());
+                return DeveloperResult.error(messageBody.getSerialNo(),"发送群消息异常");
             }
         }
-        return DeveloperResult.success(recvInfo.getSerialNo());
+        return DeveloperResult.success(messageBody.getSerialNo());
     }
 
 
     /**
      * 发送结果
-     * @param recvInfo
+     * @param messageBody
      * @param receiver
      * @param sendCode
      */
-    private void sendResult(IMChatMessageModel recvInfo, IMUserInfoModel receiver, SendCodeType sendCode){
-        if(recvInfo.getSendResult()){
+    private void sendResult(IMChatGroupMessageModel messageBody, IMUserInfoModel receiver, SendCodeType sendCode){
+        if(messageBody.getSendResult()){
             SendResultModel sendResult = new SendResultModel();
             sendResult.setSender(receiver);
             sendResult.setReceiver(receiver);
             sendResult.setCode(sendCode);
-            sendResult.setData(recvInfo.getData());
+            sendResult.setData(messageBody.getData());
             String key = RedisKeyConstant.IM_RESULT_GROUP_QUEUE;
             redisTemplate.opsForList().rightPush(key, sendResult);
         }

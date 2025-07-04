@@ -11,6 +11,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.framework.utils.SerialNoHolder;
 import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.payment.dto.SendRedPacketsResultDTO;
 import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
@@ -63,7 +64,7 @@ public class LuckPaymentServiceImpl extends BasePaymentService implements RedPac
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
+    public DeveloperResult<SendRedPacketsResultDTO> sendRedPackets(SendRedPacketsDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
 

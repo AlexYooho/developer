@@ -37,7 +37,7 @@ public class LogoutProcessor  extends AbstractMessageProcessor<Object>{
     }
 
     @Override
-    public DeveloperResult<Boolean> handler(Object data, IMCmdType cmdType) {
+    public DeveloperResult<Boolean> handler(Object data) {
         return null;
     }
 }

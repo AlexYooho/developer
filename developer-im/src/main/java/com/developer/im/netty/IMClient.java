@@ -54,7 +54,7 @@ public class IMClient {
      *
      * @param message 私有消息
      */
-    public<T> DeveloperResult<Boolean> sendPrivateMessage(IMChatMessageBaseModel<PrivateMessageDTO> message, IMCmdType cmdType){
+    public<T> DeveloperResult<Boolean> sendPrivateMessage(IMChatMessageBaseModel message, IMCmdType cmdType){
         return processors.sendPrivateMessage(message,cmdType);
     }
 
@@ -63,7 +63,7 @@ public class IMClient {
      *
      * @param message 群聊消息
      */
-    public<T> DeveloperResult<Boolean> sendGroupMessage(IMChatMessageBaseModel<GroupMessageDTO> message){
+    public<T> DeveloperResult<Boolean> sendGroupMessage(IMChatMessageBaseModel message){
         return processors.sendGroupMessage(message);
     }
 

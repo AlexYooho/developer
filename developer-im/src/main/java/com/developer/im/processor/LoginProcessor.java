@@ -35,7 +35,7 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
     public void handler(ChannelHandlerContext ctx, IMLoginInfoModel loginInfo) {
         OAuth2AccessToken oAuth2AccessToken = null;
         IMSendMessageInfoModel<Object> sendMessageInfo = new IMSendMessageInfoModel<Object>();
-        sendMessageInfo.setCmd(IMCmdType.FORCE_LOGOUT.code());
+        sendMessageInfo.setCmd(IMCmdType.FORCE_LOGOUT);
         try {
             oAuth2AccessToken = ResourceServerConfiger.resourceServerSecurityConfigurer.getTokenStore().readAccessToken(loginInfo.getAccessToken());
             if(oAuth2AccessToken.getExpiration().compareTo(new Date())<0){
@@ -87,12 +87,12 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
         redisTemplate.opsForValue().set(key, IMStartServer.serverId, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
         // 响应ws
         IMSendMessageInfoModel<Object> sendInfo = new IMSendMessageInfoModel<Object>();
-        sendInfo.setCmd(IMCmdType.LOGIN.code());
+        sendInfo.setCmd(IMCmdType.LOGIN);
         ctx.channel().writeAndFlush(sendInfo);
     }
 
     @Override
-    public DeveloperResult<Boolean> handler(IMLoginInfoModel data, IMCmdType cmdType) {
+    public DeveloperResult<Boolean> handler(IMLoginInfoModel data) {
         return null;
     }
 

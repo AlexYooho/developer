@@ -11,6 +11,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.framework.utils.SerialNoHolder;
 import com.developer.framework.utils.SnowflakeNoUtil;
+import com.developer.payment.dto.SendRedPacketsResultDTO;
 import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.enums.TransactionTypeEnum;
@@ -63,7 +64,7 @@ public class NormalPaymentServiceImpl extends BasePaymentService implements RedP
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
+    public DeveloperResult<SendRedPacketsResultDTO> sendRedPackets(SendRedPacketsDTO dto) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
 
@@ -84,7 +85,7 @@ public class NormalPaymentServiceImpl extends BasePaymentService implements RedP
         }
 
         // 4、推送红包消息
-        DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel(), redPacketsInfoPO.getId(),PaymentTypeEnum.RED_PACKETS,"红包来啦", MessageContentTypeEnum.RED_PACKETS);
+        DeveloperResult<SendRedPacketsResultDTO> sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel(), redPacketsInfoPO.getId(),PaymentTypeEnum.RED_PACKETS,"红包来啦", MessageContentTypeEnum.RED_PACKETS);
         if (!sendMessageResult.getIsSuccessful()) {
             throw new DeveloperBusinessException(serialNo,sendMessageResult.getMsg());
         }
@@ -92,7 +93,10 @@ public class NormalPaymentServiceImpl extends BasePaymentService implements RedP
         // 5、推送红包过期延迟检查事件
         this.transactionExpiredCheckEvent(serialNo,PaymentTypeEnum.RED_PACKETS, redPacketsInfoPO.getId(), redPacketsInfoPO.getExpireTime().getTime());
 
-        return DeveloperResult.success(serialNo);
+        SendRedPacketsResultDTO resultDto = new SendRedPacketsResultDTO();
+        resultDto.setMessageId(sendMessageResult.getData().getMessageId());
+
+        return DeveloperResult.success(serialNo,resultDto);
     }
 
     /**

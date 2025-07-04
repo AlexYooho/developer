@@ -8,7 +8,7 @@ public abstract class AbstractMessageProcessor<T> {
 
     public void handler(ChannelHandlerContext ctx,T data){}
 
-    public abstract DeveloperResult<Boolean> handler(T data, IMCmdType cmdType);
+    public abstract DeveloperResult<Boolean> handler(T data);
 
     public T trans(Object object){
         return (T) object;

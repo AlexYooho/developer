@@ -6,6 +6,7 @@ import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.framework.utils.SerialNoHolder;
 import com.developer.payment.dto.OpenRedPacketsRequestDTO;
 import com.developer.payment.dto.ReturnTransferRequestDTO;
+import com.developer.payment.dto.SendRedPacketsResultDTO;
 import com.developer.payment.enums.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
@@ -38,7 +39,7 @@ public class RedPacketsPaymentServiceImpl implements PaymentService {
      */
     @Override
     @GlobalTransactional(name = "send-red-packets-transaction-tx", rollbackFor = Exception.class)
-    public DeveloperResult<Boolean> doPay(PaymentInfoDTO dto){
+    public DeveloperResult<SendRedPacketsResultDTO> doPay(PaymentInfoDTO dto){
         return dispatchFactory.getInstance(dto.getSendRedPacketsDTO().getType()).sendRedPackets(dto.getSendRedPacketsDTO());
     }
 

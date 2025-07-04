@@ -3,6 +3,7 @@ package com.developer.payment.service.impl.redpackets;
 import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.framework.enums.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
+import com.developer.payment.dto.SendRedPacketsResultDTO;
 import com.developer.payment.service.RedPacketsService;
 import com.developer.payment.service.impl.BasePaymentService;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class DefaultRedPacketsTypeServiceImpl extends BasePaymentService impleme
     }
 
     @Override
-    public DeveloperResult<Boolean> sendRedPackets(SendRedPacketsDTO dto) {
+    public DeveloperResult<SendRedPacketsResultDTO> sendRedPackets(SendRedPacketsDTO dto) {
         return null;
     }
 

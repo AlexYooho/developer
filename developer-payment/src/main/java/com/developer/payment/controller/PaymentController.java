@@ -7,6 +7,7 @@ import com.developer.framework.enums.PaymentTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.OpenRedPacketsRequestDTO;
 import com.developer.payment.dto.ReturnTransferRequestDTO;
+import com.developer.payment.dto.SendRedPacketsResultDTO;
 import com.developer.payment.service.processorFactory.PaymentTypeProcessorDispatchFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class PaymentController {
      * @return
      */
     @PostMapping("red-packets/send")
-    public DeveloperResult<Boolean> sendRedPackets(@RequestBody SendRedPacketsDTO dto){
+    public DeveloperResult<SendRedPacketsResultDTO> sendRedPackets(@RequestBody SendRedPacketsDTO dto){
         return dispatchFactory.getInstance(PaymentTypeEnum.RED_PACKETS).doPay(PaymentInfoDTO.builder().sendRedPacketsDTO(dto).paymentTypeEnum(PaymentTypeEnum.RED_PACKETS).channel(dto.getPaymentChannel()).build());
     }
 
@@ -44,7 +45,7 @@ public class PaymentController {
      * @return
      */
     @PostMapping("transfer")
-    public DeveloperResult<Boolean> transfer(@RequestBody TransferInfoDTO dto){
+    public DeveloperResult<SendRedPacketsResultDTO> transfer(@RequestBody TransferInfoDTO dto){
         return dispatchFactory.getInstance(PaymentTypeEnum.TRANSFER).doPay(PaymentInfoDTO.builder().transferInfoDTO(dto).paymentTypeEnum(PaymentTypeEnum.RED_PACKETS).channel(dto.getPaymentChannel()).build());
     }
 

@@ -208,7 +208,7 @@ public class BasePaymentService {
      * @param targetId
      * @param channelEnum
      */
-    public DeveloperResult sendRedPacketsMessage(String serialNo, Long targetId, PaymentChannelEnum channelEnum, Long transactionId,PaymentTypeEnum paymentTypeEnum,String messageContent,MessageContentTypeEnum messageContentTypeEnum) {
+    public DeveloperResult<SendRedPacketsResultDTO> sendRedPacketsMessage(String serialNo, Long targetId, PaymentChannelEnum channelEnum, Long transactionId,PaymentTypeEnum paymentTypeEnum,String messageContent,MessageContentTypeEnum messageContentTypeEnum) {
         if(channelEnum == null || !channelEnum.isSupportType()){
             return DeveloperResult.error(serialNo, "消息主类型不明确");
         }
@@ -224,7 +224,7 @@ public class BasePaymentService {
                 .build());
 
         MessageMainTypeEnum messageMainTypeEnum = channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : channelEnum == PaymentChannelEnum.SCAN_CODE ? MessageMainTypeEnum.SYSTEM_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE;
-        DeveloperResult result = this.messageClient.sendMessage(serialNo,messageMainTypeEnum, SendMessageRequestDTO.builder()
+        DeveloperResult<SendRedPacketsResultDTO> result = this.messageClient.sendMessage(serialNo,messageMainTypeEnum, SendMessageRequestDTO.builder()
                 .serialNo(serialNo)
                 .receiverId(targetId)
                 .messageContent(messageContent)

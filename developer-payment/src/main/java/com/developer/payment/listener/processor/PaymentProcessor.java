@@ -5,6 +5,7 @@ import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
+import com.developer.payment.dto.SendRedPacketsResultDTO;
 import com.developer.payment.service.PaymentService;
 import com.developer.payment.service.processorFactory.PaymentTypeProcessorDispatchFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ public class PaymentProcessor implements IMessageProcessor {
     public DeveloperResult<Boolean> processor(RabbitMQMessageBodyDTO dto) {
         PaymentInfoDTO paymentInfo = dto.parseData(PaymentInfoDTO.class);
         PaymentService paymentTypeInstance = dispatchFactory.getInstance(paymentInfo.getPaymentTypeEnum());
-        return paymentTypeInstance.doPay(paymentInfo);
+        DeveloperResult<SendRedPacketsResultDTO> result = paymentTypeInstance.doPay(paymentInfo);
+        return DeveloperResult.success(result.getSerialNo());
     }
 }

@@ -4,6 +4,7 @@ import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.CheckVerifyCodeRequestDTO;
 import com.developer.payment.dto.SendMessageRequestDTO;
+import com.developer.payment.dto.SendRedPacketsResultDTO;
 import com.developer.payment.interceptor.FeignRequestInterceptor;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,6 @@ public interface MessageClient {
     DeveloperResult<Boolean> verifyCodeCheck(@RequestBody CheckVerifyCodeRequestDTO req);
 
     @PostMapping("/message-module/api/message/{type}/send")
-    DeveloperResult sendMessage(@RequestHeader("serial_no") String serialNo, @PathVariable("type")MessageMainTypeEnum type, @RequestBody SendMessageRequestDTO req);
+    DeveloperResult<SendRedPacketsResultDTO> sendMessage(@RequestHeader("serial_no") String serialNo, @PathVariable("type")MessageMainTypeEnum type, @RequestBody SendMessageRequestDTO req);
 
 }

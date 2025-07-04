@@ -25,15 +25,17 @@ public class PrivateMessageService extends AbstractMessageTypeService {
 
     @Override
     public DeveloperResult<Boolean> handler(ChatMessageDTO dto) {
-        IMChatMessageBaseModel<PrivateMessageDTO> model = new IMChatMessageBaseModel<>();
+        IMChatMessageBaseModel model = new IMChatMessageBaseModel();
         model.setSerialNo(dto.getSerialNo());
-        model.setSender(new IMUserInfoModel(dto.getSendId(),dto.getTerminalType(), dto.getSendNickName()));
-        model.setSendToSelf(false);
-        model.setSendResult(false);
         model.setMessageId(dto.getMessageId());
         model.setMessageContent(dto.getMessageContent());
-        model.setMessageContentType(dto.getMessageContentTypeEnum().code());
-        model.setData(new PrivateMessageDTO(dto.getFriendUserId()));
+        model.setMessageContentType(dto.getMessageContentTypeEnum());
+        model.setMessageStatus(dto.getMessageStatus());
+        model.setReceiverId(dto.getFriendUserId());
+        model.setSendToSelf(true);
+        model.setSender(new IMUserInfoModel(dto.getSendId(),dto.getTerminalType(),dto.getSendNickName()));
+        model.setSendTime(dto.getSendTime());
+        model.setSendResult(false);
         return imClients.sendPrivateMessage(model, IMCmdType.PRIVATE_MESSAGE);
     }
 }

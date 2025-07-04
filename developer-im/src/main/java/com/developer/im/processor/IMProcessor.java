@@ -26,11 +26,11 @@ public class IMProcessor {
      * @param message
      * @param <T>
      */
-    public <T> DeveloperResult<Boolean> sendPrivateMessage(IMChatMessageBaseModel<PrivateMessageDTO> message, IMCmdType cmdType) {
+    public <T> DeveloperResult<Boolean> sendPrivateMessage(IMChatMessageBaseModel message, IMCmdType cmdType) {
         DeveloperResult<Boolean> result = null;
         for (Integer terminal : message.getReceiveTerminals()) {
             // 获取对方连接的channelId
-            String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, message.getData().getReceiverId().toString(), terminal.toString());
+            String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, message.getReceiverId().toString(), terminal.toString());
             Integer serverId = (Integer) redisTemplate.opsForValue().get(key);
 
             if (serverId == null || serverId <= 0) {
@@ -39,15 +39,15 @@ public class IMProcessor {
 
             // 如果对方在线
             String sendKey = String.join(":", RedisKeyConstant.IM_MESSAGE_PRIVATE_QUEUE, serverId.toString());
-            IMChatPrivateMessageModel recvInfo = new IMChatPrivateMessageModel();
-            recvInfo.setSerialNo(message.getSerialNo());
-            recvInfo.setCmd(cmdType.code());
-            recvInfo.setSendResult(message.getSendResult());
-            recvInfo.setSender(message.getSender());
-            recvInfo.setMessageReceiver(new IMUserInfoModel(message.getData().getReceiverId(), MessageTerminalTypeEnum.fromCode(terminal),""));
-            recvInfo.setData(message.getData());
+            IMChatPrivateMessageModel messageBody = new IMChatPrivateMessageModel();
+            messageBody.setSerialNo(message.getSerialNo());
+            messageBody.setCmd(cmdType);
+            messageBody.setSender(message.getSender());
+            messageBody.setSendResult(message.getSendResult());
+            messageBody.setMessageReceiver(new IMUserInfoModel(message.getReceiverId(), MessageTerminalTypeEnum.fromCode(terminal),""));
+            messageBody.setData(message);
             AbstractMessageProcessor processor = ProcessorFactory.getHandler(cmdType);
-            result = processor.handler(recvInfo, cmdType);
+            result = processor.handler(messageBody);
         }
         return result;
     }
@@ -58,12 +58,12 @@ public class IMProcessor {
      * @param message
      * @param <T>
      */
-    public <T> DeveloperResult<Boolean> sendGroupMessage(IMChatMessageBaseModel<GroupMessageDTO> message) {
+    public <T> DeveloperResult<Boolean> sendGroupMessage(IMChatMessageBaseModel message) {
         DeveloperResult<Boolean> result = null;
         // 根据群聊每个成员所连的IM-server，进行分组
         HashMap<String, IMUserInfoModel> sendMap = new HashMap<>();
         for (Integer terminal : message.getReceiveTerminals()) {
-            message.getData().getReceiverIds().stream().forEach(id -> {
+            message.getReceiverIds().forEach(id -> {
                 String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, id.toString(), terminal.toString());
                 sendMap.put(key, new IMUserInfoModel(id, MessageTerminalTypeEnum.fromCode(terminal),""));
             });
@@ -76,6 +76,7 @@ public class IMProcessor {
         List<IMUserInfoModel> offLineUsers = new LinkedList<>();
         int idx = 0;
         for (Map.Entry<String, IMUserInfoModel> entry : sendMap.entrySet()) {
+            assert serverIds != null;
             Integer serverId = (Integer) serverIds.get(idx++);
             if (serverId != null) {
                 List<IMUserInfoModel> list = serverMap.computeIfAbsent(serverId, o -> new LinkedList<>());
@@ -85,17 +86,17 @@ public class IMProcessor {
                 offLineUsers.add(entry.getValue());
             }
         }
-        ;
         // 逐个server发送
         for (Map.Entry<Integer, List<IMUserInfoModel>> entry : serverMap.entrySet()) {
-            IMChatGroupMessageModel recvInfo = new IMChatGroupMessageModel();
-            recvInfo.setCmd(IMCmdType.GROUP_MESSAGE.code());
-            recvInfo.setMessageReceiverList(new LinkedList<>(entry.getValue()));
-            recvInfo.setSender(message.getSender());
-            recvInfo.setSendResult(message.getSendResult());
-            recvInfo.setData(message.getData());
+            IMChatGroupMessageModel messageBody = new IMChatGroupMessageModel();
+            messageBody.setSerialNo(message.getSerialNo());
+            messageBody.setCmd(IMCmdType.GROUP_MESSAGE);
+            messageBody.setSender(message.getSender());
+            messageBody.setSendResult(message.getSendResult());
+            messageBody.setMessageReceiverList(new LinkedList<>(entry.getValue()));
+            messageBody.setData(message);
             AbstractMessageProcessor processor = ProcessorFactory.getHandler(IMCmdType.GROUP_MESSAGE);
-            result = processor.handler(recvInfo, IMCmdType.GROUP_MESSAGE);
+            result = processor.handler(messageBody);
         }
         return result;
     }

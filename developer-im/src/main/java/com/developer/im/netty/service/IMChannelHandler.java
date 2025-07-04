@@ -25,7 +25,7 @@ public class IMChannelHandler extends SimpleChannelInboundHandler<IMSendMessageI
      */
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, IMSendMessageInfoModel imSendMessageInfoModel) throws Exception {
-        AbstractMessageProcessor processor = ProcessorFactory.getHandler(IMCmdType.transCode(imSendMessageInfoModel.getCmd()));
+        AbstractMessageProcessor processor = ProcessorFactory.getHandler(imSendMessageInfoModel.getCmd());
         processor.handler(channelHandlerContext,processor.trans(imSendMessageInfoModel.getData()));
     }
 
