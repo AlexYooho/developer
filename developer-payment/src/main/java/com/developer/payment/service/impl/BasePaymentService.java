@@ -126,7 +126,7 @@ public class BasePaymentService {
 
         // 红包、转账通用条件
         if(paymentChannelEnum == PaymentChannelEnum.FRIEND) {
-            FriendInfoDTO isFriend = friendClient.isFriend(IsFriendDto.builder().friendId(targetId).userId(userId).serialNo(serialNo).build()).getData();
+            FriendInfoDTO isFriend = friendClient.isFriend(IsFriendDto.builder().friendId(targetId).userId(userId).build()).getData();
             if (isFriend == null) {
                 return DeveloperResult.error(serialNo, "对方不是您的好友");
             }

@@ -34,6 +34,7 @@ public class PrivateMessageService extends AbstractMessageTypeService {
         model.setReceiverId(dto.getFriendUserId());
         model.setSendToSelf(true);
         model.setSender(new IMUserInfoModel(dto.getSendId(),dto.getTerminalType(),dto.getSendNickName()));
+        model.setSendId(dto.getSendId());
         model.setSendTime(dto.getSendTime());
         model.setSendResult(false);
         return imClients.sendPrivateMessage(model, IMCmdType.PRIVATE_MESSAGE);

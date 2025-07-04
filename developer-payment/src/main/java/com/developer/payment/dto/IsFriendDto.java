@@ -8,9 +8,6 @@ import lombok.Data;
 @Builder
 public class IsFriendDto {
 
-    @JsonProperty("serial_no")
-    private String serialNo;
-
     @JsonProperty("friend_id")
     private Long friendId;
 

@@ -62,6 +62,12 @@ public class IMChatMessageBaseModel {
     private IMUserInfoModel sender;
 
     /**
+     * 发送人id
+     */
+    @JsonProperty("send_id")
+    private Long sendId;
+
+    /**
      * 发送时间
      */
     @JsonProperty("send_time")
