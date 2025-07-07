@@ -58,14 +58,14 @@ public class TransactionExpiredCheckProcessor implements IMessageProcessor {
                 return DeveloperResult.error(dto.getSerialNo(), "红包剩余金额为0,无需退回");
             }
 
+            userId = redPacketsInfoPO.getSenderUserId();
+            remainingAmount = redPacketsInfoPO.getRemainingAmount();
+
             redPacketsInfoPO.setReturnAmount(redPacketsInfoPO.getRemainingAmount());
             redPacketsInfoPO.setStatus(RedPacketsStatusEnum.REFUND);
             redPacketsInfoPO.setRemainingCount(0);
             redPacketsInfoPO.setRemainingAmount(BigDecimal.ZERO);
             redPacketsInfoRepository.updateById(redPacketsInfoPO);
-
-            userId = redPacketsInfoPO.getSenderUserId();
-            remainingAmount = redPacketsInfoPO.getRemainingAmount();
         }
 
         if(transactionExpiredCheckDTO.getPaymentTypeEnum() == PaymentTypeEnum.TRANSFER){
