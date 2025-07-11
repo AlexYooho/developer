@@ -4,6 +4,7 @@ import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.FileUtil;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.oss.dto.UploadImageDTO;
 import com.developer.oss.enums.FileTypeEnum;
@@ -31,16 +32,17 @@ public class FileServiceImpl implements FileService {
      */
     @Override
     public DeveloperResult<String> uploadFile(MultipartFile file) {
+        String serialNo = SerialNoHolder.getSerialNo();
         if(file.getSize()> DeveloperConstant.MAX_FILE_SIZE){
             return DeveloperResult.error("文件大小不能超过10M");
         }
 
-        String fileName = minioService.uploadFile("developer","file",file);
+        String fileName = minioService.uploadFile("developer-test","file",file);
         if(StringUtils.isEmpty(fileName)){
             return DeveloperResult.error("文件上传失败");
         }
-        String fileUrl = minioService.findFileUrl("developer", FileTypeEnum.FILE,fileName);
-        return DeveloperResult.success(fileUrl);
+        String fileUrl = minioService.findFileUrl("developer-test", FileTypeEnum.FILE,fileName);
+        return DeveloperResult.success(serialNo,fileUrl);
     }
 
     /**
@@ -51,6 +53,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public DeveloperResult<UploadImageDTO> uploadImage(MultipartFile file) {
         try{
+            String serialNo = SerialNoHolder.getSerialNo();
             Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
             if(file.getSize()> DeveloperConstant.MAX_IMAGE_SIZE){
                 return DeveloperResult.error("图片大小不能超过5M");
@@ -60,24 +63,24 @@ public class FileServiceImpl implements FileService {
             }
 
             UploadImageDTO uploadImageRep = new UploadImageDTO();
-            String fileName = minioService.uploadFile("developer","image",file);
+            String fileName = minioService.uploadFile("developer-test","image",file);
             if(StringUtils.isEmpty(fileName)){
                 return DeveloperResult.error("图片上传失败");
             }
 
-            String fileUrl = minioService.findFileUrl("developer",FileTypeEnum.IMAGE,fileName);
+            String fileUrl = minioService.findFileUrl("developer-test",FileTypeEnum.IMAGE,fileName);
             uploadImageRep.setOriginUrl(fileUrl);
             // 大于30k上传缩略图
             if(file.getSize()>30*1024){
                 byte[] imageByte={};
-                fileName = minioService.uploadFile("developer","image",file);
+                fileName = minioService.uploadFile("developer-test","image",file);
                 if(StringUtils.isEmpty(fileName)){
                     return DeveloperResult.error("图片上传失败");
                 }
             }
-            fileUrl = minioService.findFileUrl("developer",FileTypeEnum.IMAGE,fileName);
+            fileUrl = minioService.findFileUrl("developer-test",FileTypeEnum.IMAGE,fileName);
             uploadImageRep.setThumbUrl(fileUrl);
-            return DeveloperResult.success("",uploadImageRep);
+            return DeveloperResult.success(serialNo,uploadImageRep);
         }catch (Exception e){
             log.error("上传图片失败,{}",e.getMessage(),e);
             return DeveloperResult.error("",500,"图片上传失败");

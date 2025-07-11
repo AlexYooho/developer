@@ -66,7 +66,7 @@ public class MessageController {
      * @param req
      * @return
      */
-    @GetMapping("/{type}/history")
+    @PostMapping("/{type}/history")
     public DeveloperResult<List<SendMessageResultDTO>> recallMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody QueryHistoryMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).findHistoryMessage(req);
     }

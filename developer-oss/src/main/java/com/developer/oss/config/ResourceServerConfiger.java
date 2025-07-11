@@ -31,7 +31,7 @@ public class ResourceServerConfiger extends ResourceServerConfigurerAdapter {
      */
     @Override
     public void configure(ResourceServerSecurityConfigurer resources)  {
-        resources.resourceId("developer_user").tokenStore(tokenStore()).stateless(true).authenticationEntryPoint(customIdentityVerifyExceptionProcessor); // 添加自定义异常处理
+        resources.resourceId("developer_oss").tokenStore(tokenStore()).stateless(true).authenticationEntryPoint(customIdentityVerifyExceptionProcessor); // 添加自定义异常处理
     }
 
     @Override
