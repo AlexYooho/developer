@@ -2,6 +2,7 @@ package com.developer.message.dto;
 
 import com.developer.framework.enums.MessageContentTypeEnum;
 import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -63,5 +64,11 @@ public class SendMessageRequestDTO {
      */
     @JsonProperty("reference_id")
     private Long referenceId;
+
+    /**
+     * 终端类型
+     */
+    @JsonProperty("terminal_type")
+    private MessageTerminalTypeEnum terminalType;
 
 }

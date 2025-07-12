@@ -71,24 +71,31 @@ public class PrivateMessageServiceImpl implements MessageService {
         List<SendMessageResultDTO> list = new ArrayList<>();
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
-        String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId);
-        Long maxMessageId = redisUtil.get(key, Long.class) == null ? 0L:redisUtil.get(key, Long.class);
-        if(maxMessageId != 0L && req.getMinId().equals(maxMessageId)){
-            return DeveloperResult.success(serialNo,list);
+        // 优化：按终端类型区分游标
+        MessageTerminalTypeEnum terminalType = req.getTerminalType();
+        String key = RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId, terminalType);
+        Long maxMessageId = redisUtil.get(key, Long.class) == null ? 0L : redisUtil.get(key, Long.class);
+        if (maxMessageId != 0L && req.getMinId().equals(maxMessageId)) {
+            return DeveloperResult.success(serialNo, list);
         }
 
         List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(req.getMinId(), userId);
-        List<Long> ids = messages.stream().filter(x -> !x.getSendId().equals(userId) && x.getMessageStatus().equals(MessageStatusEnum.UNSEND))
+        List<Long> ids = messages.stream()
+                .filter(x -> !x.getSendId().equals(userId) && x.getMessageStatus().equals(MessageStatusEnum.UNSEND))
                 .map(PrivateMessagePO::getId)
                 .collect(Collectors.toList());
         if (!ids.isEmpty()) {
             this.privateMessageRepository.updateMessageStatus(ids, MessageStatusEnum.SENDED);
         }
 
-        redisUtil.set(key,ids.stream().max(Long::compareTo).orElse(req.getMinId()),24, TimeUnit.HOURS);
-
+        // 只在有新消息时更新 maxMessageId，且取本次拉取到的消息的最大 id
+        if (!messages.isEmpty()) {
+            Long newMaxId = messages.stream().mapToLong(PrivateMessagePO::getId).max().getAsLong();
+            redisUtil.set(key, newMaxId, 24, TimeUnit.HOURS);
+        }
+        // 如果没有新消息，不回写 redis，保持原有 maxMessageId
         list = messages.stream().map(m -> BeanUtils.copyProperties(m, PrivateMessageDTO.class)).collect(Collectors.toList());
-        return DeveloperResult.success(serialNo,list);
+        return DeveloperResult.success(serialNo, list);
     }
 
     /**
@@ -111,11 +118,12 @@ public class PrivateMessageServiceImpl implements MessageService {
         // 消息入库
         PrivateMessagePO privateMessage = this.saveMessage(userId,req);
 
-        // 记录消息id
-        redisUtil.set(RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId),privateMessage.getId(),24, TimeUnit.HOURS);
+        // 记录消息id，兼容多端游标
+        MessageTerminalTypeEnum terminalType = req.getTerminalType() != null ? req.getTerminalType() : MessageTerminalTypeEnum.WEB;
+        redisUtil.set(RedisKeyConstant.DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(userId, terminalType), privateMessage.getId(), 24, TimeUnit.HOURS);
 
         // 发送消息
-        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getMessageStatus(), MessageTerminalTypeEnum.WEB, privateMessage.getId(), userId, nickName, req.getMessageContent(),privateMessage.getSendTime(),req.getReceiverId()));
+        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getMessageStatus(), terminalType, privateMessage.getId(), userId, nickName, req.getMessageContent(),privateMessage.getSendTime(),req.getReceiverId()));
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
