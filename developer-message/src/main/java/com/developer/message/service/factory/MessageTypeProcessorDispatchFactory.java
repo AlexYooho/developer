@@ -1,6 +1,7 @@
-package com.developer.message.service;
+package com.developer.message.service.factory;
 
 import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.message.service.MessageService;
 import com.developer.message.service.impl.DefaultMessageServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;

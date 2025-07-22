@@ -7,7 +7,7 @@ import com.developer.framework.processor.IMessageProcessor;
 import com.developer.framework.utils.SerialNoHolder;
 import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.message.dto.SendMessageRequestDTO;
-import com.developer.message.service.MessageTypeProcessorDispatchFactory;
+import com.developer.message.service.factory.MessageTypeProcessorDispatchFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

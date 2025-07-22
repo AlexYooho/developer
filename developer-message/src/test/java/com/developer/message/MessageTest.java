@@ -1,7 +1,7 @@
 package com.developer.message;
 
 import com.developer.framework.enums.MessageMainTypeEnum;
-import com.developer.message.service.MessageTypeProcessorDispatchFactory;
+import com.developer.message.service.factory.MessageTypeProcessorDispatchFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

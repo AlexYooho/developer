@@ -103,4 +103,14 @@ public class RedisKeyConstant {
     public static String verifyCode(VerifyCodeTypeEnum verifyCodeType, String account){
     	return String.format("developer:user:verify:type:%s:%s",verifyCodeType.code(),account);
     }
+
+    /**
+     * 存在好友关系
+     * @param userId
+     * @param friendId
+     * @return
+     */
+    public static String IS_FRIEND_KEY(Long userId,Long friendId){
+        return String.format("developer:message:user:%s:friend:%s:exist:relation",userId,friendId);
+    }
 }

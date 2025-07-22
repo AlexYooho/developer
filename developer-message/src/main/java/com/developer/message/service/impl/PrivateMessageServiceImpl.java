@@ -16,6 +16,7 @@ import com.developer.message.dto.*;
 import com.developer.message.param.IsFriendParam;
 import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.PrivateMessageRepository;
+import com.developer.message.service.FriendService;
 import com.developer.message.service.MessageLikeService;
 import com.developer.message.service.MessageService;
 import com.developer.message.util.RabbitMQUtil;
@@ -35,9 +36,6 @@ import java.util.stream.Collectors;
 public class PrivateMessageServiceImpl implements MessageService {
 
     @Autowired
-    private FriendClient friendClient;
-
-    @Autowired
     private PaymentClient paymentClient;
 
     @Autowired
@@ -51,6 +49,9 @@ public class PrivateMessageServiceImpl implements MessageService {
 
     @Autowired
     private MessageLikeService messageLikeService;
+
+    @Autowired
+    private FriendService friendService;
 
     /**
      * 消息主体类型
@@ -110,7 +111,7 @@ public class PrivateMessageServiceImpl implements MessageService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
-        DeveloperResult<FriendInfoDTO> friend = friendClient.isFriend(IsFriendParam.builder().friendId(req.getReceiverId()).userId(userId).build());
+        DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getReceiverId());
         if(!friend.getIsSuccessful()){
             return DeveloperResult.error(serialNo,friend.getMsg());
         }

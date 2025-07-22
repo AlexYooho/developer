@@ -3,7 +3,7 @@ package com.developer.message.controller;
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.*;
-import com.developer.message.service.MessageTypeProcessorDispatchFactory;
+import com.developer.message.service.factory.MessageTypeProcessorDispatchFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
