@@ -113,4 +113,27 @@ public class RedisKeyConstant {
     public static String IS_FRIEND_KEY(Long userId,Long friendId){
         return String.format("developer:message:user:%s:friend:%s:exist:relation",userId,friendId);
     }
+
+    /**
+     * 客户端对应服务端关系key
+     */
+    public final static String WS_CLIENT_TO_SERVER_MAP_KEY = "developer:im:ws:client:to:server:map";
+
+    /**
+     * 当前服务节点的所有客户端key
+     * @param serverId
+     * @return
+     */
+    public static String WS_SERVER_TO_CLIENTS_KEY(String serverId){
+        return String.join("developer:im:ws:server:to:clients:%s",serverId);
+    }
+
+    /**
+     * 客户端对应channel频道关系key  多连接
+     * @param clientId
+     * @return
+     */
+    public static String WS_CLIENT_CHANNEL_KEY(String clientId){
+        return String.join("developer:im:ws:client:channel:%s",clientId);
+    }
 }

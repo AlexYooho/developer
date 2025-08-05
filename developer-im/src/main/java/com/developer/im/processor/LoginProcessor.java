@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.model.SelfUserInfoModel;
+import com.developer.framework.utils.RedisUtil;
 import com.developer.im.config.ResourceServerConfiger;
 import com.developer.im.constant.ChannelAttrKey;
 import com.developer.framework.constant.RedisKeyConstant;
@@ -29,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
 
     @Autowired
-    private RedisTemplate<String,Object> redisTemplate;
+    private RedisUtil redisUtil;
 
     @Override
     public void handler(ChannelHandlerContext ctx, IMLoginInfoModel loginInfo) {
@@ -84,7 +85,14 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
 
         // 在redis上记录每个user的channelId，15秒没有心跳，则自动过期
         String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
-        redisTemplate.opsForValue().set(key, IMStartServer.serverId, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
+        redisUtil.set(key, IMStartServer.serverId, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
+
+
+        redisUtil.hSet(RedisKeyConstant.WS_CLIENT_TO_SERVER_MAP_KEY,"","");
+        redisUtil.sAdd(RedisKeyConstant.WS_SERVER_TO_CLIENTS_KEY(""),"");
+        redisUtil.hSet(RedisKeyConstant.WS_CLIENT_CHANNEL_KEY(""),"","");
+
+
         // 响应ws
         IMSendMessageInfoModel<Object> sendInfo = new IMSendMessageInfoModel<Object>();
         sendInfo.setCmd(IMCmdType.LOGIN);

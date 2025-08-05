@@ -1,5 +1,6 @@
 package com.developer.im.netty.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.utils.RedisUtil;
 import io.netty.channel.ChannelHandlerContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,21 +21,22 @@ public class UserChannelCtxMap {
     }
 
     public static void removeChannelCtx(Long userId,Integer terminal){
-        if(userId!=null && terminal!=null && channelMap.containsKey(userId)){
-            Map<Integer, ChannelHandlerContext> userChannelMap = channelMap.get(userId);
-            userChannelMap.remove(terminal);
+        if(ObjectUtil.isEmpty(userId) || ObjectUtil.isEmpty(terminal) || !channelMap.containsKey(userId)){
+            return;
         }
+        Map<Integer, ChannelHandlerContext> userChannelMap = channelMap.get(userId);
+        userChannelMap.remove(terminal);
     }
 
     public static ChannelHandlerContext getChannelCtx(Long userId,Integer terminal){
-        if(userId!=null && terminal!=null && channelMap.containsKey(userId)){
-            Map<Integer, ChannelHandlerContext> userChannelMap = channelMap.get(userId);
-            if(userChannelMap.containsKey(terminal)){
-                return userChannelMap.get(terminal);
-            }
+        if(ObjectUtil.isEmpty(userId) || ObjectUtil.isEmpty(terminal) || !channelMap.containsKey(userId)){
+            return null;
         }
-        return null;
+        Map<Integer, ChannelHandlerContext> userChannelMap = channelMap.get(userId);
+        if(!userChannelMap.containsKey(terminal)){
+            return null;
+        }
+
+        return userChannelMap.get(terminal);
     }
-
-
 }
