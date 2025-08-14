@@ -25,40 +25,54 @@
     </modules>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <!-- JDK 编译版本 -->
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- 依赖版本 -->
         <spring-boot.version>2.6.3</spring-boot.version>
         <spring-cloud.version>2021.0.1</spring-cloud.version>
-        <spring-dloud-alibaba.version>2021.0.1.0</spring-dloud-alibaba.version>
+        <spring-cloud-alibaba.version>2021.0.1.0</spring-cloud-alibaba.version>
+
+        <!-- 数据库 -->
         <mysql-connector-java.version>8.0.29</mysql-connector-java.version>
-        <spring-boot-starter-data-redis.version>2.6.3</spring-boot-starter-data-redis.version>
-        <redisson-spring-boot-starter.version>3.17.0</redisson-spring-boot-starter.version>
         <mybatis-plus-boot-starter.version>3.5.3.1</mybatis-plus-boot-starter.version>
         <mybatis-plus-join-boot-starter.version>1.4.11</mybatis-plus-join-boot-starter.version>
+        <mybatis-plus-annotation.version>3.5.3.1</mybatis-plus-annotation.version>
+        <druid-spring-boot-starter.version>1.2.16</druid-spring-boot-starter.version>
+
+        <!-- 缓存 -->
+        <spring-boot-starter-data-redis.version>2.6.3</spring-boot-starter-data-redis.version>
+        <redisson-spring-boot-starter.version>3.17.0</redisson-spring-boot-starter.version>
+
+        <!-- JSON / 工具类 -->
         <fastjson.version>1.2.70</fastjson.version>
         <commons-lang3.version>3.8.1</commons-lang3.version>
-        <jaxb-api.version>2.3.1</jaxb-api.version>
         <hutool-all.version>5.8.3</hutool-all.version>
+
+        <!-- 其他依赖 -->
+        <jaxb-api.version>2.3.1</jaxb-api.version>
         <spring-cloud-starter-bootstrap.version>3.1.0</spring-cloud-starter-bootstrap.version>
         <spring-cloud-starter-alibaba-nacos-config.version>2021.0.1.0</spring-cloud-starter-alibaba-nacos-config.version>
         <spring-boot-autoconfigure.version>2.6.7</spring-boot-autoconfigure.version>
         <minio.version>8.4.5</minio.version>
         <netty.version>4.1.42.Final</netty.version>
         <lombok.version>1.18.8</lombok.version>
-        <log4j.vsrsion>1.2.17</log4j.vsrsion>
+        <log4j.version>1.2.17</log4j.version>
         <junit.version>4.12</junit.version>
-        <druid-spring-boot-starter.version>1.2.16</druid-spring-boot-starter.version>
         <spring-cloud-starter-oauth2.version>2.2.5.RELEASE</spring-cloud-starter-oauth2.version>
         <spring-boot-starter-amqp.version>3.3.2</spring-boot-starter-amqp.version>
         <seata.version>2.0.0</seata.version>
-        <mybatis-plus-annotation.version>3.5.3.1</mybatis-plus-annotation.version>
         <spring-boot-starter-mail.version>3.3.1</spring-boot-starter-mail.version>
+        <com-sun-mail.version>1.6.2</com-sun-mail.version>
+        <developer-framework.version>0.0.1-SNAPSHOT</developer-framework.version>
+        <jjwt.version>0.9.1</jjwt.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- SpringBoot 依赖 -->
+            <!-- Spring Boot BOM -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -67,7 +81,7 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- SpringCloud 依赖 -->
+            <!-- Spring Cloud BOM -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -76,152 +90,118 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Spring Cloud Alibaba 依赖 -->
+            <!-- Spring Cloud Alibaba BOM -->
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-alibaba-dependencies</artifactId>
-                <version>${spring-dloud-alibaba.version}</version>
+                <version>${spring-cloud-alibaba.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
 
-
-
-            <!-- MySQL -->
+            <!-- 数据库 -->
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql-connector-java.version}</version>
             </dependency>
-
-            <!-- Redis -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-redis</artifactId>
-                <version>${spring-boot-starter-data-redis.version}</version>
-            </dependency>
-
-            <!-- Redisson -->
-            <dependency>
-                <groupId>org.redisson</groupId>
-                <artifactId>redisson-spring-boot-starter</artifactId>
-                <version>${redisson-spring-boot-starter.version}</version>
-            </dependency>
-
-            <!-- mybatis-plus -->
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mybatis-plus-boot-starter.version}</version>
             </dependency>
-
-            <!-- mybatis-plus-join -->
             <dependency>
                 <groupId>com.github.yulichang</groupId>
                 <artifactId>mybatis-plus-join-boot-starter</artifactId>
                 <version>${mybatis-plus-join-boot-starter.version}</version>
             </dependency>
-
-            <!-- fastjosn -->
             <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>fastjson</artifactId>
-                <version>${fastjson.version}</version>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-annotation</artifactId>
+                <version>${mybatis-plus-annotation.version}</version>
             </dependency>
-
-            <!-- commons-lang3 -->
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>${commons-lang3.version}</version>
-            </dependency>
-
-            <!-- jaxb-api -->
-            <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>${jaxb-api.version}</version>
-            </dependency>
-
-            <!--hutool-->
-            <dependency>
-                <groupId>cn.hutool</groupId>
-                <artifactId>hutool-all</artifactId>
-                <version>${hutool-all.version}</version>
-            </dependency>
-
-            <!-- Spring Cloud 新版本默认将 Bootstrap 禁用，需要将 spring-cloud-starter-bootstrap 依赖引入到工程中-->
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-starter-bootstrap</artifactId>
-                <version>${spring-cloud-starter-bootstrap.version}</version>
-            </dependency>
-
-            <!-- nacos配置中心 -->
-            <dependency>
-                <groupId>com.alibaba.cloud</groupId>
-                <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
-                <version>${spring-cloud-starter-alibaba-nacos-config.version}</version>
-            </dependency>
-
-            <!-- spring-boot-autoconfigure -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-autoconfigure</artifactId>
-                <version>${spring-boot-autoconfigure.version}</version>
-            </dependency>
-
-            <!--minio-->
-            <dependency>
-                <groupId>io.minio</groupId>
-                <artifactId>minio</artifactId>
-                <version>${minio.version}</version>
-            </dependency>
-
-            <!--netty-->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-all</artifactId>
-                <version>${netty.version}</version>
-            </dependency>
-
-            <!--aop动态代理-->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-aop</artifactId>
-            </dependency>
-
-            <!--rabbitmq-->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-amqp</artifactId>
-               <version>${spring-boot-starter-amqp.version}</version>
-            </dependency>
-
-            <!-- lombok-->
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-            </dependency>
-
-            <!-- log4j-->
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>${log4j.vsrsion}</version>
-            </dependency>
-
-
-
-            <!--druid连接池依赖 -->
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid-spring-boot-starter</artifactId>
                 <version>${druid-spring-boot-starter.version}</version>
             </dependency>
 
-            <!--oauth2依赖 -->
+            <!-- 缓存 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-redis</artifactId>
+                <version>${spring-boot-starter-data-redis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson-spring-boot-starter.version}</version>
+            </dependency>
+
+            <!-- JSON / 工具类 -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool-all.version}</version>
+            </dependency>
+
+            <!-- 其他依赖 -->
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-bootstrap</artifactId>
+                <version>${spring-cloud-starter-bootstrap.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+                <version>${spring-cloud-starter-alibaba-nacos-config.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-autoconfigure</artifactId>
+                <version>${spring-boot-autoconfigure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-amqp</artifactId>
+                <version>${spring-boot-starter-amqp.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-oauth2</artifactId>
@@ -230,16 +210,30 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-oauth2-client</artifactId>
+                <version>${spring-boot.version}</version>
             </dependency>
-
-            <!--数据库枚举映射-->
             <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-annotation</artifactId>
-                <version>${mybatis-plus-annotation.version}</version>
-                <scope>compile</scope>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-mail</artifactId>
+                <version>${spring-boot-starter-mail.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>javax.mail</artifactId>
+                <version>${com-sun-mail.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.developer</groupId>
+                <artifactId>developer-framework</artifactId>
+                <version>${developer-framework.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

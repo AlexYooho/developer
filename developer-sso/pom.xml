@@ -22,41 +22,29 @@
     </properties>
 
     <dependencies>
-
-        <!-- spring boot web依赖 -->
+        <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- spring-cloud -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-dependencies</artifactId>
-            <version>2021.0.1</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-
-        <!-- nacos注册中心 依赖 -->
+        <!-- Nacos 注册中心 & 配置中心 -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>
-
-        <!-- SpringBoot2.4.x之后默认不加载bootstrap.yml文件，需要在pom里加上依赖 -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-bootstrap</artifactId>
-        </dependency>
-
-        <!-- nacos配置中心 依赖 -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
 
-        <!-- OAuth2 认证服务器 -->
+        <!-- Spring Cloud bootstrap (2020+版本必需) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+
+        <!-- OAuth2 认证服务器 / Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -64,49 +52,48 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-oauth2</artifactId>
-            <version>2.2.5.RELEASE</version>
         </dependency>
 
-        <!-- lombok -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
 
-        <!-- mysql 依赖 -->
+        <!-- MySQL -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
-        <!-- mybatis-plus 依赖 -->
+        <!-- MyBatis Plus -->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
         </dependency>
 
+        <!-- 公共框架模块 -->
         <dependency>
             <groupId>com.developer</groupId>
             <artifactId>developer-framework</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
+        <!-- FastJSON -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
         </dependency>
 
-        <!-- openfeign 远程调用依赖 -->
+        <!-- OpenFeign & LoadBalancer -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
-
     </dependencies>
 
 </project>
