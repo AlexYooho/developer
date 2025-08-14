@@ -24,6 +24,13 @@
 
     <dependencies>
 
+        <!-- Lombok（仅编译期使用） -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- 工具库 -->
         <dependency>
             <groupId>cn.hutool</groupId>

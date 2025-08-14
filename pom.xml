@@ -68,6 +68,7 @@
         <com-sun-mail.version>1.6.2</com-sun-mail.version>
         <developer-framework.version>0.0.1-SNAPSHOT</developer-framework.version>
         <jjwt.version>0.9.1</jjwt.version>
+        <dubbo.version>3.2.3</dubbo.version>
     </properties>
 
     <dependencyManagement>
@@ -97,6 +98,18 @@
                 <version>${spring-cloud-alibaba.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- Dubbo BOM 管理 -->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo</artifactId>
+                <version>${dubbo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-starter</artifactId>
+                <version>${dubbo.version}</version>
             </dependency>
 
             <!-- 数据库 -->
@@ -153,6 +166,11 @@
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
                 <version>${hutool-all.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-aop</artifactId>
+                <version>${spring-boot.version}</version>
             </dependency>
 
             <!-- 其他依赖 -->
@@ -222,13 +240,11 @@
                 <artifactId>javax.mail</artifactId>
                 <version>${com-sun-mail.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.developer</groupId>
                 <artifactId>developer-framework</artifactId>
                 <version>${developer-framework.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt</artifactId>
