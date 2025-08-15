@@ -1,6 +1,6 @@
 package com.developer.im.netty.protocol.codec;
 
-import com.developer.im.model.IMSendMessageInfoModel;
+import com.developer.im.model.IMMessageBodyModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -13,7 +13,7 @@ public class WSDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
     @Override
     protected void decode(ChannelHandlerContext channelHandlerContext, TextWebSocketFrame textWebSocketFrame, List<Object> list) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        IMSendMessageInfoModel sendMessageInfo = mapper.readValue(textWebSocketFrame.text(), IMSendMessageInfoModel.class);
+        IMMessageBodyModel sendMessageInfo = mapper.readValue(textWebSocketFrame.text(), IMMessageBodyModel.class);
         list.add(sendMessageInfo);
     }
 

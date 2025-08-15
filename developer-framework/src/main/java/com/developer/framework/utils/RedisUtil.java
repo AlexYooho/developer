@@ -213,7 +213,7 @@ public class RedisUtil {
      * @param values 要添加的元素
      * @return 添加的元素数量
      */
-    public long sAdd(String key, Object... values) {
+    public Long sAdd(String key, Object... values) {
         return redisTemplate.opsForSet().add(key, values);
     }
 
@@ -223,7 +223,7 @@ public class RedisUtil {
      * @param values 要移除的元素
      * @return 移除的元素数量
      */
-    public long sRemove(String key, Object... values) {
+    public Long sRemove(String key, Object... values) {
         return redisTemplate.opsForSet().remove(key, values);
     }
 
@@ -242,7 +242,7 @@ public class RedisUtil {
      * @param value 元素
      * @return true if exists
      */
-    public boolean sIsMember(String key, Object value) {
+    public Boolean sIsMember(String key, Object value) {
         return redisTemplate.opsForSet().isMember(key, value);
     }
 
@@ -251,7 +251,7 @@ public class RedisUtil {
      * @param key Set的键
      * @return 元素数量
      */
-    public long sSize(String key) {
+    public Long sSize(String key) {
         return redisTemplate.opsForSet().size(key);
     }
 
@@ -308,5 +308,77 @@ public class RedisUtil {
      */
     public Set<Object> sDiff(String key, String... otherKeys) {
         return redisTemplate.opsForSet().difference(key, Arrays.asList(otherKeys));
+    }
+
+    /*----------------------------------------------------------List----------------------------------------------------------*/
+    /**
+     * 从左边插入一个或多个元素
+     */
+    public long llPush(String key, Object... values) {
+        Long result = redisTemplate.opsForList().leftPushAll(key, values);
+        return result != null ? result : 0L;
+    }
+
+    /**
+     * 从右边插入一个或多个元素
+     */
+    public long lrPush(String key, Object... values) {
+        Long result = redisTemplate.opsForList().rightPushAll(key, values);
+        return result != null ? result : 0L;
+    }
+
+    /**
+     * 从左边弹出一个元素
+     */
+    public Object llPop(String key) {
+        return redisTemplate.opsForList().leftPop(key);
+    }
+
+    /**
+     * 从左边弹出一个元素（带超时阻塞）
+     */
+    public Object llPop(String key, long timeout, TimeUnit unit) {
+        return redisTemplate.opsForList().leftPop(key, timeout, unit);
+    }
+
+    /**
+     * 从右边弹出一个元素
+     */
+    public Object lrPop(String key) {
+        return redisTemplate.opsForList().rightPop(key);
+    }
+
+    /**
+     * 获取列表中指定区间的元素
+     */
+    public List<Object> lRange(String key, long start, long end) {
+        List<Object> list = redisTemplate.opsForList().range(key, start, end);
+        return list != null ? list : new ArrayList<>(); // 返回空集合而不是 null
+    }
+
+    /**
+     * 获取列表长度
+     */
+    public long lLen(String key) {
+        Long size = redisTemplate.opsForList().size(key);
+        return size != null ? size : 0L;
+    }
+
+    /**
+     * 设置指定索引的值
+     */
+    public void lSet(String key, long index, Object value) {
+        redisTemplate.opsForList().set(key, index, value);
+    }
+
+    /**
+     * 移除列表中与 value 相等的元素
+     * count > 0 从表头开始移除 count 个
+     * count < 0 从表尾开始移除 count 个
+     * count = 0 移除所有匹配的元素
+     */
+    public long lRemove(String key, long count, Object value) {
+        Long removed = redisTemplate.opsForList().remove(key, count, value);
+        return removed != null ? removed : 0L;
     }
 }

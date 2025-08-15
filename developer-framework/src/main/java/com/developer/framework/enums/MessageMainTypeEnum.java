@@ -12,7 +12,9 @@ public enum MessageMainTypeEnum {
 
     SYSTEM_MESSAGE(2,"系统消息"),
 
-    SUBSCRIBE_MESSAGE(3,"订阅消息");
+    SUBSCRIBE_MESSAGE(3,"订阅消息"),
+
+    CHAT_MESSAGE(4,"聊天消息"),;
 
     @EnumValue
     private final Integer code;

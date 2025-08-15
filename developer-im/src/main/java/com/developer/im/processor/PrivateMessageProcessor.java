@@ -2,7 +2,6 @@ package com.developer.im.processor;
 
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.im.enums.IMCmdType;
 import com.developer.im.enums.SendCodeType;
 import com.developer.im.model.*;
 import com.developer.im.netty.service.UserChannelCtxMap;
@@ -27,7 +26,7 @@ public class PrivateMessageProcessor extends AbstractMessageProcessor<IMChatPriv
         try{
             ChannelHandlerContext channelCtx = UserChannelCtxMap.getChannelCtx(receiver.getSenderId(), receiver.getTerminal().code());
             if(channelCtx!=null){
-                IMSendMessageInfoModel<IMChatPrivateMessageModel> sendMessageInfo = new IMSendMessageInfoModel<>();
+                IMMessageBodyModel sendMessageInfo = new IMMessageBodyModel();
                 sendMessageInfo.setCmd(messageBody.getCmd());
                 sendMessageInfo.setData(messageBody);
                 channelCtx.channel().writeAndFlush(sendMessageInfo);

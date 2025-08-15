@@ -1,11 +1,13 @@
 package com.developer.im.processor;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.im.dto.GroupMessageDTO;
-import com.developer.im.dto.PrivateMessageDTO;
+import com.developer.framework.utils.IPUtils;
+import com.developer.framework.utils.RedisUtil;
+import com.developer.im.dto.PushMessageBodyDTO;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,45 @@ public class IMProcessor {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private RedisUtil redisUtil;
+
+    /**
+     * 发送聊天消息
+     * 当前需要推送的客户端肯定是和当前server建立连接的
+     * 其他的都在切面处理了
+     * @return
+     * @param <T>
+     */
+    public <T> DeveloperResult<Boolean> pushMessage(PushMessageBodyDTO dto){
+        DeveloperResult<Boolean> result = null;
+        // 先看接收用户有哪些终端在线
+        for (Long receiverId : dto.getMessageReceiverIds()) {
+            for (Integer terminal : MessageTerminalTypeEnum.codes()) {
+                // 判断用户终端是否在线
+                String terminalOnlineKey = String.join(":",RedisKeyConstant.IM_USER_SERVER_ID,receiverId.toString(),terminal.toString());
+                Object serverId = redisUtil.get(terminalOnlineKey,Object.class);
+                if(ObjectUtil.isEmpty(serverId)){
+                    continue;
+                }
+
+                // 当前终端是否在此server上
+                String key = RedisKeyConstant.USER_MAP_SERVER_INFO_KEY(receiverId);
+                Object serverIP = redisUtil.hGet(key, terminal.toString());
+                String ip = Optional.ofNullable(serverIP).orElse("").toString();
+                if(!ip.equals(IPUtils.getLocalIPv4())){
+                    continue;
+                }
+
+                // 存在则继续
+                AbstractMessageProcessor processor = ProcessorFactory.getHandler(IMCmdType.CHAT_MESSAGE);
+                result = processor.handler(dto);
+            }
+        }
+
+        return result;
+    }
 
     /**
      * 发送私聊消息
@@ -73,7 +114,6 @@ public class IMProcessor {
         List<Object> serverIds = redisTemplate.opsForValue().multiGet(sendMap.keySet());
         // 格式:map<服务器id,list<接收方>>
         Map<Integer, List<IMUserInfoModel>> serverMap = new HashMap<>();
-        List<IMUserInfoModel> offLineUsers = new LinkedList<>();
         int idx = 0;
         for (Map.Entry<String, IMUserInfoModel> entry : sendMap.entrySet()) {
             assert serverIds != null;
@@ -81,9 +121,6 @@ public class IMProcessor {
             if (serverId != null) {
                 List<IMUserInfoModel> list = serverMap.computeIfAbsent(serverId, o -> new LinkedList<>());
                 list.add(entry.getValue());
-            } else {
-                // 加入离线列表
-                offLineUsers.add(entry.getValue());
             }
         }
         // 逐个server发送

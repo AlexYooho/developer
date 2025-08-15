@@ -2,11 +2,9 @@ package com.developer.im.netty;
 
 import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.im.dto.GroupMessageDTO;
-import com.developer.im.dto.PrivateMessageDTO;
+import com.developer.im.dto.PushMessageBodyDTO;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMChatMessageBaseModel;
-import com.developer.im.model.IMGroupMessageModel;
 import com.developer.im.processor.IMProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -67,5 +65,8 @@ public class IMClient {
         return processors.sendGroupMessage(message);
     }
 
+    public<T> DeveloperResult<Boolean> pushMessage(PushMessageBodyDTO message){
+        return processors.pushMessage(message);
+    }
 }
 

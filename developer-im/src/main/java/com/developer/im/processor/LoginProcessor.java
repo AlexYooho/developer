@@ -5,20 +5,20 @@ import com.alibaba.fastjson.JSON;
 import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.model.SelfUserInfoModel;
+import com.developer.framework.utils.IPUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.im.config.ResourceServerConfiger;
 import com.developer.im.constant.ChannelAttrKey;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMLoginInfoModel;
-import com.developer.im.model.IMSendMessageInfoModel;
+import com.developer.im.model.IMMessageBodyModel;
 import com.developer.im.netty.service.IMStartServer;
 import com.developer.im.netty.service.UserChannelCtxMap;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +35,7 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
     @Override
     public void handler(ChannelHandlerContext ctx, IMLoginInfoModel loginInfo) {
         OAuth2AccessToken oAuth2AccessToken = null;
-        IMSendMessageInfoModel<Object> sendMessageInfo = new IMSendMessageInfoModel<Object>();
+        IMMessageBodyModel sendMessageInfo = new IMMessageBodyModel();
         sendMessageInfo.setCmd(IMCmdType.FORCE_LOGOUT);
         try {
             oAuth2AccessToken = ResourceServerConfiger.resourceServerSecurityConfigurer.getTokenStore().readAccessToken(loginInfo.getAccessToken());
@@ -87,14 +87,12 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
         String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
         redisUtil.set(key, IMStartServer.serverId, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
 
-
-        redisUtil.hSet(RedisKeyConstant.WS_CLIENT_TO_SERVER_MAP_KEY,"","");
-        redisUtil.sAdd(RedisKeyConstant.WS_SERVER_TO_CLIENTS_KEY(""),"");
-        redisUtil.hSet(RedisKeyConstant.WS_CLIENT_CHANNEL_KEY(""),"","");
-
+        // 记录维护客户端和服务端的映射关系
+        String keys = RedisKeyConstant.USER_MAP_SERVER_INFO_KEY(userId);
+        redisUtil.hSet(keys,terminal.toString(), IPUtils.getLocalIPv4());
 
         // 响应ws
-        IMSendMessageInfoModel<Object> sendInfo = new IMSendMessageInfoModel<Object>();
+        IMMessageBodyModel sendInfo = new IMMessageBodyModel();
         sendInfo.setCmd(IMCmdType.LOGIN);
         ctx.channel().writeAndFlush(sendInfo);
     }

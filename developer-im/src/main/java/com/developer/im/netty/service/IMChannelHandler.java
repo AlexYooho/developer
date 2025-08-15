@@ -2,7 +2,7 @@ package com.developer.im.netty.service;
 
 import com.developer.im.constant.ChannelAttrKey;
 import com.developer.im.enums.IMCmdType;
-import com.developer.im.model.IMSendMessageInfoModel;
+import com.developer.im.model.IMMessageBodyModel;
 import com.developer.im.processor.AbstractMessageProcessor;
 import com.developer.im.processor.ProcessorFactory;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,18 +15,18 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Optional;
 
 @Slf4j
-public class IMChannelHandler extends SimpleChannelInboundHandler<IMSendMessageInfoModel> {
+public class IMChannelHandler extends SimpleChannelInboundHandler<IMMessageBodyModel> {
 
     /**
      * 接收消息
      * @param channelHandlerContext
-     * @param imSendMessageInfoModel
+     * @param imMessageBodyModel
      * @throws Exception
      */
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, IMSendMessageInfoModel imSendMessageInfoModel) throws Exception {
-        AbstractMessageProcessor processor = ProcessorFactory.getHandler(imSendMessageInfoModel.getCmd());
-        processor.handler(channelHandlerContext,processor.trans(imSendMessageInfoModel.getData()));
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, IMMessageBodyModel imMessageBodyModel) throws Exception {
+        AbstractMessageProcessor processor = ProcessorFactory.getHandler(imMessageBodyModel.getCmd());
+        processor.handler(channelHandlerContext,processor.trans(imMessageBodyModel.getData()));
     }
 
     /**

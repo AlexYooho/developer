@@ -7,7 +7,7 @@ import com.developer.im.constant.ChannelAttrKey;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMHeartbeatInfoModel;
-import com.developer.im.model.IMSendMessageInfoModel;
+import com.developer.im.model.IMMessageBodyModel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class HeartbeatProcessor extends AbstractMessageProcessor<IMHeartbeatInfo
     @Override
     public void handler(ChannelHandlerContext ctx, IMHeartbeatInfoModel data) {
         // 响应ws
-        IMSendMessageInfoModel<Object> sendMessageInfo = new IMSendMessageInfoModel<Object>();
+        IMMessageBodyModel sendMessageInfo = new IMMessageBodyModel();
         sendMessageInfo.setCmd(IMCmdType.HEART_BEAT);
         ctx.channel().writeAndFlush(sendMessageInfo);
 

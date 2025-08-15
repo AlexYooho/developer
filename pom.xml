@@ -68,7 +68,8 @@
         <com-sun-mail.version>1.6.2</com-sun-mail.version>
         <developer-framework.version>0.0.1-SNAPSHOT</developer-framework.version>
         <jjwt.version>0.9.1</jjwt.version>
-        <dubbo.version>3.2.3</dubbo.version>
+        <dubbo.version>3.3.0</dubbo.version>
+        <spring-security.version>5.6.6</spring-security.version>
     </properties>
 
     <dependencyManagement>
@@ -100,17 +101,35 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Dubbo BOM 管理 -->
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo</artifactId>
-                <version>${dubbo.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-starter</artifactId>
-                <version>${dubbo.version}</version>
-            </dependency>
+                    <!-- Dubbo BOM 管理 -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-bom</artifactId>
+            <version>${dubbo.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        
+        <!-- Dubbo Spring Boot Starter -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
+            <version>${dubbo.version}</version>
+        </dependency>
+        
+        <!-- Dubbo Registry Nacos -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-registry-nacos</artifactId>
+            <version>${dubbo.version}</version>
+        </dependency>
+        
+        <!-- Dubbo Config Center Nacos -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-configcenter-nacos</artifactId>
+            <version>${dubbo.version}</version>
+        </dependency>
 
             <!-- 数据库 -->
             <dependency>
@@ -173,12 +192,24 @@
                 <version>${spring-boot.version}</version>
             </dependency>
 
-            <!-- 其他依赖 -->
+            <!-- spring boot 系列依赖 -->
             <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>${jaxb-api.version}</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-autoconfigure</artifactId>
+                <version>${spring-boot-autoconfigure.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-amqp</artifactId>
+                <version>${spring-boot-starter-amqp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-mail</artifactId>
+                <version>${spring-boot-starter-mail.version}</version>
+            </dependency>
+
+            <!-- spring cloud 系列依赖 -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-bootstrap</artifactId>
@@ -189,20 +220,46 @@
                 <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
                 <version>${spring-cloud-starter-alibaba-nacos-config.version}</version>
             </dependency>
+
+            <!-- spring security -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-oauth2</artifactId>
+                <version>${spring-cloud-starter-oauth2.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-autoconfigure</artifactId>
-                <version>${spring-boot-autoconfigure.version}</version>
+                <artifactId>spring-boot-starter-oauth2-client</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-oauth2-resource-server</artifactId>
+                <version>${spring-security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
+            <!-- Netty -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
+
+            <!-- 其他依赖 -->
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.minio</groupId>
                 <artifactId>minio</artifactId>
                 <version>${minio.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-all</artifactId>
-                <version>${netty.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -216,39 +273,16 @@
                 <version>${log4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-amqp</artifactId>
-                <version>${spring-boot-starter-amqp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-starter-oauth2</artifactId>
-                <version>${spring-cloud-starter-oauth2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-oauth2-client</artifactId>
-                <version>${spring-boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-mail</artifactId>
-                <version>${spring-boot-starter-mail.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.sun.mail</groupId>
                 <artifactId>javax.mail</artifactId>
                 <version>${com-sun-mail.version}</version>
             </dependency>
+
+            <!-- 自家公用模块依赖 -->
             <dependency>
                 <groupId>com.developer</groupId>
                 <artifactId>developer-framework</artifactId>
                 <version>${developer-framework.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt</artifactId>
-                <version>${jjwt.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

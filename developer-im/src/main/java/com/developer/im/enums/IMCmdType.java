@@ -20,7 +20,9 @@ public enum IMCmdType {
 
     SUBSCRIBE_MESSAGE(6,"订阅消息"),
 
-    LOGOUT(7,"离线");
+    LOGOUT(7,"离线"),
+
+    CHAT_MESSAGE(8,"聊天消息");
 
     @EnumValue
     private Integer code;
