@@ -22,6 +22,7 @@
         <module>developer-oss</module>
         <module>developer-sso</module>
         <module>developer-payment</module>
+        <module>developer-rpc-api</module>
     </modules>
 
     <properties>
@@ -67,6 +68,7 @@
         <spring-boot-starter-mail.version>3.3.1</spring-boot-starter-mail.version>
         <com-sun-mail.version>1.6.2</com-sun-mail.version>
         <developer-framework.version>0.0.1-SNAPSHOT</developer-framework.version>
+        <developer-rpc-api.version>1.0-SNAPSHOT</developer-rpc-api.version>
         <jjwt.version>0.9.1</jjwt.version>
         <dubbo.version>3.3.0</dubbo.version>
         <spring-security.version>5.6.6</spring-security.version>
@@ -283,6 +285,11 @@
                 <groupId>com.developer</groupId>
                 <artifactId>developer-framework</artifactId>
                 <version>${developer-framework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.developer.rpc</groupId>
+                <artifactId>developer-rpc-api</artifactId>
+                <version>${developer-rpc-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

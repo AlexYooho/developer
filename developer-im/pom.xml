@@ -93,6 +93,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
+
+        <!-- rpc-api -->
+        <dependency>
+            <groupId>com.developer.rpc</groupId>
+            <artifactId>developer-rpc-api</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

@@ -6,9 +6,9 @@ import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.utils.IPUtils;
 import com.developer.framework.utils.RedisUtil;
-import com.developer.im.common.PushMessageToRemoteNodeService;
 import com.developer.im.dto.PushMessageBodyDTO;
 import com.developer.im.dto.PushMessageBodyDataDTO;
+import com.developer.rpc.service.im.IMRpcService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -26,9 +26,9 @@ public class ClientMapServerInfoAspect {
     private RedisUtil redisUtil;
 
     @DubboReference
-    private PushMessageToRemoteNodeService pushService;
+    private IMRpcService imRpcService;
 
-    //@Around("")
+    @Around("execution(* com.developer.im.listener.processor.IMMessageProcessor.processor(..))")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
 
         Object[] args = joinPoint.getArgs();
@@ -81,7 +81,7 @@ public class ClientMapServerInfoAspect {
             for (Map.Entry<String,List<Long>> entry : transpondMap.entrySet()){
                 String ip = entry.getKey();
                 // 远程调用目标server,可以通过dubbo、feign都可以
-                pushService.pushMessageToRemoteNode();
+                imRpcService.pushTargetWSNode();
             }
         }
 
