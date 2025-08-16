@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.constant.RedisKeyConstant;
+import com.developer.framework.dto.ChatMessageDTO;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.utils.IPUtils;
@@ -35,8 +36,8 @@ public class MessageRouteAspect {
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
 
         Object[] args = joinPoint.getArgs();
-        PushMessageBodyDTO dto =(PushMessageBodyDTO)args[0];
-        PushMessageBodyDataDTO pushMessageBodyDataDTO = dto.parseData(PushMessageBodyDataDTO.class);
+        RabbitMQMessageBodyDTO dto =(RabbitMQMessageBodyDTO)args[0];
+        ChatMessageDTO chatMessageDTO = dto.parseData(ChatMessageDTO.class);
 
         String localIPv4 = IPUtils.getLocalIPv4();
         String localPort = Optional.ofNullable(environment.getProperty("local.server.port")).orElse("8080");
@@ -48,7 +49,7 @@ public class MessageRouteAspect {
 
 
         List<Integer> terminals = MessageTerminalTypeEnum.codes();
-        List<Long> receiverIds = pushMessageBodyDataDTO.getReceiverIds();
+        List<Long> receiverIds = chatMessageDTO.getReceiverIds();
         for (Long receiverId : receiverIds) {
             int existTerminalCnt = 0;
             for (Integer terminal : terminals) {
@@ -87,9 +88,9 @@ public class MessageRouteAspect {
             }
         }
 
-        pushMessageBodyDataDTO.getReceiverIds().removeAll(removeList);
+        chatMessageDTO.getReceiverIds().removeAll(removeList);
 
-        if(CollUtil.isEmpty(pushMessageBodyDataDTO.getReceiverIds())){
+        if(CollUtil.isEmpty(chatMessageDTO.getReceiverIds())){
             return null;
         }
 
@@ -100,7 +101,9 @@ public class MessageRouteAspect {
                 String targetUrl = entry.getKey();
                 // 远程调用目标server,可以通过Dubbo、feign都可以
                 IMRpcService instance = RpcUtil.getInstance(IMRpcService.class, targetUrl);
-                instance.pushTargetWSNode(new RabbitMQMessageBodyDTO());
+                chatMessageDTO.setReceiverIds(entry.getValue());
+                dto.setData(chatMessageDTO);
+                instance.pushTargetWSNode(dto);
             }
         }
 
