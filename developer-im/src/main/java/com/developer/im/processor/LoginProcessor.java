@@ -19,6 +19,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,9 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private Environment environment;
 
     @Override
     public void handler(ChannelHandlerContext ctx, IMLoginInfoModel loginInfo) {
@@ -89,7 +93,9 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
 
         // 记录维护客户端和服务端的映射关系
         String keys = RedisKeyConstant.USER_MAP_SERVER_INFO_KEY(userId);
-        redisUtil.hSet(keys,terminal.toString(), IPUtils.getLocalIPv4());
+        String port = Optional.ofNullable(environment.getProperty("local.server.port")).orElse("");
+        String url = IPUtils.getLocalIPv4().concat(":").concat(port);
+        redisUtil.hSet(keys,terminal.toString(), url);
 
         // 响应ws
         IMMessageBodyModel sendInfo = new IMMessageBodyModel();
