@@ -32,7 +32,7 @@ public class MessageRouteAspect {
     @Autowired
     private Environment environment;
 
-    @Around("execution(* com.developer.im.listener.processor.IMMessageProcessor.processor(..))")
+    @Around("@annotation(com.developer.im.annotations.MessageRouterAspect)")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
 
         Object[] args = joinPoint.getArgs();

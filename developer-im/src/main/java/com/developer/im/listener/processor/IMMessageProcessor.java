@@ -7,6 +7,7 @@ import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
+import com.developer.im.annotations.MessageRouterAspect;
 import com.developer.im.service.AbstractMessageTypeService;
 import com.developer.im.service.MessageTypeServiceDispatchFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class IMMessageProcessor implements IMessageProcessor {
     }
 
     @Override
+    @MessageRouterAspect
     public DeveloperResult<Boolean> processor(RabbitMQMessageBodyDTO dto) {
         ChatMessageDTO chatMessageDTO = dto.parseData(ChatMessageDTO.class);
         chatMessageDTO.setSerialNo(dto.getSerialNo());
