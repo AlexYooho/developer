@@ -2,7 +2,6 @@ package com.developer.framework.constant;
 
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.enums.VerifyCodeTypeEnum;
-import com.sun.org.apache.bcel.internal.generic.RET;
 
 public class RedisKeyConstant {
 
