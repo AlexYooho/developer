@@ -31,7 +31,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- 依赖版本 -->
+        <!-- 核心依赖 -->
         <spring-boot.version>2.6.3</spring-boot.version>
         <spring-cloud.version>2021.0.1</spring-cloud.version>
         <spring-cloud-alibaba.version>2021.0.1.0</spring-cloud-alibaba.version>
@@ -51,28 +51,45 @@
         <fastjson.version>1.2.70</fastjson.version>
         <commons-lang3.version>3.8.1</commons-lang3.version>
         <hutool-all.version>5.8.3</hutool-all.version>
-
-        <!-- 其他依赖 -->
-        <jaxb-api.version>2.3.1</jaxb-api.version>
-        <spring-cloud-starter-bootstrap.version>3.1.0</spring-cloud-starter-bootstrap.version>
-        <spring-cloud-starter-alibaba-nacos-config.version>2021.0.1.0
-        </spring-cloud-starter-alibaba-nacos-config.version>
-        <spring-boot-autoconfigure.version>2.6.7</spring-boot-autoconfigure.version>
-        <minio.version>8.4.5</minio.version>
-        <netty.version>4.1.42.Final</netty.version>
         <lombok.version>1.18.8</lombok.version>
         <log4j.version>1.2.17</log4j.version>
         <junit.version>4.12</junit.version>
+        <jaxb-api.version>2.3.1</jaxb-api.version>
+
+        <!-- spring security 安全依赖 -->
         <spring-cloud-starter-oauth2.version>2.2.5.RELEASE</spring-cloud-starter-oauth2.version>
-        <spring-boot-starter-amqp.version>3.3.2</spring-boot-starter-amqp.version>
-        <seata.version>2.0.0</seata.version>
+        <spring-security.version>5.6.6</spring-security.version>
+        <jjwt.version>0.9.1</jjwt.version>
+
+        <!-- 邮箱 依赖 -->
         <spring-boot-starter-mail.version>3.3.1</spring-boot-starter-mail.version>
         <com-sun-mail.version>1.6.2</com-sun-mail.version>
-        <developer-framework.version>0.0.1-SNAPSHOT</developer-framework.version>
+
+        <!-- rpc 依赖 -->
         <developer-rpc-api.version>1.0-SNAPSHOT</developer-rpc-api.version>
-        <jjwt.version>0.9.1</jjwt.version>
         <dubbo.version>3.3.0</dubbo.version>
-        <spring-security.version>5.6.6</spring-security.version>
+
+        <!-- Nacos -->
+        <spring-cloud-starter-alibaba-nacos.version>2021.0.1.0</spring-cloud-starter-alibaba-nacos.version>
+
+        <!-- 事务依赖 -->
+        <seata.version>2.0.0</seata.version>
+
+        <!-- 消息mq 依赖 -->
+        <spring-boot-starter-amqp.version>3.3.2</spring-boot-starter-amqp.version>
+
+        <!-- 文件系统服务 依赖 -->
+        <minio.version>8.4.5</minio.version>
+
+        <!-- 通讯 依赖 -->
+        <netty.version>4.1.42.Final</netty.version>
+
+        <!-- 自动装配 -->
+        <spring-boot-autoconfigure.version>2.6.3</spring-boot-autoconfigure.version>
+
+        <!-- 其他依赖 -->
+        <spring-cloud-starter-bootstrap.version>3.1.0</spring-cloud-starter-bootstrap.version>
+        <developer-framework.version>0.0.1-SNAPSHOT</developer-framework.version>
     </properties>
 
     <dependencyManagement>
@@ -112,25 +129,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <!-- Dubbo Spring Boot Starter -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-spring-boot-starter</artifactId>
                 <version>${dubbo.version}</version>
             </dependency>
-
-            <!-- Dubbo Registry Nacos -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-registry-nacos</artifactId>
-                <version>${dubbo.version}</version>
-            </dependency>
-
-            <!-- Dubbo Config Center Nacos -->
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-configcenter-nacos</artifactId>
                 <version>${dubbo.version}</version>
             </dependency>
 
@@ -218,10 +224,17 @@
                 <artifactId>spring-cloud-starter-bootstrap</artifactId>
                 <version>${spring-cloud-starter-bootstrap.version}</version>
             </dependency>
+
+            <!-- naocs 系列依赖 -->
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
-                <version>${spring-cloud-starter-alibaba-nacos-config.version}</version>
+                <version>${spring-cloud-starter-alibaba-nacos.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+                <version>${spring-cloud-starter-alibaba-nacos.version}</version>
             </dependency>
 
             <!-- spring security -->
