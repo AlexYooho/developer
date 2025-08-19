@@ -32,9 +32,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- 核心依赖 -->
-        <spring-boot.version>2.6.3</spring-boot.version>
-        <spring-cloud.version>2021.0.1</spring-cloud.version>
-        <spring-cloud-alibaba.version>2021.0.1.0</spring-cloud-alibaba.version>
+        <spring-boot.version>2.7.12</spring-boot.version>
+        <spring-cloud.version>2021.0.8</spring-cloud.version>
+        <spring-cloud-alibaba.version>2021.0.6.0</spring-cloud-alibaba.version>
+        <spring-cloud-starter-bootstrap.version>3.1.0</spring-cloud-starter-bootstrap.version>
 
         <!-- 数据库 -->
         <mysql-connector-java.version>8.0.29</mysql-connector-java.version>
@@ -61,34 +62,30 @@
         <spring-security.version>5.6.6</spring-security.version>
         <jjwt.version>0.9.1</jjwt.version>
 
-        <!-- 邮箱 依赖 -->
+        <!-- 邮箱 -->
         <spring-boot-starter-mail.version>3.3.1</spring-boot-starter-mail.version>
         <com-sun-mail.version>1.6.2</com-sun-mail.version>
 
-        <!-- rpc 依赖 -->
+        <!-- rpc -->
         <developer-rpc-api.version>1.0-SNAPSHOT</developer-rpc-api.version>
-        <dubbo.version>3.3.0</dubbo.version>
+        <dubbo.version>3.3.2</dubbo.version>
 
-        <!-- Nacos -->
-        <spring-cloud-starter-alibaba-nacos.version>2021.0.1.0</spring-cloud-starter-alibaba-nacos.version>
-
-        <!-- 事务依赖 -->
+        <!-- 事务 -->
         <seata.version>2.0.0</seata.version>
 
-        <!-- 消息mq 依赖 -->
+        <!-- 消息mq -->
         <spring-boot-starter-amqp.version>3.3.2</spring-boot-starter-amqp.version>
 
-        <!-- 文件系统服务 依赖 -->
+        <!-- 文件系统服务 -->
         <minio.version>8.4.5</minio.version>
 
-        <!-- 通讯 依赖 -->
+        <!-- 通讯 -->
         <netty.version>4.1.42.Final</netty.version>
 
         <!-- 自动装配 -->
         <spring-boot-autoconfigure.version>2.6.3</spring-boot-autoconfigure.version>
 
-        <!-- 其他依赖 -->
-        <spring-cloud-starter-bootstrap.version>3.1.0</spring-cloud-starter-bootstrap.version>
+        <!-- 其他 -->
         <developer-framework.version>0.0.1-SNAPSHOT</developer-framework.version>
     </properties>
 
@@ -229,12 +226,12 @@
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
-                <version>${spring-cloud-starter-alibaba-nacos.version}</version>
+                <version>${spring-cloud-alibaba.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
-                <version>${spring-cloud-starter-alibaba-nacos.version}</version>
+                <version>${spring-cloud-alibaba.version}</version>
             </dependency>
 
             <!-- spring security -->
