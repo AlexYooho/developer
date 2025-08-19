@@ -38,8 +38,8 @@ public class MessageRouteAspect {
         ChatMessageDTO chatMessageDTO = dto.parseData(ChatMessageDTO.class);
 
         String localIPv4 = IPUtils.getLocalIPv4();
-        String localPort = Optional.ofNullable(environment.getProperty("local.server.port")).orElse("8080");
-        String localUrl = localIPv4.concat(localPort);
+        String localPort = Optional.ofNullable(environment.getProperty("dubbo.protocol.port")).orElse("20880");
+        String localUrl = localIPv4.concat(":").concat(localPort);
 
         /** 格式 Map<URL,[user1,user2,user3]></>*/
         Map<String, List<Long>> transpondMap = new HashMap<>();

@@ -93,7 +93,7 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
 
         // 记录维护客户端和服务端的映射关系
         String keys = RedisKeyConstant.USER_MAP_SERVER_INFO_KEY(userId);
-        String port = Optional.ofNullable(environment.getProperty("local.server.port")).orElse("");
+        String port = Optional.ofNullable(environment.getProperty("dubbo.protocol.port")).orElse("20880");
         String url = IPUtils.getLocalIPv4().concat(":").concat(port);
         redisUtil.hSet(keys,terminal.toString(), url);
 
