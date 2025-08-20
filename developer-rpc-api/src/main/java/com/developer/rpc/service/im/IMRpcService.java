@@ -7,4 +7,6 @@ public interface IMRpcService {
 
     DeveloperResult<Boolean> pushTargetWSNode(RabbitMQMessageBodyDTO dto);
 
+    String sayHi(String name);
+
 }

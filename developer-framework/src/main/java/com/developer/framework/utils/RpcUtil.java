@@ -1,4 +1,4 @@
-package com.developer.im.rpc;
+package com.developer.framework.utils;
 
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;

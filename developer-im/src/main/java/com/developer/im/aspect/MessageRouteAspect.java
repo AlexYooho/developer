@@ -9,7 +9,7 @@ import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.utils.IPUtils;
 import com.developer.framework.utils.RedisUtil;
-import com.developer.im.rpc.RpcUtil;
+import com.developer.framework.utils.RpcUtil;
 import com.developer.rpc.service.im.IMRpcService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
