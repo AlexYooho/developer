@@ -31,21 +31,30 @@ public interface FriendService {
      * @param req
      * @return
      */
-    DeveloperResult<Boolean> sendAddFriendRequest(SendAddFriendInfoRequestDTO req);
+    DeveloperResult<Boolean> apply(SendAddFriendInfoRequestDTO req);
 
     /**
-     * 处理好友请求
-     * @param req
+     * 同意好友申请
+     * @param friendId
+     * @param dto
      * @return
      */
-    DeveloperResult<Boolean> processFriendRequest(ProcessAddFriendRequestDTO req);
+    DeveloperResult<Boolean> applyAccept(Long friendId,FriendApplyAcceptDTO dto);
+
+    /**
+     * 拒绝好友申请
+     * @param friendId
+     * @param dto
+     * @return
+     */
+    DeveloperResult<Boolean> applyReject(Long friendId,FriendApplyRejectDTO dto);
 
     /**
      * 通过好友id删除好友
      * @param friendId
      * @return
      */
-    DeveloperResult<Boolean> deleteFriendByFriendId(Long friendId);
+    DeveloperResult<Boolean> deleteFriend(Long friendId);
 
     /**
      * 获取好友添加数
@@ -70,5 +79,5 @@ public interface FriendService {
      * @param req
      * @return
      */
-    DeveloperResult<Boolean> modifyFriendList(BatchModifyFriendListRequestDTO req);
+    DeveloperResult<Boolean> batchModifyFriendInfo(BatchModifyFriendListRequestDTO req);
 }

@@ -102,4 +102,9 @@ public class RedisKeyConstant {
     public static String USER_MAP_SERVER_INFO_KEY(Long userId){
         return "developer:im:user:map:server:info:".concat(userId.toString());
     }
+
+    // 好友列表key
+    public static String FRIENDS_KEY(Long userId){
+        return "developer:friend:list:user:".concat(userId.toString());
+    }
 }

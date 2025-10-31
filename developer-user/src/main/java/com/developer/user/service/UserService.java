@@ -56,4 +56,6 @@ public interface UserService {
      * @return
      */
     DeveloperResult<Boolean> modifyUserPassword(ModifyUserPasswordDTO dto);
+
+    DeveloperResult<List<UserInfoDTO>> findUserInfoByUserId(List<Long> userIdList);
 }

@@ -3,6 +3,7 @@ package com.developer.friend.controller;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.friend.dto.*;
 import com.developer.friend.service.FriendService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -12,10 +13,10 @@ import java.util.List;
 @Slf4j
 @RequestMapping("friend")
 @RestController
+@RequiredArgsConstructor
 public class FriendController {
 
-    @Autowired
-    private FriendService friendService;
+    private final FriendService friendService;
 
     /**
      * 好友列表
@@ -27,31 +28,31 @@ public class FriendController {
     }
 
     /**
-     * 通过好友id查询好友信息
+     * 查询好友信息
      * @param friendId
      * @return
      */
-    @GetMapping("/find/{friend_id}")
+    @GetMapping("/{friend_id}")
     public DeveloperResult<FriendInfoDTO> findFriend(@PathVariable("friend_id") Long friendId){
         return friendService.findFriend(friendId);
     }
 
     /**
-     * 通过好友id删除好友
+     * 删除好友
      * @param friendId
      * @return
      */
-    @DeleteMapping("/delete/{friend_id}")
+    @DeleteMapping("/{friend_id}")
     public DeveloperResult<Boolean> deleteFriend(@PathVariable("friend_id") Long friendId){
-        return friendService.deleteFriendByFriendId(friendId);
+        return friendService.deleteFriend(friendId);
     }
 
     /**
      * 更新好友信息
      * @return
      */
-    @PutMapping("/update")
-    public DeveloperResult<Boolean> modifyFriend(){
+    @PutMapping("/{friend_id}")
+    public DeveloperResult<Boolean> modifyFriend(@PathVariable("friend_id") Long friendId){
         return DeveloperResult.success("");
     }
 
@@ -60,64 +61,76 @@ public class FriendController {
      * @param req
      * @return
      */
-    @PutMapping("/update/list")
-    public DeveloperResult<Boolean> modifyFriendList(@RequestBody BatchModifyFriendListRequestDTO req){
-        return friendService.modifyFriendList(req);
+    @PutMapping("/batch")
+    public DeveloperResult<Boolean> batchModifyFriendInfo(@RequestBody BatchModifyFriendListRequestDTO req){
+        return friendService.batchModifyFriendInfo(req);
     }
 
     /**
-     * 发送添加好友请求
+     * 发送好友请求
      * @param req
      * @return
      */
-    @PostMapping("/sendAddFriendRequest")
-    public DeveloperResult<Boolean> sendAddFriendRequest(@RequestBody SendAddFriendInfoRequestDTO req){
-        return friendService.sendAddFriendRequest(req);
+    @PostMapping("/apply")
+    public DeveloperResult<Boolean> apply(@RequestBody SendAddFriendInfoRequestDTO req){
+        return friendService.apply(req);
     }
 
     /**
-     * 处理好友请求
-     * @param req
+     * 同意好友请求
+     * @param friendId
+     * @param dto
      * @return
      */
-    @PostMapping("/processFriendRequest")
-    public DeveloperResult<Boolean> processFriendRequest(@RequestBody ProcessAddFriendRequestDTO req){
-        return friendService.processFriendRequest(req);
+    @PostMapping("/{friend_id}/apply/accept")
+    public DeveloperResult<Boolean> applyAccept(@PathVariable("friend_id") Long friendId,@RequestBody FriendApplyAcceptDTO dto){
+        return friendService.applyAccept(friendId,dto);
     }
 
     /**
-     * 好友添加请求数
+     * 拒绝好友请求
+     * @param friendId
+     * @param dto
      * @return
      */
-    @GetMapping("/friendAddRequestCount")
+    @PostMapping("/{friend_id}/apply/reject")
+    public DeveloperResult<Boolean> applyReject(@PathVariable("friend_id") Long friendId,@RequestBody FriendApplyRejectDTO dto){
+        return friendService.applyReject(friendId,dto);
+    }
+
+    /**
+     * 待处理好友请求数
+     * @return
+     */
+    @GetMapping("/apply/pending/count")
     public DeveloperResult<Integer> friendAddRequestCount(){
         return friendService.findFriendAddRequestCount();
     }
 
     /**
-     * 新朋友列表
+     * 好友请求列表
      * @return
      */
-    @GetMapping("/new/list")
+    @GetMapping("/apply/pending/list")
     public DeveloperResult<List<NewFriendListDTO>> newFriendList(){
         return friendService.findNewFriendList();
     }
 
     /**
-     * 修改好友申请状态
+     * 修改好友请求状态
      * @return
      */
-    @PutMapping("/update/friend/applicant/record/status")
-    public DeveloperResult<Boolean> updateAddFriendRecordStatus(){
+    @PutMapping("/apply-status")
+    public DeveloperResult<Boolean> applyStatusModify(){
         return friendService.updateAddFriendRecordStatus();
     }
 
     /**
-     * 是否是好友
+     * 是否为好友
      * @param req
      * @return
      */
-    @PostMapping("is-friend")
+    @PostMapping("check")
     public DeveloperResult<FriendInfoDTO> isFriend(@RequestBody IsFriendDto req){
         return friendService.isFriend(req);
     }

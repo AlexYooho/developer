@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 @Data
-@TableName("friend_application_record")
+@TableName("friend_apply_record")
 @NoArgsConstructor
-public class FriendApplicationRecordPO {
+public class FriendApplyRecordPO {
 
     /**
      * id
@@ -62,7 +62,7 @@ public class FriendApplicationRecordPO {
     @TableField("remark")
     private String remark;
 
-    public FriendApplicationRecordPO(Long mainUserId, Long targetUserId, Integer addMode, Integer status, Date createTime, Date updateTime, String remark) {
+    public FriendApplyRecordPO(Long mainUserId, Long targetUserId, Integer addMode, Integer status, Date createTime, Date updateTime, String remark) {
         this.mainUserId = mainUserId;
         this.targetUserId = targetUserId;
         this.addMode = addMode;

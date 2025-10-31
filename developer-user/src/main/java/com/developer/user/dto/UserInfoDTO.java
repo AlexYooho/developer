@@ -1,5 +1,6 @@
 package com.developer.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
@@ -22,5 +23,11 @@ public class UserInfoDTO {
     private String headImageThumb;
 
     private Boolean online;
+
+    @JsonProperty("account")
+    private String account;
+
+    @JsonProperty("area")
+    private String area;
 
 }

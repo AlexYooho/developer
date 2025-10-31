@@ -46,6 +46,9 @@ public class UserPO {
     @TableField(value = "email")
     private String email;
 
+    @TableField("area")
+    private String area;
+
     @TableField(value = "signature")
     private String signature;
 

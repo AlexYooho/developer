@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name="developer-gateway",contextId = "developer-friend",configuration = {FeignRequestInterceptor.class})
 public interface FriendClient {
 
-    @PostMapping("/friend-module/api/friend/is-friend")
+    @PostMapping("/friend-module/api/friend/check")
     DeveloperResult<FriendInfoDTO> isFriend(@RequestBody IsFriendDto req);
 
 

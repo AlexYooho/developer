@@ -2,10 +2,11 @@ package com.developer.framework.model;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
-public class DeveloperResult<T> {
+public class DeveloperResult<T> implements Serializable {
 
     private int code;
 
@@ -20,12 +21,12 @@ public class DeveloperResult<T> {
     private String serialNo;
 
     /**返回成功 -- 集合 */
-    public static <T> DeveloperResult<List<T>> success(String serialNo,List<T> data, long count){
+    public static <T> DeveloperResult<List<T>> success(String serialNo,List<T> data){
         DeveloperResult<List<T>> result = new DeveloperResult<>();
         result.setCode(200);//成功
         result.setMsg("success");//提示语
         result.setData(data);
-        result.setCount(count);
+        result.setCount(data.size());
         result.setIsSuccessful(true);
         result.setSerialNo(serialNo);
         return result;

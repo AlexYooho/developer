@@ -239,4 +239,16 @@ public class UserServiceImpl implements UserService {
         return DeveloperResult.success(serialNo);
     }
 
+    @Override
+    public DeveloperResult<List<UserInfoDTO>> findUserInfoByUserId(List<Long> userIdList) {
+        List<UserPO> userList = userRepository.findByUserId(userIdList);
+        List<UserInfoDTO> list = userList.stream().map(x -> {
+            UserInfoDTO userInfoDTO = new UserInfoDTO();
+            userInfoDTO.setId(x.getId());
+            userInfoDTO.setAccount(x.getAccount());
+            userInfoDTO.setArea(x.getArea());
+            return userInfoDTO;
+        }).collect(Collectors.toList());
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(),list);
+    }
 }

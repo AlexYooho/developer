@@ -4,12 +4,14 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.developer.friend.enums.AddFriendChannelEnum;
+import com.developer.friend.enums.FriendStatusEnum;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
-@TableName("friend")
+@TableName("friend_info")
 public class FriendPO {
     /**
      * id
@@ -29,6 +31,30 @@ public class FriendPO {
     @TableField("friend_id")
     private Long friendId;
 
+    /*
+    好友备注名
+     */
+    @TableField("alias")
+    private String alias;
+
+    /**
+     * 标签
+     */
+    @TableField("tag_name")
+    private String tagName;
+
+    /**
+     * 状态
+     */
+    @TableField("status")
+    private FriendStatusEnum status;
+
+    /**
+     * 添加来源
+     */
+    @TableField("add_source")
+    private AddFriendChannelEnum addSource;
+
     /**
      * 用户昵称
      */
@@ -44,6 +70,6 @@ public class FriendPO {
     /**
      * 创建时间
      */
-    @TableField("created_time")
+    @TableField("create_time")
     private Date createdTime;
 }

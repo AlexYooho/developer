@@ -25,4 +25,8 @@ public class UserRepository extends ServiceImpl<UserMapper, UserPO> {
                 .last("limit 20").list();
     }
 
+    public List<UserPO> findByUserId(List<Long> userIdList){
+        return this.lambdaQuery().in(UserPO::getId,userIdList).list();
+    }
+
 }
