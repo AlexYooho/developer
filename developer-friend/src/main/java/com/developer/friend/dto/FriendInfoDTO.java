@@ -11,12 +11,6 @@ public class FriendInfoDTO {
     @JsonProperty("id")
     private Long id;
 
-    @JsonProperty("nick_name")
-    private String nickName;
-
-    @JsonProperty("head_image")
-    private String headImage;
-
     @JsonProperty("alias")
     private String alias;
 
@@ -32,6 +26,21 @@ public class FriendInfoDTO {
     @JsonProperty("account")
     private String account;
 
+    @JsonProperty("nick_name")
+    private String nickName;
+
+    @JsonProperty("head_image")
+    private String headImage;
+
+    @JsonProperty("head_image_thumb")
+    private String headImageThumb;
+
     @JsonProperty("area")
     private String area;
+
+    @JsonProperty("user_name")
+    private String userName;
+
+    @JsonProperty("sex")
+    private Integer sex;
 }

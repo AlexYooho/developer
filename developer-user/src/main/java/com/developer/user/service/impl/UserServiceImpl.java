@@ -246,7 +246,14 @@ public class UserServiceImpl implements UserService {
             UserInfoDTO userInfoDTO = new UserInfoDTO();
             userInfoDTO.setId(x.getId());
             userInfoDTO.setAccount(x.getAccount());
+            userInfoDTO.setUsername(x.getUsername());
+            userInfoDTO.setNickname(x.getNickname());
+            userInfoDTO.setHeadImage(x.getHeadImage());
+            userInfoDTO.setHeadImageThumb(x.getHeadImageThumb());
+            userInfoDTO.setSex(x.getSex());
             userInfoDTO.setArea(x.getArea());
+            userInfoDTO.setSignature(x.getSignature());
+            userInfoDTO.setLastLoginTime(x.getLastLoginTime());
             return userInfoDTO;
         }).collect(Collectors.toList());
         return DeveloperResult.success(SerialNoHolder.getSerialNo(),list);

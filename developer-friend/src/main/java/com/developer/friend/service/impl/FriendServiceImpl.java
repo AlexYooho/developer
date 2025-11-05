@@ -25,8 +25,10 @@ import com.developer.friend.repository.FriendApplyRecordPORepository;
 import com.developer.friend.repository.FriendRepository;
 import com.developer.friend.service.FriendService;
 import com.developer.friend.util.RabbitMQUtil;
-import com.developer.rpc.DTO.user.UserInfoRpcDTO;
+import com.developer.rpc.DTO.user.request.UserInfoRequestRpcDTO;
+import com.developer.rpc.DTO.user.response.UserInfoResponseRpcDTO;
 import lombok.RequiredArgsConstructor;
+import org.apache.dubbo.rpc.RpcContext;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -67,30 +69,35 @@ public class FriendServiceImpl implements FriendService {
         List<Long> friendIdList = friendList.stream().map(FriendPO::getFriendId).collect(Collectors.toList());
 
         // 远程调用user rpc服务
-        DeveloperResult<List<UserInfoRpcDTO>> userInfoResult = rpcServiceClient.userRpcService.findUserInfo(friendIdList);
+        UserInfoRequestRpcDTO rpcDTO = new UserInfoRequestRpcDTO();
+        rpcDTO.setUserIds(friendIdList);
+        DeveloperResult<List<UserInfoResponseRpcDTO>> userInfoResult = rpcServiceClient.userRpcService.findUserInfo(rpcDTO);
         if(!userInfoResult.getIsSuccessful()){
             return DeveloperResult.error(serialNo,userInfoResult.getMsg());
         }
 
         // 转为map key-value
-        Map<Long, UserInfoRpcDTO> userInfoMap = userInfoResult.getData().stream().collect(Collectors.toMap(UserInfoRpcDTO::getUserId, x -> x));
+        Map<Long, UserInfoResponseRpcDTO> userInfoMap = userInfoResult.getData().stream().collect(Collectors.toMap(UserInfoResponseRpcDTO::getUserId, x -> x));
 
         // 聚合
         List<FriendInfoDTO> list = friendList.stream().map(x -> {
             FriendInfoDTO rep = new FriendInfoDTO();
             rep.setId(x.getFriendId());
-            rep.setNickName(x.getFriendNickName());
-            rep.setHeadImage(x.getFriendHeadImage());
             rep.setAlias(x.getAlias());
             rep.setTagName(x.getTagName());
             rep.setStatus(x.getStatus());
             rep.setAddSource(x.getAddSource());
 
             // 从userInfoMap获取附加信息
-            UserInfoRpcDTO userInfo = userInfoMap.get(x.getFriendId());
+            UserInfoResponseRpcDTO userInfo = userInfoMap.get(x.getFriendId());
             if(ObjectUtil.isNotEmpty(userInfo)){
                 rep.setAccount(userInfo.getAccount());
+                rep.setNickName(userInfo.getNickName());
+                rep.setHeadImage(userInfo.getAvatar());
+                rep.setHeadImageThumb(userInfo.getAvatarThumb());
                 rep.setArea(userInfo.getArea());
+                rep.setUserName(userInfo.getUserName());
+                rep.setSex(userInfo.getSex());
             }
             return rep;
         }).collect(Collectors.toList());
@@ -111,8 +118,8 @@ public class FriendServiceImpl implements FriendService {
 
         FriendInfoDTO friendInfoDTO = new FriendInfoDTO();
         friendInfoDTO.setId(friend.getId());
-        friendInfoDTO.setHeadImage(friend.getFriendHeadImage());
-        friendInfoDTO.setNickName(friend.getFriendNickName());
+//        friendInfoDTO.setHeadImage(friend.getFriendHeadImage());
+//        friendInfoDTO.setNickName(friend.getFriendNickName());
         return DeveloperResult.success(serialNo, friendInfoDTO);
     }
 

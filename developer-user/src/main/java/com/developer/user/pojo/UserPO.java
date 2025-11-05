@@ -22,6 +22,9 @@ public class UserPO {
     @TableField(value = "account")
     private String account;
 
+    @TableField(value = "password")
+    private String password;
+
     @TableField(value = "user_name")
     private String username;
 
@@ -33,9 +36,6 @@ public class UserPO {
 
     @TableField(value = "head_image_thumb")
     private String headImageThumb;
-
-    @TableField(value = "password")
-    private String password;
 
     @TableField(value = "sex")
     private Integer sex;

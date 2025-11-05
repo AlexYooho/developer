@@ -3,6 +3,8 @@ package com.developer.user.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 public class UserInfoDTO {
 
@@ -29,5 +31,8 @@ public class UserInfoDTO {
 
     @JsonProperty("area")
     private String area;
+
+    @JsonProperty("last_login_time")
+    private Date lastLoginTime;
 
 }

@@ -58,18 +58,30 @@ public class FriendPO {
     /**
      * 用户昵称
      */
-    @TableField("friend_nick_name")
-    private String friendNickName;
+//    @TableField("friend_nick_name")
+//    private String friendNickName;
 
     /**
      * 用户头像
      */
-    @TableField("friend_head_image")
-    private String friendHeadImage;
+//    @TableField("friend_head_image")
+//    private String friendHeadImage;
 
     /**
      * 创建时间
      */
     @TableField("create_time")
     private Date createdTime;
+
+    /**
+     * 修改时间
+     */
+    @TableField("update_time")
+    private Date updateTime;
+
+    /**
+     * 备注
+     */
+    @TableField("remark")
+    private String remark;
 }
