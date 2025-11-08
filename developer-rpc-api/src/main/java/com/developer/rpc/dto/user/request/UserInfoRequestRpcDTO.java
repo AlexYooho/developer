@@ -1,6 +1,5 @@
-package com.developer.rpc.DTO.user.request;
+package com.developer.rpc.dto.user.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.io.Serializable;

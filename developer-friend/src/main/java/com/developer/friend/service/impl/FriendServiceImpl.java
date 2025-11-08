@@ -16,7 +16,6 @@ import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SerialNoHolder;
 import com.developer.friend.client.MessageClient;
-import com.developer.friend.client.RpcServiceClient;
 import com.developer.friend.dto.*;
 import com.developer.friend.enums.*;
 import com.developer.friend.pojo.FriendApplyRecordPO;
@@ -25,10 +24,11 @@ import com.developer.friend.repository.FriendApplyRecordPORepository;
 import com.developer.friend.repository.FriendRepository;
 import com.developer.friend.service.FriendService;
 import com.developer.friend.util.RabbitMQUtil;
-import com.developer.rpc.DTO.user.request.UserInfoRequestRpcDTO;
-import com.developer.rpc.DTO.user.response.UserInfoResponseRpcDTO;
+import com.developer.rpc.client.RpcClient;
+import com.developer.rpc.client.RpcExecutor;
+import com.developer.rpc.dto.user.request.UserInfoRequestRpcDTO;
+import com.developer.rpc.dto.user.response.UserInfoResponseRpcDTO;
 import lombok.RequiredArgsConstructor;
-import org.apache.dubbo.rpc.RpcContext;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -44,7 +44,7 @@ public class FriendServiceImpl implements FriendService {
     private final MessageClient messageClient;
     private final RabbitMQUtil rabbitMQUtil;
     private final RedisUtil redisUtil;
-    private final RpcServiceClient rpcServiceClient;
+    private final RpcClient rpcClient;
 
     @Override
     public DeveloperResult<List<FriendInfoDTO>> findFriendList() {
@@ -54,10 +54,10 @@ public class FriendServiceImpl implements FriendService {
         // 先去缓存里面查
         String friendsKey = RedisKeyConstant.FRIENDS_KEY(userId);
         String friendsValue = redisUtil.get(friendsKey, String.class);
-//        if(StrUtil.isNotBlank(friendsValue)){
-//            List<FriendInfoDTO> list = JSON.parseArray(friendsValue, FriendInfoDTO.class);
-//            return DeveloperResult.success(serialNo,list);
-//        }
+        if(StrUtil.isNotBlank(friendsValue)){
+            List<FriendInfoDTO> list = JSON.parseArray(friendsValue, FriendInfoDTO.class);
+            return DeveloperResult.success(serialNo,list);
+        }
 
         // 查库
         List<FriendPO> friendList = friendRepository.findFriendByUserId(userId);
@@ -71,7 +71,7 @@ public class FriendServiceImpl implements FriendService {
         // 远程调用user rpc服务
         UserInfoRequestRpcDTO rpcDTO = new UserInfoRequestRpcDTO();
         rpcDTO.setUserIds(friendIdList);
-        DeveloperResult<List<UserInfoResponseRpcDTO>> userInfoResult = rpcServiceClient.userRpcService.findUserInfo(rpcDTO);
+        DeveloperResult<List<UserInfoResponseRpcDTO>> userInfoResult = RpcExecutor.execute(() -> rpcClient.userRpcService.findUserInfo(rpcDTO));
         if(!userInfoResult.getIsSuccessful()){
             return DeveloperResult.error(serialNo,userInfoResult.getMsg());
         }

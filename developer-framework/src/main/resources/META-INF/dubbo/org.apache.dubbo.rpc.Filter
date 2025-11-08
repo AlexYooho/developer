@@ -1,0 +1,2 @@
+serialNoConsumer=com.developer.framework.filter.SerialNoConsumerFilter
+serialNoProvider=com.developer.framework.filter.SerialNoProviderFilter

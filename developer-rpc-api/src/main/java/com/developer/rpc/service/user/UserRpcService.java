@@ -1,8 +1,8 @@
 package com.developer.rpc.service.user;
 
 import com.developer.framework.model.DeveloperResult;
-import com.developer.rpc.DTO.user.request.UserInfoRequestRpcDTO;
-import com.developer.rpc.DTO.user.response.UserInfoResponseRpcDTO;
+import com.developer.rpc.dto.user.request.UserInfoRequestRpcDTO;
+import com.developer.rpc.dto.user.response.UserInfoResponseRpcDTO;
 
 import java.util.List;
 

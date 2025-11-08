@@ -2,8 +2,8 @@ package com.developer.user.rpc;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.SerialNoHolder;
-import com.developer.rpc.DTO.user.request.UserInfoRequestRpcDTO;
-import com.developer.rpc.DTO.user.response.UserInfoResponseRpcDTO;
+import com.developer.rpc.dto.user.request.UserInfoRequestRpcDTO;
+import com.developer.rpc.dto.user.response.UserInfoResponseRpcDTO;
 import com.developer.rpc.service.user.UserRpcService;
 import com.developer.user.dto.UserInfoDTO;
 import com.developer.user.service.UserService;
@@ -23,6 +23,7 @@ public class UserRpcProviderService implements UserRpcService {
 
     @Override
     public DeveloperResult<List<UserInfoResponseRpcDTO>> findUserInfo(UserInfoRequestRpcDTO request) {
+        String serialNo = SerialNoHolder.getSerialNo();
         DeveloperResult<List<UserInfoDTO>> userInfoResult = userService.findUserInfoByUserId(request.getUserIds());
         if(!userInfoResult.getIsSuccessful()){
             return DeveloperResult.error(userInfoResult.getSerialNo(),userInfoResult.getMsg());
