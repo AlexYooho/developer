@@ -16,10 +16,12 @@ import com.developer.message.dto.*;
 import com.developer.message.param.IsFriendParam;
 import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.PrivateMessageRepository;
+import com.developer.message.service.AbstractMessageAdapterService;
 import com.developer.message.service.FriendService;
 import com.developer.message.service.MessageLikeService;
 import com.developer.message.service.MessageService;
 import com.developer.message.util.RabbitMQUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -33,25 +35,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class PrivateMessageServiceImpl implements MessageService {
+@RequiredArgsConstructor
+public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
 
-    @Autowired
-    private PaymentClient paymentClient;
-
-    @Autowired
-    private PrivateMessageRepository privateMessageRepository;
-
-    @Autowired
-    private RabbitMQUtil rabbitMQUtil;
-
-    @Autowired
-    private RedisUtil redisUtil;
-
-    @Autowired
-    private MessageLikeService messageLikeService;
-
-    @Autowired
-    private FriendService friendService;
+    private final RedisUtil redisUtil;
+    private final RabbitMQUtil rabbitMQUtil;
+    private final FriendService friendService;
+    private final PaymentClient paymentClient;
+    private final MessageLikeService messageLikeService;
+    private final PrivateMessageRepository privateMessageRepository;
 
     /**
      * 消息主体类型
@@ -366,5 +358,13 @@ public class PrivateMessageServiceImpl implements MessageService {
                 .sendTime(sendTime)
                 .friendUserId(friendId)
                 .build();
+    }
+
+    /*
+    好友申请接受消息
+     */
+    @Override
+    public DeveloperResult<Boolean> friendApplyAcceptMessage() {
+        return super.friendApplyAcceptMessage();
     }
 }

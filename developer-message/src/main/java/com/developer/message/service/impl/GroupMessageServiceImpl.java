@@ -19,10 +19,10 @@ import com.developer.message.pojo.GroupMessageMemberReceiveRecordPO;
 import com.developer.message.pojo.GroupMessagePO;
 import com.developer.message.repository.GroupMessageMemberReceiveRecordRepository;
 import com.developer.message.repository.GroupMessageRepository;
+import com.developer.message.service.AbstractMessageAdapterService;
 import com.developer.message.service.MessageLikeService;
-import com.developer.message.service.MessageService;
 import com.developer.message.util.RabbitMQUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,31 +33,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
-public class GroupMessageServiceImpl implements MessageService {
+@RequiredArgsConstructor
+public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
 
-    @Autowired
-    private GroupMessageRepository groupMessageRepository;
-
-    @Autowired
-    private RedisUtil redisUtil;
-
-    @Autowired
-    private RabbitMQUtil rabbitMQUtil;
-
-    @Autowired
-    private GroupInfoClient groupInfoClient;
-
-    @Autowired
-    private PaymentClient paymentClient;
-
-    @Autowired
-    private GroupMessageMemberReceiveRecordRepository groupMessageMemberReceiveRecordRepository;
-
-    @Autowired
-    private GroupMemberClient groupMemberClient;
-
-    @Autowired
-    private MessageLikeService messageLikeService;
+    private final RedisUtil redisUtil;
+    private final RabbitMQUtil rabbitMQUtil;
+    private final PaymentClient paymentClient;
+    private final GroupInfoClient groupInfoClient;
+    private final GroupMemberClient groupMemberClient;
+    private final MessageLikeService messageLikeService;
+    private final GroupMessageRepository groupMessageRepository;
+    private final GroupMessageMemberReceiveRecordRepository groupMessageMemberReceiveRecordRepository;
 
     /**
      * 消息主体类型
@@ -269,17 +255,6 @@ public class GroupMessageServiceImpl implements MessageService {
         List<GroupMessagePO> messages = groupMessageRepository.findHistoryMessage(req.getTargetId(), selfJoinGroupInfoDTO.getCreatedTime(), stIdx, req.getSize());
         List<SendMessageResultDTO> list = messages.stream().map(x -> BeanUtils.copyProperties(x, GroupMessageDTO.class)).collect(Collectors.toList());
         return DeveloperResult.success(serialNo, list);
-    }
-
-    /**
-     * 新增消息
-     * @param req
-     * @return
-     */
-    @Override
-    public DeveloperResult<Boolean> insertMessage(MessageInsertDTO req) {
-        String serialNo = SerialNoHolder.getSerialNo();
-        return DeveloperResult.success(serialNo);
     }
 
     /**
