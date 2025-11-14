@@ -56,7 +56,12 @@ public abstract class AbstractMessageAdapterService implements MessageService{
     }
 
     @Override
-    public DeveloperResult<Boolean> friendApplyAcceptMessage() {
+    public DeveloperResult<Boolean> friendApplyAcceptMessage(Long receiverId) {
+        return null;
+    }
+
+    @Override
+    public DeveloperResult<Boolean> friendApplyRejectMessage(Long receiverId,String rejectReason) {
         return null;
     }
 

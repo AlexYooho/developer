@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.developer.friend.enums.AddFriendStatusEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -42,7 +43,7 @@ public class FriendApplyRecordPO {
      * 状态
      */
     @TableField("status")
-    private Integer status;
+    private AddFriendStatusEnum status;
 
     /**
      * 创建时间
@@ -62,7 +63,7 @@ public class FriendApplyRecordPO {
     @TableField("remark")
     private String remark;
 
-    public FriendApplyRecordPO(Long mainUserId, Long targetUserId, Integer addMode, Integer status, Date createTime, Date updateTime, String remark) {
+    public FriendApplyRecordPO(Long mainUserId, Long targetUserId, Integer addMode, AddFriendStatusEnum status, Date createTime, Date updateTime, String remark) {
         this.mainUserId = mainUserId;
         this.targetUserId = targetUserId;
         this.addMode = addMode;

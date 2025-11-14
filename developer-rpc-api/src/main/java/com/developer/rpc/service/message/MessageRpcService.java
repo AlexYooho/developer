@@ -7,11 +7,16 @@ public interface MessageRpcService {
     /*
     发送好友申请同意消息
      */
-    DeveloperResult<Boolean> sendFriendApplyAcceptMessage();
+    DeveloperResult<Boolean> sendFriendApplyAcceptMessage(Long receiverId);
 
     /*
     发送好友申请拒绝消息
      */
-    DeveloperResult<Boolean> sendFriendApplyRejectMessage();
+    DeveloperResult<Boolean> sendFriendApplyRejectMessage(Long receiverId,String rejectReason);
+
+    /*
+    清理好友聊天记录
+     */
+    DeveloperResult<Boolean> clearFriendChatMessage(Long friendId);
 
 }

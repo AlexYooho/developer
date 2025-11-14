@@ -2,6 +2,7 @@ package com.developer.message.service.impl;
 
 import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.constant.DeveloperMQConstant;
+import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.*;
@@ -10,20 +11,16 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SerialNoHolder;
-import com.developer.message.client.FriendClient;
 import com.developer.message.client.PaymentClient;
 import com.developer.message.dto.*;
-import com.developer.message.param.IsFriendParam;
 import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.PrivateMessageRepository;
 import com.developer.message.service.AbstractMessageAdapterService;
 import com.developer.message.service.FriendService;
 import com.developer.message.service.MessageLikeService;
-import com.developer.message.service.MessageService;
 import com.developer.message.util.RabbitMQUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -360,11 +357,54 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                 .build();
     }
 
+    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime) {
+        return RabbitMQMessageBodyDTO.builder()
+                .serialNo(UUID.randomUUID().toString())
+                .type(MQMessageTypeConstant.SENDMESSAGE)
+                .data(ChatMessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
+                        .messageContentTypeEnum(messageContentTypeEnum)
+                        .messageId(messageId)
+                        .groupId(groupId)
+                        .sendId(sendId)
+                        .sendNickName(sendNickName)
+                        .messageContent(messageContent)
+                        .receiverIds(receiverIds)
+                        .atUserIds(atUserIds)
+                        .messageStatus(messageStatus)
+                        .terminalType(terminalType)
+                        .sendTime(sendTime).build())
+                .build();
+    }
+
     /*
     好友申请接受消息
      */
     @Override
-    public DeveloperResult<Boolean> friendApplyAcceptMessage() {
-        return super.friendApplyAcceptMessage();
+    public DeveloperResult<Boolean> friendApplyAcceptMessage(Long receiverId) {
+        // 新增消息记录
+        PrivateMessagePO privateMessage = PrivateMessagePO.builder()
+                .sendId(SelfUserInfoContext.selfUserInfo().getUserId())
+                .receiverId(receiverId)
+                .messageContent("我们已经是好友啦")
+                .messageContentType(MessageContentTypeEnum.TEXT)
+                .messageStatus(MessageStatusEnum.SENDED)
+                .sendTime(new Date()).build();
+        privateMessageRepository.save(privateMessage);
+
+        // 推送im消息
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), privateMessage.getMessageContent(), Collections.singletonList(receiverId), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
+    }
+
+    /*
+    好友申请拒绝消息
+     */
+    @Override
+    public DeveloperResult<Boolean> friendApplyRejectMessage(Long receiverId,String rejectReason) {
+
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), rejectReason, Collections.singletonList(receiverId), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 }

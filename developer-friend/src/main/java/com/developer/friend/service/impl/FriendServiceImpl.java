@@ -15,7 +15,6 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SerialNoHolder;
-import com.developer.friend.client.MessageClient;
 import com.developer.friend.dto.*;
 import com.developer.friend.enums.*;
 import com.developer.friend.pojo.FriendApplyRecordPO;
@@ -43,7 +42,6 @@ public class FriendServiceImpl implements FriendService {
 
     private final FriendRepository friendRepository;
     private final FriendApplyRecordPORepository friendApplyRecordPORepository;
-    private final MessageClient messageClient;
     private final RabbitMQUtil rabbitMQUtil;
     private final RedisUtil redisUtil;
     private final RpcClient rpcClient;
@@ -180,7 +178,7 @@ public class FriendServiceImpl implements FriendService {
     }
 
     /*
-    发送成为好友申请
+    发送好友申请
      */
     @Override
     public DeveloperResult<Boolean> apply(SendAddFriendInfoRequestDTO req) {
@@ -213,7 +211,7 @@ public class FriendServiceImpl implements FriendService {
         req.setRemark("你好,我是" + SelfUserInfoContext.selfUserInfo().getNickName() + ",加个好友呗");
         FriendApplyRecordPO record = friendApplyRecordPORepository.findRecord(req.getFriendId(), SelfUserInfoContext.selfUserInfo().getUserId());
         if (record == null) {
-            record = new FriendApplyRecordPO(SelfUserInfoContext.selfUserInfo().getUserId(), req.getFriendId(), req.getAddChannel().code(), AddFriendStatusEnum.SENT.code(), new Date(), new Date(), req.getRemark());
+            record = new FriendApplyRecordPO(SelfUserInfoContext.selfUserInfo().getUserId(), req.getFriendId(), req.getAddChannel().code(), AddFriendStatusEnum.SENT, new Date(), new Date(), req.getRemark());
             friendApplyRecordPORepository.save(record);
         } else if (record.getStatus().equals(AddFriendStatusEnum.SENT.code()) || record.getStatus().equals(AddFriendStatusEnum.VIEWED.code()) || record.getStatus().equals(AddFriendStatusEnum.REJECTED.code())) {
             friendApplyRecordPORepository.updateStatus(req.getFriendId(), SelfUserInfoContext.selfUserInfo().getUserId(), AddFriendStatusEnum.SENT.code());
@@ -235,24 +233,8 @@ public class FriendServiceImpl implements FriendService {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), "不允许添加自己为好友");
         }
 
-        String message = "我们已经是好友啦";
-        // 同意,直接绑定好友关系,发送通知成为好友
-        bindFriend(SelfUserInfoContext.selfUserInfo().getUserId(), friendId);
-        // 新增消息记录
-        MessageInsertDTO privateMessage = new MessageInsertDTO();
-        privateMessage.setMessageStatus(0);
-        privateMessage.setMessageContent(message);
-        privateMessage.setSendId(SelfUserInfoContext.selfUserInfo().getUserId());
-        privateMessage.setReceiverId(friendId);
-        privateMessage.setMessageContentType(0);
-        privateMessage.setSendTime(new Date());
-        privateMessage.setSerialNo(SerialNoHolder.getSerialNo());
-        messageClient.insertMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, privateMessage);
-
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), message, Collections.singletonList(friendId), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
-
         // 推送同意好友申请消息
-        DeveloperResult<Boolean> executeResult = RpcExecutor.execute(() -> rpcClient.messageRpcService.sendFriendApplyAcceptMessage());
+        DeveloperResult<Boolean> executeResult = RpcExecutor.execute(() -> rpcClient.messageRpcService.sendFriendApplyAcceptMessage(friendId));
         if(!executeResult.getIsSuccessful()){
             return DeveloperResult.error(SerialNoHolder.getSerialNo(),executeResult.getMsg());
         }
@@ -277,8 +259,14 @@ public class FriendServiceImpl implements FriendService {
         // 处理请求记录状态
         AddFriendStatusEnum status = AddFriendStatusEnum.REJECTED;
         friendApplyRecordPORepository.updateStatus(userId, friendId, status.code());
-        if (StrUtil.isNotEmpty(dto.getRefuseReason())) {
-            rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, userId, nickName, dto.getRefuseReason(), Collections.singletonList(friendId), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+        if (StrUtil.isEmpty(dto.getRefuseReason())) {
+            return DeveloperResult.success(SerialNoHolder.getSerialNo());
+        }
+
+        // 推送拒绝好友申请消息
+        DeveloperResult<Boolean> executeResult = RpcExecutor.execute(() -> rpcClient.messageRpcService.sendFriendApplyRejectMessage(friendId,dto.getRefuseReason()));
+        if(!executeResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),executeResult.getMsg());
         }
 
         return DeveloperResult.success(serialNo);
@@ -289,17 +277,21 @@ public class FriendServiceImpl implements FriendService {
      */
     @Override
     public DeveloperResult<Boolean> deleteFriend(Long friendId) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
-        FriendPO friend = friendRepository.findByFriendId(friendId, userId);
+        FriendPO friend = friendRepository.findByFriendId(friendId, SelfUserInfoContext.selfUserInfo().getUserId());
         if (ObjectUtil.isEmpty(friend)) {
-            return DeveloperResult.error(serialNo, "对方不是你的好友");
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "对方不是你的好友");
         }
 
-        boolean isSuccess = friendRepository.removeById(friend.getId());
-        messageClient.removeFriendChatMessage(MessageMainTypeEnum.PRIVATE_MESSAGE, RemoveMessageRequestDTO.builder().targetId(friendId).serialNo(serialNo).build());
+        // 清理好友聊天记录
+        DeveloperResult<Boolean> executeResult = RpcExecutor.execute(() -> rpcClient.messageRpcService.clearFriendChatMessage(friendId));
+        if(!executeResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),executeResult.getMsg());
+        }
 
-        return DeveloperResult.success(serialNo, isSuccess);
+        // 清除好友关系
+        friendRepository.removeById(friend.getId());
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
     /*
@@ -307,9 +299,8 @@ public class FriendServiceImpl implements FriendService {
      */
     @Override
     public DeveloperResult<Integer> findFriendAddRequestCount() {
-        String serialNo = SerialNoHolder.getSerialNo();
-        List<FriendApplyRecordPO> list = friendApplyRecordPORepository.findRecordByStatus(SelfUserInfoContext.selfUserInfo().getUserId(), AddFriendStatusEnum.SENT);
-        return DeveloperResult.success(serialNo);
+        List<FriendApplyRecordPO> list = friendApplyRecordPORepository.findRecordByStatus(SelfUserInfoContext.selfUserInfo().getUserId(), Collections.singletonList(AddFriendStatusEnum.SENT));
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(),list.size());
     }
 
     /*
@@ -317,10 +308,41 @@ public class FriendServiceImpl implements FriendService {
      */
     @Override
     public DeveloperResult<List<NewFriendListDTO>> findNewFriendList() {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
         List<NewFriendListDTO> list = new ArrayList<>();
-        return DeveloperResult.success(serialNo, list);
+
+        // 查询未处理的申请记录
+        List<AddFriendStatusEnum> statusEnums = new ArrayList<>();
+        statusEnums.add(AddFriendStatusEnum.SENT);
+        statusEnums.add(AddFriendStatusEnum.VIEWED);
+        List<FriendApplyRecordPO> applyRecords = friendApplyRecordPORepository.findRecordByStatus(SelfUserInfoContext.selfUserInfo().getUserId(), statusEnums);
+        if(CollUtil.isEmpty(applyRecords)) {
+            return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
+        }
+
+        // 获取申请的对象的用户信息--用户名、头像
+        UserInfoRequestRpcDTO rpcDto = new UserInfoRequestRpcDTO();
+        rpcDto.setUserIds(applyRecords.stream().map(FriendApplyRecordPO::getMainUserId).collect(Collectors.toList()));
+        DeveloperResult<List<UserInfoResponseRpcDTO>> userRpcResponse = RpcExecutor.execute(() -> rpcClient.userRpcService.findUserInfo(rpcDto));
+        if(!userRpcResponse.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),userRpcResponse.getMsg());
+        }
+
+        // 聚合数据
+        List<UserInfoResponseRpcDTO> userInfos = userRpcResponse.getData();
+        list = applyRecords.stream().map(x->{
+            NewFriendListDTO dto = new NewFriendListDTO();
+            dto.setUserId(x.getMainUserId());
+            dto.setRemark(x.getRemark());
+
+            UserInfoResponseRpcDTO userInfoResponseRpcDTO = userInfos.stream().filter(xx -> xx.getUserId().equals(x.getMainUserId())).findFirst().orElse(null);
+            if(ObjectUtil.isNotEmpty(userInfoResponseRpcDTO)){
+                dto.setUserName(userInfoResponseRpcDTO.getUserName());
+                dto.setHeadImg(userInfoResponseRpcDTO.getAvatar());
+            }
+            return dto;
+        }).collect(Collectors.toList());
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
     }
 
     /*

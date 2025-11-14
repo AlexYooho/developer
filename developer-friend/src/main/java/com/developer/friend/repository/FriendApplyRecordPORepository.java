@@ -19,8 +19,8 @@ public class FriendApplyRecordPORepository extends ServiceImpl<FriendApplyRecord
         this.lambdaUpdate().eq(FriendApplyRecordPO::getTargetUserId,targetUserId).eq(FriendApplyRecordPO::getMainUserId,mainUserId).set(FriendApplyRecordPO::getStatus,status).update();
     }
 
-    public List<FriendApplyRecordPO> findRecordByStatus(Long targetUserId, AddFriendStatusEnum status){
-        return this.lambdaQuery().eq(FriendApplyRecordPO::getTargetUserId,targetUserId).eq(FriendApplyRecordPO::getStatus,status.code()).list();
+    public List<FriendApplyRecordPO> findRecordByStatus(Long targetUserId, List<AddFriendStatusEnum> status){
+        return this.lambdaQuery().eq(FriendApplyRecordPO::getTargetUserId,targetUserId).in(FriendApplyRecordPO::getStatus,status).list();
     }
 
     public boolean updateStatusSentToViewed(Long targetUserId){

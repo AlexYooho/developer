@@ -46,6 +46,11 @@ public interface InteractiveMessageService {
     /*
     好友申请接受消息
      */
-    DeveloperResult<Boolean> friendApplyAcceptMessage();
+    DeveloperResult<Boolean> friendApplyAcceptMessage(Long receiverId);
+
+    /*
+    好友申请拒绝消息
+     */
+    DeveloperResult<Boolean> friendApplyRejectMessage(Long receiverId,String rejectReason);
 
 }
