@@ -19,23 +19,7 @@ public class GroupInfoRepository extends ServiceImpl<GroupInfoMapper, GroupInfoP
     @Autowired
     private GroupInfoMapper groupInfoMapper;
 
-    public List<GroupInfoPO> findByGroupIds(List<Long> groupIds){
-        return this.lambdaQuery().in(GroupInfoPO::getId,groupIds).list();
+    public List<GroupInfoPO> findByGroupInfo(List<Long> groupIds){
+        return this.lambdaQuery().in(GroupInfoPO::getId,groupIds).eq(GroupInfoPO::getDeleted,false).list();
     }
-
-    public List<SelfJoinGroupInfoDTO> findUserJoinGroupInfo(Long userId){
-        MPJLambdaWrapper<GroupInfoPO> lambdaWrapper = JoinWrappers.lambda(GroupInfoPO.class)
-                .selectAs(GroupInfoPO::getId,SelfJoinGroupInfoDTO::getGroupId)
-                .selectAs(GroupInfoPO::getName,SelfJoinGroupInfoDTO::getGroupName)
-                .selectAs(GroupInfoPO::getHeadImage,SelfJoinGroupInfoDTO::getGroupName)
-                .selectAs(GroupMemberPO::getUserId,SelfJoinGroupInfoDTO::getUserId)
-                .selectAs(GroupMemberPO::getQuit,SelfJoinGroupInfoDTO::getQuit)
-                .selectAs(GroupMemberPO::getAliasName,SelfJoinGroupInfoDTO::getAliasName)
-                .selectAs(GroupMemberPO::getCreatedTime,SelfJoinGroupInfoDTO::getCreatedTime)
-                .selectAs(GroupMemberPO::getHeadImage,SelfJoinGroupInfoDTO::getHeadImage)
-                .innerJoin(GroupMemberPO.class,GroupMemberPO::getGroupId,GroupInfoPO::getId)
-                .eq(GroupMemberPO::getUserId,userId);
-        return groupInfoMapper.selectJoinList(SelfJoinGroupInfoDTO.class,lambdaWrapper);
-    }
-
 }

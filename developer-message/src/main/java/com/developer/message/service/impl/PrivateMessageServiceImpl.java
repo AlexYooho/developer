@@ -407,4 +407,34 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
+
+    /*
+    发送加入群聊邀请消息
+     */
+    @Override
+    public DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds,String groupName,String inviterName,String groupAvatar) {
+
+        for (Long memberId : memberIds) {
+            String content = "邀请你加入群聊,".concat(inviterName).concat("邀请你加入群聊").concat(groupName).concat("进入可查看详情").concat(groupAvatar);
+            rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(),
+                    DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
+                    DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY,
+                    ProcessorTypeEnum.IM,
+                    builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE,
+                            MessageContentTypeEnum.GROUP_INVITE,
+                            0L,
+                            0L,
+                            SelfUserInfoContext.selfUserInfo().getUserId(),
+                            SelfUserInfoContext.selfUserInfo().getNickName(),
+                            content,
+                            Collections.singletonList(memberId),
+                            new ArrayList<>(),
+                            MessageStatusEnum.UNSEND,
+                            MessageTerminalTypeEnum.WEB,
+                            new Date()));
+        }
+
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
+    }
 }

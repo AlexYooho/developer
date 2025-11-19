@@ -6,6 +6,7 @@ import com.developer.message.dto.ForwardMessageRequestDTO;
 import com.developer.message.dto.MessageLikeRequestDTO;
 import com.developer.message.dto.ReplyMessageRequestDTO;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface InteractiveMessageService {
@@ -52,5 +53,10 @@ public interface InteractiveMessageService {
     好友申请拒绝消息
      */
     DeveloperResult<Boolean> friendApplyRejectMessage(Long receiverId,String rejectReason);
+
+    /*
+    发送加入群聊邀请消息
+     */
+    DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds,String groupName,String inviterName,String groupAvatar);
 
 }

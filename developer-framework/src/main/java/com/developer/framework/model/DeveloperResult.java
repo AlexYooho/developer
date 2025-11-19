@@ -1,5 +1,6 @@
 package com.developer.framework.model;
 
+import com.developer.framework.utils.SerialNoHolder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -21,6 +22,15 @@ public class DeveloperResult<T> implements Serializable {
     private String serialNo;
 
     /**返回成功 -- 集合 */
+    public static DeveloperResult success(){
+        DeveloperResult result = new DeveloperResult();
+        result.setSerialNo(SerialNoHolder.getSerialNo());
+        result.setCode(200);
+        result.setMsg("success");
+        result.setIsSuccessful(true);
+        return result;
+    }
+
     public static <T> DeveloperResult<List<T>> success(String serialNo,List<T> data){
         DeveloperResult<List<T>> result = new DeveloperResult<>();
         result.setCode(200);//成功

@@ -1,6 +1,6 @@
 package com.developer.group.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -11,41 +11,43 @@ public class SelfJoinGroupInfoDTO {
     /**
      * 用户id
      */
+    @JsonProperty("user_id")
     private Long userId;
 
     /**
      * 群id
      */
+    @JsonProperty("group_id")
     private Long groupId;
 
     /**
      * 群名称
      */
+    @JsonProperty("group_name")
     private String groupName;
 
     /**
      * 群头像
      */
-    private String groupHeadImage;
+    @JsonProperty("group_avatar")
+    private String groupAvatar;
 
     /**
      * 是否在群
      */
+    @JsonProperty("quit")
     private Boolean quit;
 
     /**
      * 群昵称
      */
-    private String aliasName;
+    @JsonProperty("member_alias")
+    private String memberAlias;
 
     /**
      * 创建时间
      */
-    private Date createdTime;
-
-    /**
-     * 成员头像
-     */
-    private String headImage;
+    @JsonProperty("create_time")
+    private Date createTime;
 
 }

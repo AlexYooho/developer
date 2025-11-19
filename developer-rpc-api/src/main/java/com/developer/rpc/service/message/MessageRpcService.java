@@ -1,6 +1,7 @@
 package com.developer.rpc.service.message;
 
 import com.developer.framework.model.DeveloperResult;
+import com.developer.rpc.dto.message.request.SendJoinGroupInviteMessageRequestRpcDTO;
 
 public interface MessageRpcService {
 
@@ -18,5 +19,20 @@ public interface MessageRpcService {
     清理好友聊天记录
      */
     DeveloperResult<Boolean> clearFriendChatMessage(Long friendId);
+
+    /*
+    发送入群邀请消息
+     */
+    DeveloperResult<Boolean> sendJoinGroupInviteMessage(SendJoinGroupInviteMessageRequestRpcDTO dto);
+
+    /*
+    发送退出群聊消息
+     */
+    DeveloperResult<Boolean> sendQuitGroupChatMessage(Long groupId);
+
+    /*
+    踢出群聊消息
+     */
+    DeveloperResult<Boolean> sendKickGroupMessage(Long groupId);
 
 }

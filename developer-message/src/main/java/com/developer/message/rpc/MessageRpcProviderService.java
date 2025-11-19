@@ -2,12 +2,13 @@ package com.developer.message.rpc;
 
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.message.dto.RemoveMessageRequestDTO;
 import com.developer.message.service.factory.MessageTypeProcessorDispatchFactory;
+import com.developer.rpc.dto.message.request.SendJoinGroupInviteMessageRequestRpcDTO;
 import com.developer.rpc.service.message.MessageRpcService;
 import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.stereotype.Component;
 
 @DubboService
 @RequiredArgsConstructor
@@ -39,5 +40,29 @@ public class MessageRpcProviderService implements MessageRpcService {
         RemoveMessageRequestDTO dto = new RemoveMessageRequestDTO();
         dto.setTargetId(friendId);
         return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.PRIVATE_MESSAGE).deleteMessage(dto);
+    }
+
+    /*
+    发送入群邀请消息
+     */
+    @Override
+    public DeveloperResult<Boolean> sendJoinGroupInviteMessage(SendJoinGroupInviteMessageRequestRpcDTO dto) {
+        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.PRIVATE_MESSAGE).sendJoinGroupInviteMessage(dto.getInviteMemberIds(),dto.getGroupName(),dto.getInviterName(),dto.getGroupAvatar());
+    }
+
+    /*
+    发送退出群聊消息
+     */
+    @Override
+    public DeveloperResult<Boolean> sendQuitGroupChatMessage(Long groupId) {
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
+    }
+
+    /*
+    踢出群聊消息
+     */
+    @Override
+    public DeveloperResult<Boolean> sendKickGroupMessage(Long groupId) {
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 }

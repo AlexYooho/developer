@@ -14,7 +14,9 @@ public enum MessageContentTypeEnum {
 
     RED_PACKETS(3,"红包"),
 
-    TRANSFER(4,"转账");
+    TRANSFER(4,"转账"),
+
+    GROUP_INVITE(5,"群邀请");
 
     @EnumValue
     private final Integer code;

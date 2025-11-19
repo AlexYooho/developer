@@ -2,6 +2,9 @@ package com.developer.group.service;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.group.dto.*;
+import com.developer.group.dto.group.CreateGroupRequestDTO;
+import com.developer.group.dto.group.CreateGroupResponseDTO;
+import com.developer.group.dto.group.ModifyGroupInfoRequestDTO;
 
 import java.util.List;
 
@@ -11,14 +14,14 @@ public interface GroupService {
      * 创建群聊
      * @return
      */
-    DeveloperResult<CreateGroupRequestDTO> createGroup(CreateGroupRequestDTO dto);
+    DeveloperResult<CreateGroupResponseDTO> createGroup(CreateGroupRequestDTO dto);
 
     /**
      * 修改群聊
      * @param req
      * @return
      */
-    DeveloperResult<CreateGroupRequestDTO> modifyGroup(CreateGroupRequestDTO req);
+    DeveloperResult<Boolean> modifyGroup(ModifyGroupInfoRequestDTO req);
 
     /**
      * 解散群聊
@@ -47,7 +50,7 @@ public interface GroupService {
     DeveloperResult<Boolean> invite(GroupInviteRequestDTO req);
 
     /**
-     * 查找群成员
+     * 获取群成员信息列表
      * @param req
      * @return
      */
@@ -72,5 +75,10 @@ public interface GroupService {
      * @return
      */
     DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo();
+
+    /*
+    校验群主管理员信息
+     */
+    DeveloperResult<Boolean> verifyChatroomOwnerInfo(Long groupId,Long userId);
 
 }

@@ -90,4 +90,8 @@ public abstract class AbstractMessageAdapterService implements MessageService{
         return null;
     }
 
+    @Override
+    public DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds,String groupName,String inviterName,String groupAvatar) {
+        return null;
+    }
 }

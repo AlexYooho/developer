@@ -1,26 +1,58 @@
 package com.developer.group.dto;
 
+import com.developer.framework.enums.group.GroupMemberJoinTypeEnum;
+import com.developer.framework.enums.group.GroupMemberRoleEnum;
+import com.developer.framework.enums.group.GroupTypeEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+
+import java.util.Date;
 
 @Data
 public class GroupInfoDTO {
 
     private Long id;
 
-    private String name;
+    @JsonProperty("group_name")
+    private String groupName;
 
-    private Long ownerId;
+    @JsonProperty("group_avatar")
+    private String groupAvatar;
 
-    private String headImage;
+    @JsonProperty("group_owner_id")
+    private Long groupOwnerId;
 
-    private String headImageThumb;
+    @JsonProperty("group_type")
+    private GroupTypeEnum groupType;
 
+    @JsonProperty("max_member_count")
+    private Integer maxMemberCount;
+
+    @JsonProperty("member_count")
+    private Integer memberCount;
+
+    @JsonProperty("notice")
     private String notice;
 
-    private String aliasName;
+    @JsonProperty("mute_all")
+    private Boolean muteAll;
 
+    @JsonProperty("member_role")
+    private GroupMemberRoleEnum memberRole;
+
+    @JsonProperty("group_member_alias")
+    private String groupMemberAlias;
+
+    @JsonProperty("join_time")
+    private Date joinTime;
+
+    @JsonProperty("join_type")
+    private GroupMemberJoinTypeEnum joinType;
+
+    @JsonProperty("is_muted")
+    private Boolean isMuted;
+
+    @JsonProperty("remark")
     private String remark;
-
-    private Boolean deleted;
 
 }

@@ -135,6 +135,12 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- rpc-api -->
+        <dependency>
+            <groupId>com.developer.rpc</groupId>
+            <artifactId>developer-rpc-api</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

@@ -1,242 +1,436 @@
 package com.developer.group.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.enums.group.GroupInviteTypeEnum;
+import com.developer.framework.enums.group.GroupMemberRoleEnum;
+import com.developer.framework.enums.group.GroupTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.IMOnlineUtil;
 import com.developer.framework.utils.SerialNoHolder;
-import com.developer.framework.utils.SnowflakeNoUtil;
-import com.developer.group.client.FriendClient;
 import com.developer.group.dto.*;
+import com.developer.group.dto.group.CreateGroupRequestDTO;
+import com.developer.group.dto.group.CreateGroupResponseDTO;
+import com.developer.group.dto.group.ModifyGroupInfoRequestDTO;
 import com.developer.group.pojo.GroupInfoPO;
 import com.developer.group.pojo.GroupMemberPO;
 import com.developer.group.repository.GroupInfoRepository;
 import com.developer.group.repository.GroupMemberRepository;
+import com.developer.group.service.GroupMemberService;
 import com.developer.group.service.GroupService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.developer.rpc.client.RpcClient;
+import com.developer.rpc.client.RpcExecutor;
+import com.developer.rpc.dto.friend.response.FriendInfoResponseRpcDTO;
+import com.developer.rpc.dto.message.request.SendJoinGroupInviteMessageRequestRpcDTO;
+import com.developer.rpc.dto.user.request.UserInfoRequestRpcDTO;
+import com.developer.rpc.dto.user.response.UserInfoResponseRpcDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
 
-    @Autowired
-    private GroupMemberRepository groupMemberRepository;
+    private final GroupMemberRepository groupMemberRepository;
+    private final GroupInfoRepository groupInfoRepository;
+    private final GroupMemberService groupMemberService;
+    private final IMOnlineUtil imOnlineUtil;
+    private final RpcClient rpcClient;
 
-    @Autowired
-    private GroupInfoRepository groupInfoRepository;
-
-    @Autowired
-    private FriendClient friendClient;
-
-    @Autowired
-    private IMOnlineUtil imOnlineUtil;
-
+    /*
+    建群
+     */
     @Override
-    public DeveloperResult<CreateGroupRequestDTO> createGroup(CreateGroupRequestDTO dto) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
-        String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        GroupInfoPO group = BeanUtils.copyProperties(dto, GroupInfoPO.class);
-        assert group != null;
-        group.setOwnerId(userId);
+    public DeveloperResult<CreateGroupResponseDTO> createGroup(CreateGroupRequestDTO dto) {
+        // 建群
+        GroupInfoPO group = new GroupInfoPO();
+        dto.getMemberUserIds().add(SelfUserInfoContext.selfUserInfo().getUserId());
+        group.setGroupName(dto.getGroupName());
+        group.setOwnerId(SelfUserInfoContext.selfUserInfo().getUserId());
+        group.setGroupType(GroupTypeEnum.NORMAL);
+        group.setInviteType(GroupInviteTypeEnum.PASS);
+        group.setMaxMemberCount(500);
+        group.setMemberCount(dto.getMemberUserIds().size());
+        group.setMuteAll(false);
+        group.setDeleted(false);
+        group.setCreateTime(new Date());
+        group.setUpdateTime(new Date());
+        group.setRemark("");
         groupInfoRepository.save(group);
 
-        GroupMemberPO groupMember = new GroupMemberPO();
-        groupMember.setGroupId(group.getId());
-        groupMember.setUserId(userId);
-        groupMember.setAliasName(StringUtils.isEmpty(dto.getAliasName()) ? nickName : dto.getAliasName());
-        groupMember.setRemark(StringUtils.isEmpty(dto.getRemark())?group.getName():dto.getRemark());
-        this.groupMemberRepository.save(groupMember);
+        // 处理群成员
+        DeveloperResult<Boolean> initMemberInfo = groupMemberService.createGroupInitMemberInfo(group.getId(), group.getOwnerId(), dto.getMemberUserIds());
+        if (!initMemberInfo.getIsSuccessful()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), initMemberInfo.getMsg());
+        }
 
-        dto.setId(group.getId());
-        dto.setAliasName(groupMember.getAliasName());
-        dto.setRemark(groupMember.getRemark());
+        // 返回群信息
+        CreateGroupResponseDTO responseDTO = new CreateGroupResponseDTO();
+        responseDTO.setGroupId(group.getId());
+        responseDTO.setGroupName(group.getGroupName());
 
-        return DeveloperResult.success(serialNo,dto);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(), responseDTO);
     }
 
+    /*
+    修改群信息
+     */
     @Override
-    public DeveloperResult<CreateGroupRequestDTO> modifyGroup(CreateGroupRequestDTO req) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
-        String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        GroupInfoPO group = groupInfoRepository.getById(req.getId());
-        if(group==null){
-            return DeveloperResult.error(serialNo,"群不存在,请确认再操作");
+    public DeveloperResult<Boolean> modifyGroup(ModifyGroupInfoRequestDTO req) {
+        // 判断群是否存在
+        GroupInfoPO group = groupInfoRepository.getById(req.getGroupId());
+        if (group == null) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "群不存在,请确认再操作");
         }
 
-        if(group.getOwnerId().equals(userId)){
-            group = BeanUtils.copyProperties(req,GroupInfoPO.class);
-            groupInfoRepository.updateById(group);
+        // 校验群主管理员信息
+        DeveloperResult<Boolean> verifyResult = verifyChatroomOwnerInfo(group.getId(), SelfUserInfoContext.selfUserInfo().getUserId());
+        if (!verifyResult.getIsSuccessful()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), verifyResult.getMsg());
         }
 
-        GroupMemberPO member = groupMemberRepository.findByGroupIdAndUserId(req.getId(), userId);
-        if(member==null){
-            return DeveloperResult.error(serialNo,"你不是群聊的成员");
-        }
+        // 修改群信息
+        group.setGroupName(req.getGroupName() == null ? group.getGroupName() : req.getGroupName());
+        group.setGroupAvatar(req.getGroupAvatar() == null ? group.getGroupAvatar() : req.getGroupAvatar());
+        group.setOwnerId(req.getOwnerId() == null ? group.getOwnerId() : req.getOwnerId());
+        group.setInviteType(req.getInviteType() == null ? group.getInviteType() : req.getInviteType());
+        group.setNotice(req.getNotice() == null ? group.getNotice() : req.getNotice());
+        group.setMuteAll(req.getMuteAll() == null ? group.getMuteAll() : req.getMuteAll());
+        groupInfoRepository.updateById(group);
 
-        member.setAliasName(StringUtils.isEmpty(req.getAliasName())? nickName : req.getAliasName());
-        member.setRemark(StringUtils.isEmpty(req.getRemark())?group.getName():req.getRemark());
-        groupMemberRepository.updateById(member);
-
-        return DeveloperResult.success(serialNo,req);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
+    /*
+    解散群
+     */
     @Override
     public DeveloperResult<Boolean> deleteGroup(DissolveGroupRequestDTO req) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
+        // 查询群是否存在
         GroupInfoPO group = this.groupInfoRepository.getById(req.getGroupId());
-        if(!group.getOwnerId().equals(userId)){
-            return DeveloperResult.error(serialNo,"您不是群主,只有群主才能解散");
+        if(ObjectUtil.isEmpty(group)){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),"群不存在");
         }
 
+        // 检测是否为群主
+        if (!group.getOwnerId().equals(SelfUserInfoContext.selfUserInfo().getUserId())) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "仅群主可操作");
+        }
+
+        // 修改群状态为解散
         group.setDeleted(true);
         this.groupInfoRepository.updateById(group);
 
-        this.groupMemberRepository.removeByGroupId(req.getGroupId());
+        // 清空相关群缓存
 
-        return DeveloperResult.success(serialNo);
+
+        // 回滚红包交易等未完成业务
+
+
+        // 发送最后群消息通知成员群已解散
+
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
+    /*
+    根据id查群信息
+     */
     @Override
     public DeveloperResult<GroupInfoDTO> findById(FindGroupRequestDTO req) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
+        // 群是否存在
         GroupInfoPO group = groupInfoRepository.getById(req.getGroupId());
-        GroupMemberPO groupMember = groupMemberRepository.findByGroupIdAndUserId(req.getGroupId(), userId);
-        if(groupMember==null){
-            return DeveloperResult.error(serialNo,"您未加入群聊");
+        if(ObjectUtil.isEmpty(group)){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),"群不存在");
         }
 
-        GroupInfoDTO dto = BeanUtils.copyProperties(group, GroupInfoDTO.class);
-        assert dto != null;
-        dto.setAliasName(groupMember.getAliasName());
+        // 是否为群成员
+        DeveloperResult<GroupMemberPO> groupMemberInfo = groupMemberService.findGroupMemberInfo(req.getGroupId(), SelfUserInfoContext.selfUserInfo().getUserId());
+        if(!groupMemberInfo.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),groupMemberInfo.getMsg());
+        }
+        GroupMemberPO groupMember = groupMemberInfo.getData();
+
+        // 查询内容
+        GroupInfoDTO dto = new GroupInfoDTO();
+        dto.setGroupName(group.getGroupName());
+        dto.setGroupOwnerId(group.getOwnerId());
+        dto.setGroupAvatar(group.getGroupAvatar());
+        dto.setNotice(group.getNotice());
+        dto.setGroupMemberAlias(groupMember.getAlias());
         dto.setRemark(groupMember.getRemark());
-        return DeveloperResult.success(serialNo,dto);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(), dto);
     }
 
+    /*
+    获取当前用户群列表
+     */
     @Override
     public DeveloperResult<List<GroupInfoDTO>> findGroupList() {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
-        List<GroupMemberPO> groupMembers = groupMemberRepository.findByUserId(userId);
-        if(groupMembers.isEmpty()){
-            return DeveloperResult.success(serialNo);
+        // 获取当前登录用户加入的所有群
+        List<GroupMemberPO> groupMembers = groupMemberService.findJoinGroupList(SelfUserInfoContext.selfUserInfo().getUserId()).getData();
+        if (groupMembers.isEmpty()) {
+            return DeveloperResult.success(SerialNoHolder.getSerialNo());
         }
 
+        // 群id集合
         List<Long> ids = groupMembers.stream().map((GroupMemberPO::getGroupId)).collect(Collectors.toList());
-        List<GroupInfoPO> groups = groupInfoRepository.findByGroupIds(ids);
+
+        // 获取群信息
+        List<GroupInfoPO> groups = groupInfoRepository.findByGroupInfo(ids);
+
+        // 聚合群、成员信息
         List<GroupInfoDTO> list = groups.stream().map(x -> {
-            GroupInfoDTO groupInfoRep = BeanUtils.copyProperties(x, GroupInfoDTO.class);
-            GroupMemberPO member = groupMembers.stream().filter(m -> x.getId().equals(m.getGroupId())).findFirst().get();
-            assert groupInfoRep != null;
-            groupInfoRep.setAliasName(member.getAliasName());
-            groupInfoRep.setRemark(member.getRemark());
-            return groupInfoRep;
+            GroupInfoDTO groupInfo = new GroupInfoDTO();
+            groupInfo.setGroupName(x.getGroupName());
+            groupInfo.setGroupAvatar(x.getGroupAvatar());
+            groupInfo.setGroupOwnerId(x.getOwnerId());
+            groupInfo.setGroupType(x.getGroupType());
+            groupInfo.setMaxMemberCount(x.getMaxMemberCount());
+            groupInfo.setMemberCount(x.getMemberCount());
+            groupInfo.setNotice(x.getNotice());
+            groupInfo.setMuteAll(x.getMuteAll());
+            groupInfo.setRemark(x.getRemark());
+
+            GroupMemberPO memberPO = groupMembers.stream().filter(xx -> xx.getGroupId().equals(x.getId())).findFirst().orElse(new GroupMemberPO());
+            groupInfo.setMemberRole(memberPO.getMemberRole());
+            groupInfo.setGroupMemberAlias(memberPO.getAlias());
+            groupInfo.setJoinTime(memberPO.getJoinTime());
+            groupInfo.setJoinType(memberPO.getJoinType());
+            groupInfo.setIsMuted(memberPO.getIsMuted());
+            return groupInfo;
         }).collect(Collectors.toList());
-        return DeveloperResult.success(serialNo,list);
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
     }
 
+    /*
+    邀请入群
+     */
     @Override
     public DeveloperResult<Boolean> invite(GroupInviteRequestDTO req) {
-        String serialNo = SerialNoHolder.getSerialNo();
+        // 群是否存在
         GroupInfoPO group = this.groupInfoRepository.getById(req.getGroupId());
-        if(group==null){
-            return DeveloperResult.error(serialNo,"群聊不存在");
+        if (group == null) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "群聊不存在");
         }
 
-        List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(req.getGroupId());
-        long size = members.stream().filter(x -> !x.getQuit()).count();
-        if(req.getFriendIds().size()+size> DeveloperConstant.MAX_GROUP_MEMBER){
-            return DeveloperResult.error(serialNo,"群聊人数不能大于"+DeveloperConstant.MAX_GROUP_MEMBER+"人");
+        // 校验是否超过群聊限制人数
+        if (req.getFriendIds().size() + group.getMemberCount() > DeveloperConstant.MAX_GROUP_MEMBER) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "群聊人数不能大于" + DeveloperConstant.MAX_GROUP_MEMBER + "人");
         }
 
-        DeveloperResult<List<FriendInfoDTO>> developerResult = friendClient.friends(serialNo);
-        List<FriendInfoDTO> friends = (List<FriendInfoDTO>) developerResult.getData();
-        List<FriendInfoDTO> friendsList = req.getFriendIds().stream().map(id -> friends.stream().filter(f -> f.getId().equals(id)).findFirst().get()).collect(Collectors.toList());
-        if(friendsList.size()!=req.getFriendIds().size()){
-            return DeveloperResult.error(serialNo,"部分用户不是您的好友,邀请失败");
+        // rpc调用获取好友信息
+        DeveloperResult<List<FriendInfoResponseRpcDTO>> rpcExecuteResult = RpcExecutor.execute(() -> rpcClient.friendRpcService.findFriends());
+        if(!rpcExecuteResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),rpcExecuteResult.getMsg());
         }
 
-        List<GroupMemberPO> groupMembers = friendsList.stream().map(f -> {
-            Optional<GroupMemberPO> optional = members.stream().filter(m -> m.getUserId().equals(f.getId())).findFirst();
-            GroupMemberPO groupMember = optional.orElseGet(GroupMemberPO::new);
-            groupMember.setGroupId(req.getGroupId());
-            groupMember.setUserId(f.getId());
-            groupMember.setAliasName(f.getNickName());
-            groupMember.setRemark(group.getName());
-            groupMember.setHeadImage(f.getHeadImage());
-            groupMember.setCreatedTime(new Date());
-            groupMember.setQuit(false);
-            return groupMember;
-        }).collect(Collectors.toList());
+        List<FriendInfoResponseRpcDTO> friendInfoDTO = rpcExecuteResult.getData();
 
-        if(!groupMembers.isEmpty()){
-            groupMemberRepository.saveOrUpdateBatch(groupMembers);
+        // 校验邀请用户是否全部都是自己好友
+        List<FriendInfoResponseRpcDTO> friendsList = req.getFriendIds().stream().map(id -> friendInfoDTO.stream().filter(f -> f.getId().equals(id)).findFirst().get()).collect(Collectors.toList());
+        if (friendsList.size() != req.getFriendIds().size()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "部分用户不是您的好友,邀请失败");
         }
 
-        return DeveloperResult.success(serialNo);
+        // 发送入群邀请消息,待用户确认加入
+        SendJoinGroupInviteMessageRequestRpcDTO inviteMessageDTO = new SendJoinGroupInviteMessageRequestRpcDTO();
+        inviteMessageDTO.setGroupId(group.getId());
+        inviteMessageDTO.setGroupName(group.getGroupName());
+        inviteMessageDTO.setGroupAvatar(group.getGroupAvatar());
+        inviteMessageDTO.setInviterId(SelfUserInfoContext.selfUserInfo().getUserId());
+        inviteMessageDTO.setInviterName(SelfUserInfoContext.selfUserInfo().getNickName());
+        inviteMessageDTO.setInviteMemberIds(friendsList.stream().map(FriendInfoResponseRpcDTO::getId).collect(Collectors.toList()));
+        DeveloperResult<Boolean> inviteResult = RpcExecutor.execute(() -> rpcClient.messageRpcService.sendJoinGroupInviteMessage(inviteMessageDTO));
+        if(!inviteResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),inviteResult.getMsg());
+        }
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
+    /*
+    获取群成员信息列表
+     */
     @Override
     public DeveloperResult<List<GroupMemberDTO>> findGroupMembers(FindGroupMembersRequestDTO req) {
-        String serialNo = SerialNoHolder.getSerialNo();
-        List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(req.getGroupId());
-        List<Long> userIds = members.stream().map(GroupMemberPO::getUserId).collect(Collectors.toList());
-        List<Long> onlineUserIds = imOnlineUtil.getOnlineUser(userIds);
-        List<GroupMemberDTO> list = members.stream().map(x -> {
-            GroupMemberDTO vo = BeanUtils.copyProperties(x, GroupMemberDTO.class);
-            assert vo != null;
+        // 获取当前群的所有群成员
+        List<GroupMemberPO> groupMembers = groupMemberService.findGroupMember(req.getGroupId()).getData();
+
+        // 群成员用户id
+        List<Long> memberUserIds = groupMembers.stream().map(GroupMemberPO::getUserId).collect(Collectors.toList());
+
+        // im 在线状态
+        List<Long> onlineUserIds = imOnlineUtil.getOnlineUser(memberUserIds);
+
+        // rpc 调用用户信息
+        UserInfoRequestRpcDTO userRpcDTO = new UserInfoRequestRpcDTO();
+        userRpcDTO.setUserIds(memberUserIds);
+        DeveloperResult<List<UserInfoResponseRpcDTO>> execute = RpcExecutor.execute(() -> rpcClient.userRpcService.findUserInfo(userRpcDTO));
+        if(!execute.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),execute.getMsg());
+        }
+
+        // 消息聚合
+        List<GroupMemberDTO> list = groupMembers.stream().map(x -> {
+            GroupMemberDTO vo = new GroupMemberDTO();
+            vo.setUserId(x.getUserId());
+            vo.setAliasName(x.getAlias());
+            vo.setQuit(x.getQuit());
             vo.setOnline(onlineUserIds.contains(x.getUserId()));
+
+            UserInfoResponseRpcDTO memberUserInfo = execute.getData().stream().filter(xx -> xx.getUserId().equals(x.getUserId())).findFirst().orElse(new UserInfoResponseRpcDTO());
+            vo.setHeadImage(memberUserInfo.getAvatar());
             return vo;
         }).collect(Collectors.toList());
-        return DeveloperResult.success(serialNo,list);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
     }
 
+    /*
+    退出群聊
+     */
     @Override
     public DeveloperResult<Boolean> quitGroup(QuitGroupRequestDTO req) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
+        // 校验群主
         GroupInfoPO group = groupInfoRepository.getById(req.getGroupId());
-        if(group.getOwnerId().equals(userId)){
-            return DeveloperResult.error(serialNo,"你是群主,不能退出");
+        if (group.getOwnerId().equals(SelfUserInfoContext.selfUserInfo().getUserId())) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "你是群主,不能退出");
         }
 
-        this.groupMemberRepository.removeByGroupAndUserId(req.getGroupId(),userId);
-        return DeveloperResult.success(serialNo);
+        // 修改群成员状态
+        ModifyGroupMemberInfoDTO memberInfoDTO = new ModifyGroupMemberInfoDTO();
+        memberInfoDTO.setGroupId(group.getId());
+        memberInfoDTO.setMemberUserId(SelfUserInfoContext.selfUserInfo().getUserId());
+        memberInfoDTO.setQuit(true);
+        DeveloperResult<Boolean> modifyResult = groupMemberService.modifyGroupMemberInfo(memberInfoDTO);
+        if(!modifyResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),modifyResult.getMsg());
+        }
+
+        // 修改群成员数量
+        group.setMemberCount(group.getMemberCount()-1);
+        groupInfoRepository.updateById(group);
+
+        // 通知所有群成员,发送IM消息
+        DeveloperResult<Boolean> quitGroupResult = RpcExecutor.execute(() -> rpcClient.messageRpcService.sendQuitGroupChatMessage(group.getId()));
+        if(!quitGroupResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),quitGroupResult.getMsg());
+        }
+
+        this.groupMemberRepository.removeByGroupAndUserId(req.getGroupId(), SelfUserInfoContext.selfUserInfo().getUserId());
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
+    /*
+    踢人出群
+     */
     @Override
     public DeveloperResult<Boolean> kickGroup(KickOutGroupRequestDTO req) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
-        GroupInfoPO group = groupInfoRepository.getById(req.getGroupId());
-        if(!group.getOwnerId().equals(userId)){
-            return DeveloperResult.error(serialNo,"你不是群主，不能踢人");
+        // 判断踢出用户是否在当前群聊当中
+        DeveloperResult<GroupMemberPO> targetGroupMemberInfoResult = groupMemberService.findGroupMemberInfo(req.getGroupId(), req.getUserId());
+        if(!targetGroupMemberInfoResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),targetGroupMemberInfoResult.getMsg());
         }
 
-        if(req.getUserId().equals(userId)){
-            return DeveloperResult.error(serialNo,"你不能踢自己");
+        // 获取当前用户所在群的成员信息
+        DeveloperResult<GroupMemberPO> currentUserGroupMemberInfoResult = groupMemberService.findGroupMemberInfo(req.getGroupId(), SelfUserInfoContext.selfUserInfo().getUserId());
+        if(!currentUserGroupMemberInfoResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),currentUserGroupMemberInfoResult.getMsg());
         }
 
-        groupMemberRepository.removeByGroupAndUserId(req.getGroupId(),req.getUserId());
-        return DeveloperResult.success(serialNo);
+        // 校验当前用户的群角色身份,是否为群主或管理员
+        GroupMemberPO memberInfo = currentUserGroupMemberInfoResult.getData();
+        if(!memberInfo.getMemberRole().equals(GroupMemberRoleEnum.OWNER) && !memberInfo.getMemberRole().equals(GroupMemberRoleEnum.ADMIN)){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),"仅群主或管理员可操作");
+        }
+
+        // 踢出对象不能是当前用户
+        if (req.getUserId().equals(SelfUserInfoContext.selfUserInfo().getUserId())) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "不能踢出自己");
+        }
+
+        // 修改群成员状态信息
+        ModifyGroupMemberInfoDTO modifyDTO = new ModifyGroupMemberInfoDTO();
+        modifyDTO.setGroupId(req.getGroupId());
+        modifyDTO.setMemberUserId(req.getUserId());
+        modifyDTO.setQuit(false);
+        DeveloperResult<Boolean> modifyResult = groupMemberService.modifyGroupMemberInfo(modifyDTO);
+        if(!modifyResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),modifyResult.getMsg());
+        }
+
+        // 更新群成员数量
+        GroupInfoPO groupInfo = groupInfoRepository.getById(req.getGroupId());
+        groupInfo.setMemberCount(groupInfo.getMemberCount()-1);
+        groupInfoRepository.updateById(groupInfo);
+
+        // 关播通知 xx 被踢出群聊
+        DeveloperResult<Boolean> execute = RpcExecutor.execute(() -> rpcClient.messageRpcService.sendKickGroupMessage(groupInfo.getId()));
+        if(!execute.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),execute.getMsg());
+        }
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
+    /*
+    获取当前用户加入的所有群聊
+     */
     @Override
     public DeveloperResult<List<SelfJoinGroupInfoDTO>> findSelfJoinAllGroupInfo() {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
-        List<SelfJoinGroupInfoDTO> joinAllGroupInfoList = groupInfoRepository.findUserJoinGroupInfo(userId);
-        return DeveloperResult.success(serialNo,joinAllGroupInfoList);
+        // 查询当前用户未退出的所有群
+        DeveloperResult<List<GroupMemberPO>> joinGroupList = groupMemberService.findJoinGroupList(SelfUserInfoContext.selfUserInfo().getUserId());
+        if(!joinGroupList.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),joinGroupList.getMsg());
+        }
+
+        // 群id集合
+        List<Long> groupIds = joinGroupList.getData().stream().map(GroupMemberPO::getGroupId).collect(Collectors.toList());
+
+        // 查询群信息
+        List<GroupInfoPO> groupInfoList = groupInfoRepository.findByGroupInfo(groupIds);
+
+        // 群信息聚合
+        List<SelfJoinGroupInfoDTO> aggregatorData = joinGroupList.getData().stream().map(x -> {
+            SelfJoinGroupInfoDTO dto = new SelfJoinGroupInfoDTO();
+            // 用户群成员信息
+            dto.setUserId(x.getUserId());
+            dto.setQuit(x.getQuit());
+            dto.setMemberAlias(x.getAlias());
+
+            // 群信息
+            GroupInfoPO groupInfo = groupInfoList.stream().filter(xx -> xx.getId().equals(x.getGroupId())).findFirst().orElse(new GroupInfoPO());
+            dto.setGroupId(groupInfo.getId());
+            dto.setGroupName(groupInfo.getGroupName());
+            dto.setGroupAvatar(groupInfo.getGroupAvatar());
+            dto.setCreateTime(groupInfo.getCreateTime());
+
+            return dto;
+        }).collect(Collectors.toList());
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(), aggregatorData);
+    }
+
+    /*
+    校验群主管理员信息
+     */
+    @Override
+    public DeveloperResult<Boolean> verifyChatroomOwnerInfo(Long groupId, Long userId) {
+        DeveloperResult<GroupMemberPO> groupMemberInfo = groupMemberService.findGroupMemberInfo(groupId, userId);
+        if (!groupMemberInfo.getIsSuccessful()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), groupMemberInfo.getMsg());
+        }
+        GroupMemberPO memberData = groupMemberInfo.getData();
+        if (!memberData.getMemberRole().equals(GroupMemberRoleEnum.OWNER) && !memberData.getMemberRole().equals(GroupMemberRoleEnum.ADMIN)) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "仅群主管理员可操作");
+        }
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 }

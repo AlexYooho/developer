@@ -2,19 +2,22 @@ package com.developer.group.controller;
 
 import com.developer.framework.model.DeveloperResult;
 import com.developer.group.dto.*;
+import com.developer.group.dto.group.CreateGroupRequestDTO;
+import com.developer.group.dto.group.CreateGroupResponseDTO;
+import com.developer.group.dto.group.ModifyGroupInfoRequestDTO;
 import com.developer.group.service.GroupService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("group")
+@RequiredArgsConstructor
 public class GroupController {
 
 
-    @Autowired
-    private GroupService groupService;
+    private final GroupService groupService;
 
     /**
      * 创建群聊
@@ -22,7 +25,7 @@ public class GroupController {
      * @return
      */
     @PostMapping("/create")
-    public DeveloperResult<CreateGroupRequestDTO> createGroup(@RequestBody CreateGroupRequestDTO req){
+    public DeveloperResult<CreateGroupResponseDTO> createGroup(@RequestBody CreateGroupRequestDTO req){
         return groupService.createGroup(req);
     }
 
@@ -32,7 +35,7 @@ public class GroupController {
      * @return
      */
     @PutMapping("/modify")
-    public DeveloperResult<CreateGroupRequestDTO> modifyGroup(@RequestBody CreateGroupRequestDTO req){
+    public DeveloperResult<Boolean> modifyGroup(@RequestBody ModifyGroupInfoRequestDTO req){
         return groupService.modifyGroup(req);
     }
 
@@ -76,7 +79,7 @@ public class GroupController {
     }
 
     /**
-     * 查询群聊成员列表
+     * 获取群成员信息列表
      * @param req
      * @return
      */
