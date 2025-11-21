@@ -34,7 +34,6 @@ public class RabbitMQEventListener {
         long tag = message.getMessageProperties().getDeliveryTag();
         try {
             LocalDateTime begin = LocalDateTime.now();
-            //IMessageProcessor instance = messageProcessorFactory.getInstance(dto.getProcessorType());
             IMessageProcessor instance = processorDispatchFactory.getInstance(dto.getProcessorType());
             if(instance==null){
                 log.info("【Message服务】消息内容:{},没有对应的消息处理器",dto);

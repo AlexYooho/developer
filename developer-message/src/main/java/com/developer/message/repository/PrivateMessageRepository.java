@@ -14,13 +14,14 @@ import java.util.List;
 public class PrivateMessageRepository extends ServiceImpl<PrivateMessageMapper, PrivateMessagePO> {
 
     public List<PrivateMessagePO> getMessageListByUserId(Long minId, Long userId){
-        Date minDate = DateTimeUtils.addMonths(new Date(), -1);
-        return this.lambdaQuery().gt(PrivateMessagePO::getId,minId)
-                .ge(PrivateMessagePO::getSendTime,minDate)
-                .ne(PrivateMessagePO::getMessageStatus, MessageStatusEnum.RECALL.code())
-                .and(x->x.and(z->z.eq(PrivateMessagePO::getSendId,userId)).or(q->q.eq(PrivateMessagePO::getReceiverId,userId)))
-                .orderByAsc(PrivateMessagePO::getId)
-                .last("limit 100").list();
+//        Date minDate = DateTimeUtils.addMonths(new Date(), -1);
+//        return this.lambdaQuery().gt(PrivateMessagePO::getId,minId)
+//                .ge(PrivateMessagePO::getSendTime,minDate)
+//                .ne(PrivateMessagePO::getMessageStatus, MessageStatusEnum.RECALL.code())
+//                .and(x->x.and(z->z.eq(PrivateMessagePO::getSendId,userId)).or(q->q.eq(PrivateMessagePO::getReceiverId,userId)))
+//                .orderByAsc(PrivateMessagePO::getId)
+//                .last("limit 100").list();
+        return baseMapper.findMessageList(minId,userId);
     }
 
     public void updateMessageStatus(Long friendId, Long userId, Integer messageStatus){

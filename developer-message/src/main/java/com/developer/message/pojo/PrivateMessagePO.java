@@ -21,6 +21,24 @@ public class PrivateMessagePO {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
+    /*
+    全局消息id
+     */
+    @TableField("message_id")
+    private Long messageId;
+
+    /*
+    会话id
+     */
+    @TableField("conversation_id")
+    private String conversationId;
+
+    /*
+    客户端生成的 ID，用于幂等
+     */
+    @TableField("client_msg_id")
+    private String clientMsgId;
+
     /**
      * 发送用户id
      */
@@ -30,7 +48,7 @@ public class PrivateMessagePO {
     /**
      * 接收用户id
      */
-    @TableField("recv_id")
+    @TableField("receiver_id")
     private Long receiverId;
 
     /**
@@ -51,12 +69,23 @@ public class PrivateMessagePO {
     @TableField("status")
     private MessageStatusEnum messageStatus;
 
+    /*
+    已读状态（0 未读，1 已读）
+     */
+    @TableField("read_status")
+    private Integer readStatus;
 
     /**
      * 发送时间
      */
     @TableField("send_time")
     private Date sendTime;
+
+    /*
+    排序用（雪花 ID），避免毫秒内排序错乱
+     */
+    @TableField("order_no")
+    private Long orderNo;
 
     /**
      * 引用消息id
@@ -69,4 +98,28 @@ public class PrivateMessagePO {
      */
     @TableField("like_count")
     private Long likeCount;
+
+    /*
+    扩展字段（JSON）
+     */
+    @TableField("extra")
+    private String extra;
+
+    /*
+    是否逻辑删除
+     */
+    @TableField("deleted")
+    private Boolean deleted;
+
+    /*
+    创建时间
+     */
+    @TableField("create_time")
+    private Date createTime;
+
+    /*
+    修改时间
+     */
+    @TableField("update_time")
+    private Date updateTime;
 }

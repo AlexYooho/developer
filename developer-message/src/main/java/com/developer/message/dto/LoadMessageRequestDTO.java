@@ -6,11 +6,6 @@ import com.developer.framework.enums.MessageTerminalTypeEnum;
 
 @Data
 public class LoadMessageRequestDTO {
-    /**
-     * 操作编号
-     */
-    @JsonProperty("serial_no")
-    private String serialNo;
 
     /**
      * 消息最小id

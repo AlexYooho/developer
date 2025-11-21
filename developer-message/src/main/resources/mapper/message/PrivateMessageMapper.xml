@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.developer.message.mappers.PrivateMessageMapper">
+
+    <resultMap id="BaseResultMap" type="com.developer.message.pojo.PrivateMessagePO"/>
+
+    <sql id="Base_Column_list">
+        id,send_id,recv_id,content,`type`,status,send_time,referene_id,like_count
+    </sql>
+
+    <select id="findMessageList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+            FROM private_message
+        WHERE id > #{min_id}
+        AND send_time >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
+        AND message_status != 2
+        AND (send_id = #{user_id} OR recv_id = #{user_id})
+        ORDER BY id ASC
+        LIMIT 100
+    </select>
+
+</mapper>

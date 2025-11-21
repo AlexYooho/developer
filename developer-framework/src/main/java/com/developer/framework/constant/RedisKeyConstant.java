@@ -1,6 +1,7 @@
 package com.developer.framework.constant;
 
 import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.MessageTerminalTypeEnum;
 import com.developer.framework.enums.VerifyCodeTypeEnum;
 
 public class RedisKeyConstant {
@@ -38,8 +39,8 @@ public class RedisKeyConstant {
     /**
      * 用户私聊最大消息id（多端）
      */
-    public static String DEVELOPER_MESSAGE_PRIVATE_USER_MAX_ID(Long userId, com.developer.framework.enums.MessageTerminalTypeEnum terminalType) {
-        return String.format("developer:message:private:user:%s:max:id:%s", userId, terminalType == null ? "UNKNOWN" : terminalType.name());
+    public static String DEVELOPER_MESSAGE_USER_TERMINAL_PRIVATE_CHAT_MAX_ID(Long userId, MessageTerminalTypeEnum terminalType) {
+        return String.format("developer:message:user:%s:terminal:%s:private:chat:max:id", userId, terminalType.code());
     }
 
     /**

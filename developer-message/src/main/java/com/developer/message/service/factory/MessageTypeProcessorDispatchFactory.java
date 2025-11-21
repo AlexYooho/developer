@@ -2,7 +2,6 @@ package com.developer.message.service.factory;
 
 import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.message.service.MessageService;
-import com.developer.message.service.impl.DefaultMessageServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -15,8 +14,6 @@ public class MessageTypeProcessorDispatchFactory {
     @Autowired
     private ApplicationContext context;
 
-    @Autowired
-    private DefaultMessageServiceImpl defaultMessageService;
 
     public MessageService getInstance(MessageMainTypeEnum messageMainTypeEnum) {
         Map<String, MessageService> beansMap = context.getBeansOfType(MessageService.class);
@@ -30,7 +27,7 @@ public class MessageTypeProcessorDispatchFactory {
             break;
         }
 
-        return instance == null ? defaultMessageService : instance;
+        return instance;
     }
 
 }

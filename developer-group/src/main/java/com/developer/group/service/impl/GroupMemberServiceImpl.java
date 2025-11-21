@@ -31,6 +31,9 @@ public class GroupMemberServiceImpl implements GroupMemberService {
     private final GroupMemberRepository groupMemberRepository;
     private final RpcClient rpcClient;
 
+    /*
+    查找群成员id
+     */
     @Override
     public DeveloperResult<List<Long>> findGroupMember(FindGroupMemberUserIdRequestDTO req) {
         String serialNo = SerialNoHolder.getSerialNo();
@@ -39,6 +42,9 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         return DeveloperResult.success(serialNo,userIds);
     }
 
+    /*
+    查找群成员
+     */
     @Override
     public DeveloperResult<List<GroupMemberPO>> findGroupMember(Long groupId) {
         List<GroupMemberPO> members = this.groupMemberRepository.findByGroupId(groupId);
@@ -58,6 +64,9 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         return DeveloperResult.success(SerialNoHolder.getSerialNo(),memberInfo);
     }
 
+    /*
+    批量修改群成员信息
+     */
     @Override
     public DeveloperResult<Boolean> batchModifyGroupMemberInfo(BatchModifyGroupMemberInfoRequestDTO req) {
         String serialNo = SerialNoHolder.getSerialNo();
