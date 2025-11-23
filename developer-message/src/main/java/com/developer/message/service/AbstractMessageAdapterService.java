@@ -16,7 +16,7 @@ public abstract class AbstractMessageAdapterService implements MessageService{
     }
 
     @Override
-    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(LoadMessageRequestDTO req) {
+    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(LoadMessageRequestDTO req) {
         return null;
     }
 

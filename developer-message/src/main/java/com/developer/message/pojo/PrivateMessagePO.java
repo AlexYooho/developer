@@ -18,26 +18,20 @@ public class PrivateMessagePO {
     /**
      * id
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     /*
-    全局消息id
+    较小的用户ID
      */
-    @TableField("message_id")
-    private Long messageId;
+    @TableField("uid_a")
+    private Long uidA;
 
     /*
-    会话id
+    较大的用户ID
      */
-    @TableField("conversation_id")
-    private String conversationId;
-
-    /*
-    客户端生成的 ID，用于幂等
-     */
-    @TableField("client_msg_id")
-    private String clientMsgId;
+    @TableField("uid_b")
+    private Long uidB;
 
     /**
      * 发送用户id
@@ -50,6 +44,18 @@ public class PrivateMessagePO {
      */
     @TableField("receiver_id")
     private Long receiverId;
+
+    /*
+   会话内严格递增序列号（彻底解决时间乱序、时钟回拨问题）
+    */
+    @TableField("conv_seq")
+    private Long convSeq;
+
+    /*
+    客户端生成的 ID，用于幂等
+     */
+    @TableField("client_msg_id")
+    private String clientMsgId;
 
     /**
      * 发送内容
@@ -80,12 +86,6 @@ public class PrivateMessagePO {
      */
     @TableField("send_time")
     private Date sendTime;
-
-    /*
-    排序用（雪花 ID），避免毫秒内排序错乱
-     */
-    @TableField("order_no")
-    private Long orderNo;
 
     /**
      * 引用消息id

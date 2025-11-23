@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.developer.message.mappers.MessageConversationMapper">
+
+    <resultMap id="BaseResultMap" type="com.developer.message.pojo.MessageConversationPO"/>
+
+    <sql id="Base_Column_list">
+        id, user_id, conv_type, target_id, last_msg_seq, last_msg_id, last_msg_content, last_msg_type, last_msg_time, unread_count, pinned, muted, deleted, draft, extra, create_time, updated_time
+    </sql>
+
+    <select id="findList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+            FROM message_conversation
+        WHERE user_id > #{user_id}
+        AND deleted = 0
+        ORDER BY last_msg_time DESC
+    </select>
+
+</mapper>

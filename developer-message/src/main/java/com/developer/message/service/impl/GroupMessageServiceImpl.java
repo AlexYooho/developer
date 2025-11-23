@@ -60,7 +60,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
      * @return
      */
     @Override
-    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(LoadMessageRequestDTO req) {
+    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(LoadMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
         List<SelfJoinGroupInfoDTO> joinGroupInfoList = groupInfoClient.getSelfJoinAllGroupInfo(serialNo).getData();
@@ -98,7 +98,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
             return vo;
         }).collect(Collectors.toList());
 
-        return DeveloperResult.success(serialNo, vos);
+        return DeveloperResult.success(serialNo, null);
     }
 
     /**

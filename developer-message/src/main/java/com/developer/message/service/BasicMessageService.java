@@ -19,7 +19,7 @@ public interface BasicMessageService {
      * @param req
      * @return
      */
-    DeveloperResult<List<SendMessageResultDTO>> loadMessage(LoadMessageRequestDTO req);
+    DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(LoadMessageRequestDTO req);
 
     /**
      * 发送消息

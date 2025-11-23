@@ -4,6 +4,7 @@ import com.developer.framework.enums.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.*;
 import com.developer.message.service.factory.MessageTypeProcessorDispatchFactory;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +13,10 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("message")
+@AllArgsConstructor
 public class MessageController {
 
-    @Autowired
-    private MessageTypeProcessorDispatchFactory messageTypeProcessorDispatchFactory;
+    private final MessageTypeProcessorDispatchFactory messageTypeProcessorDispatchFactory;
 
     /*
     发送消息
@@ -37,7 +38,7 @@ public class MessageController {
     拉取消息
      */
     @GetMapping("/{type}/loadMessage/{min_id}")
-    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("min_id") Long minId) {
+    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("min_id") Long minId) {
         LoadMessageRequestDTO dto = new LoadMessageRequestDTO();
         dto.setMinId(minId);
         return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(dto);

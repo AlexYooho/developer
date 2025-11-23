@@ -39,8 +39,8 @@ public class RedisKeyConstant {
     /**
      * 用户私聊最大消息id（多端）
      */
-    public static String DEVELOPER_MESSAGE_USER_TERMINAL_PRIVATE_CHAT_MAX_ID(Long userId, MessageTerminalTypeEnum terminalType) {
-        return String.format("developer:message:user:%s:terminal:%s:private:chat:max:id", userId, terminalType.code());
+    public static String DEVELOPER_MESSAGE_USER_PRIVATE_CHAT_MAX_ID(Long userId) {
+        return String.format("developer:message:user:%s:private:chat:max:id", userId);
     }
 
     /**

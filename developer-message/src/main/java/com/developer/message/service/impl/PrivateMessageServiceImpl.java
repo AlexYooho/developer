@@ -51,22 +51,21 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return MessageMainTypeEnum.PRIVATE_MESSAGE;
     }
 
-    /**
-     * 拉取最新消息
-     * @param req
-     * @return
+    /*
+    拉取最新消息--这里需要改成按会话id获取
      */
     @Override
-    public DeveloperResult<List<SendMessageResultDTO>> loadMessage(LoadMessageRequestDTO req) {
-        List<SendMessageResultDTO> list = new ArrayList<>();
+    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(LoadMessageRequestDTO req) {
+        List<LoadMessageListResponseDTO> list = new ArrayList<>();
 
-        // 根据缓存判断是否有新的聊天消息
-        String key = RedisKeyConstant.DEVELOPER_MESSAGE_USER_TERMINAL_PRIVATE_CHAT_MAX_ID(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTerminalType());
+        // 是否有新消息 有：拉取、没有：直接返回
+        String key = RedisKeyConstant.DEVELOPER_MESSAGE_USER_PRIVATE_CHAT_MAX_ID(SelfUserInfoContext.selfUserInfo().getUserId());
         Long maxMessageId = redisUtil.get(key, Long.class);
         if (maxMessageId != 0L && req.getMinId().equals(maxMessageId)) {
             return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
         }
 
+        // 获取当前用户的最新聊天消息
         List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(req.getMinId(), SelfUserInfoContext.selfUserInfo().getUserId());
         List<Long> ids = messages.stream()
                 .filter(x -> !x.getSendId().equals(SelfUserInfoContext.selfUserInfo().getUserId()) && x.getMessageStatus().equals(MessageStatusEnum.UNSEND))
@@ -82,14 +81,12 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
             redisUtil.set(key, newMaxId, 24, TimeUnit.HOURS);
         }
         // 如果没有新消息，不回写 redis，保持原有 maxMessageId
-        list = messages.stream().map(m -> BeanUtils.copyProperties(m, PrivateMessageDTO.class)).collect(Collectors.toList());
+        messages.stream().map(m -> BeanUtils.copyProperties(m, PrivateMessageDTO.class)).collect(Collectors.toList());
         return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
     }
 
-    /**
-     * 发送消息
-     * @param req
-     * @return
+    /*
+    发送消息
      */
     @Transactional
     @Override
@@ -108,7 +105,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
 
         // 记录消息id，兼容多端游标
         MessageTerminalTypeEnum terminalType = req.getTerminalType() != null ? req.getTerminalType() : MessageTerminalTypeEnum.WEB;
-        redisUtil.set(RedisKeyConstant.DEVELOPER_MESSAGE_USER_TERMINAL_PRIVATE_CHAT_MAX_ID(userId, terminalType), privateMessage.getId(), 24, TimeUnit.HOURS);
+        redisUtil.set(RedisKeyConstant.DEVELOPER_MESSAGE_USER_PRIVATE_CHAT_MAX_ID(userId), privateMessage.getId(), 24, TimeUnit.HOURS);
 
         // 发送消息
         rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getMessageStatus(), terminalType, privateMessage.getId(), userId, nickName, req.getMessageContent(),privateMessage.getSendTime(),req.getReceiverId()));
@@ -127,10 +124,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return DeveloperResult.success(serialNo,dto);
     }
 
-    /**
-     * 已读消息
-     * @param req
-     * @return
+    /*
+    已读消息
      */
     @Override
     public DeveloperResult<Boolean> readMessage(ReadMessageRequestDTO req) {
@@ -143,10 +138,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return DeveloperResult.success(serialNo);
     }
 
-    /**
-     * 撤回消息
-     * @param req
-     * @return
+    /*
+    撤回消息
      */
     @Override
     public DeveloperResult<Boolean> withdrawMessage(RecallMessageRequestDTO req) {
@@ -176,10 +169,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return DeveloperResult.success(serialNo);
     }
 
-    /**
-     * 获取历史消息
-     * @param req
-     * @return
+    /*
+    获取历史消息
      */
     @Override
     public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
@@ -193,10 +184,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return DeveloperResult.success(serialNo,collect);
     }
 
-    /**
-     * 新增消息
-     * @param dto
-     * @return
+    /*
+    新增消息
      */
     @Override
     public DeveloperResult<Boolean> insertMessage(MessageInsertDTO dto) {
@@ -212,10 +201,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return DeveloperResult.success(serialNo,isSuccess);
     }
 
-    /**
-     * 删除消息
-     * @param req
-     * @return
+    /*
+    删除消息
      */
     @Override
     public DeveloperResult<Boolean> deleteMessage(RemoveMessageRequestDTO req) {
@@ -225,11 +212,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return DeveloperResult.success(serialNo,isSuccess);
     }
 
-    /**
-     * 回复消息
-     * @param id
-     * @param req
-     * @return
+    /*
+    回复消息
      */
     @Override
     public DeveloperResult<Boolean> replyMessage(Long id,ReplyMessageRequestDTO req) {
@@ -246,20 +230,16 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return DeveloperResult.success(serialNo);
     }
 
-    /**
-     * 收藏
-     * @param req
-     * @return
+    /*
+    收藏
      */
     @Override
     public DeveloperResult<Boolean> collectionMessage(CollectionMessageRequestDTO req) {
         return null;
     }
 
-    /**
-     * 转发消息
-     * @param req
-     * @return
+    /*
+    转发消息
      */
     @Override
     public DeveloperResult<Boolean> forwardMessage(ForwardMessageRequestDTO req) {
@@ -283,10 +263,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return DeveloperResult.success(serialNo);
     }
 
-    /**
-     * 点赞消息
-     * @param req
-     * @return
+    /*
+    点赞消息
      */
     @Async
     @Transactional
@@ -295,6 +273,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return messageLikeService.like(req, MessageMainTypeEnum.PRIVATE_MESSAGE);
     }
 
+    /*
+    取消点赞
+     */
     @Async
     @Transactional
     @Override
@@ -302,10 +283,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return messageLikeService.unLike(req, MessageMainTypeEnum.PRIVATE_MESSAGE);
     }
 
-    /**
-     * 是否支付类型消息
-     * @param messageContentTypeEnum
-     * @return
+    /*
+    是否支付类型消息
      */
     @Override
     public Boolean isPaymentMessageType(MessageContentTypeEnum messageContentTypeEnum) {
@@ -324,11 +303,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                 .build();
     }
 
-    /**
-     * 消息入库
-     * @param userId
-     * @param req
-     * @return
+    /*
+    消息入库
      */
     private PrivateMessagePO saveMessage(Long userId,SendMessageRequestDTO req){
         PrivateMessagePO privateMessage = createPrivateMessageMode(userId, req.getReceiverId(), req.getMessageContent(), req.getMessageContentType(), MessageStatusEnum.SENDED,req.getReferenceId());
@@ -336,8 +312,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return privateMessage;
     }
 
-    /**
-     * 构建mq消息dto
+    /*
+    构建mq消息dto
      */
     private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName, String messageContent, Date sendTime,Long friendId){
         return ChatMessageDTO
