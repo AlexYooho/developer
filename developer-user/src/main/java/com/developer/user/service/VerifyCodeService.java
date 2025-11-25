@@ -1,6 +1,6 @@
 package com.developer.user.service;
 
-import com.developer.framework.enums.VerifyCodeTypeEnum;
+import com.developer.framework.enums.message.VerifyCodeTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.user.dto.SendRegisterVerifyCodeRequestDTO;
 

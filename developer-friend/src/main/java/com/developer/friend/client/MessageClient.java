@@ -1,6 +1,6 @@
 package com.developer.friend.client;
 
-import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.friend.dto.MessageInsertDTO;
 import com.developer.friend.dto.RemoveMessageRequestDTO;

@@ -1,6 +1,6 @@
 package com.developer.payment.service.processorFactory;
 
-import com.developer.framework.enums.RedPacketsTypeEnum;
+import com.developer.framework.enums.payment.RedPacketsTypeEnum;
 import com.developer.payment.service.RedPacketsService;
 import com.developer.payment.service.impl.redpackets.DefaultRedPacketsTypeServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;

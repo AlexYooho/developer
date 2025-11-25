@@ -1,6 +1,6 @@
 package com.developer.payment.service.processorFactory;
 
-import com.developer.framework.enums.PaymentTypeEnum;
+import com.developer.framework.enums.payment.PaymentTypeEnum;
 import com.developer.payment.service.PaymentService;
 import com.developer.payment.service.impl.DefaultPaymentTypeServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.developer.message.dto;
 
-import com.developer.framework.enums.VerifyCodeTypeEnum;
+import com.developer.framework.enums.message.VerifyCodeTypeEnum;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

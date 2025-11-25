@@ -1,13 +1,13 @@
 package com.developer.payment.service.impl.redpackets;
 
-import com.developer.framework.enums.PaymentTypeEnum;
+import com.developer.framework.enums.payment.PaymentTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.framework.utils.SerialNoHolder;
 import com.developer.payment.dto.OpenRedPacketsRequestDTO;
 import com.developer.payment.dto.ReturnTransferRequestDTO;
 import com.developer.payment.dto.SendRedPacketsResultDTO;
-import com.developer.payment.enums.RedPacketsStatusEnum;
+import com.developer.framework.enums.payment.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;
 import com.developer.payment.service.PaymentService;

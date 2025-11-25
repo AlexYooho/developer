@@ -1,13 +1,13 @@
 package com.developer.message.eventlistener.processor;
 
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
 import com.developer.framework.utils.SerialNoHolder;
 import com.developer.message.dto.MessageLikeEventDTO;
-import com.developer.message.enums.MessageLikeEnum;
+import com.developer.framework.enums.message.MessageLikeEnum;
 import com.developer.message.pojo.GroupMessagePO;
 import com.developer.message.pojo.MessageLikeRecordPO;
 import com.developer.message.repository.GroupMessageRepository;

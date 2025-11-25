@@ -1,7 +1,7 @@
 package com.developer.message.repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.message.mappers.MessageLikeRecordMapper;
 import com.developer.message.pojo.MessageLikeRecordPO;
 import org.springframework.stereotype.Repository;

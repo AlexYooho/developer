@@ -1,6 +1,6 @@
 package com.developer.payment.client;
 
-import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.CheckVerifyCodeRequestDTO;
 import com.developer.payment.dto.SendMessageRequestDTO;

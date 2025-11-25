@@ -1,7 +1,7 @@
 package com.developer.payment.service.impl.redpackets;
 
 import com.developer.framework.dto.SendRedPacketsDTO;
-import com.developer.framework.enums.RedPacketsTypeEnum;
+import com.developer.framework.enums.payment.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.SendRedPacketsResultDTO;
 import com.developer.payment.service.RedPacketsService;

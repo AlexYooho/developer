@@ -1,7 +1,7 @@
 package com.developer.user.service.impl;
 
 import com.developer.framework.constant.RedisKeyConstant;
-import com.developer.framework.enums.VerifyCodeTypeEnum;
+import com.developer.framework.enums.message.VerifyCodeTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.MailUtil;
 import com.developer.framework.utils.RedisUtil;

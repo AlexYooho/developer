@@ -1,14 +1,18 @@
-package com.developer.message.enums;
+package com.developer.framework.enums.payment;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.developer.framework.enums.MessageMainTypeEnum;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum MessageLikeEnum {
+public enum TransactionTypeEnum {
 
-    CANCEL_LIKE(0,"取消点赞"),
-    LIKE(1,"点赞");
+    TRANSFER(0,"转账"),
+
+    RECHARGE(1,"充值"),
+
+    WITHDRAW(2,"提现"),
+
+    RED_PACKET(3,"红包");
 
     @EnumValue
     private final Integer code;
@@ -19,12 +23,13 @@ public enum MessageLikeEnum {
         return this.code;
     }
 
-    public static MessageLikeEnum fromCode(Integer code){
-        for (MessageLikeEnum typeEnum:values()) {
+    public static TransactionTypeEnum fromCode(Integer code){
+        for (TransactionTypeEnum typeEnum:values()) {
             if (typeEnum.code.equals(code)) {
                 return typeEnum;
             }
         }
         return null;
     }
+
 }

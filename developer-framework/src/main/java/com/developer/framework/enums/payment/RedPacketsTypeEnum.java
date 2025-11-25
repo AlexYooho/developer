@@ -1,19 +1,14 @@
-package com.developer.payment.enums;
+package com.developer.framework.enums.payment;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.baomidou.mybatisplus.annotation.IEnum;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum TransactionTypeEnum {
+public enum RedPacketsTypeEnum {
 
-    TRANSFER(0,"转账"),
+    NORMAL(0,"普通红包"),
 
-    RECHARGE(1,"充值"),
-
-    WITHDRAW(2,"提现"),
-
-    RED_PACKET(3,"红包");
+    LUCKY(1,"拼手气红包");
 
     @EnumValue
     private final Integer code;
@@ -24,13 +19,12 @@ public enum TransactionTypeEnum {
         return this.code;
     }
 
-    public static TransactionTypeEnum fromCode(Integer code){
-        for (TransactionTypeEnum typeEnum:values()) {
+    public static RedPacketsTypeEnum fromCode(Integer code){
+        for (RedPacketsTypeEnum typeEnum:values()) {
             if (typeEnum.code.equals(code)) {
                 return typeEnum;
             }
         }
         return null;
     }
-
 }

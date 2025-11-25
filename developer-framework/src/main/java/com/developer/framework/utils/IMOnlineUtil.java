@@ -1,7 +1,7 @@
 package com.developer.framework.utils;
 
 import com.developer.framework.constant.RedisKeyConstant;
-import com.developer.framework.enums.MessageTerminalTypeEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
 import com.developer.framework.model.IMUserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;

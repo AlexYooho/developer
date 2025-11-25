@@ -1,4 +1,4 @@
-package com.developer.friend.enums;
+package com.developer.framework.enums.friend;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;

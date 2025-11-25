@@ -6,7 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.dto.ChatMessageDTO;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.MessageTerminalTypeEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
 import com.developer.framework.utils.IPUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.RpcUtil;

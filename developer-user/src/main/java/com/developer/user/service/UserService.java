@@ -1,9 +1,7 @@
 package com.developer.user.service;
 
-import com.developer.framework.enums.VerifyCodeTypeEnum;
 import com.developer.user.dto.*;
 import com.developer.framework.model.DeveloperResult;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.util.List;
 

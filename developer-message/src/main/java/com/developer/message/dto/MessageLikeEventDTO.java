@@ -1,6 +1,6 @@
 package com.developer.message.dto;
 
-import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
 import lombok.Builder;
 import lombok.Data;
 

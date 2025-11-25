@@ -4,6 +4,11 @@ import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.*;
+import com.developer.framework.enums.message.MessageContentTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.payment.PaymentChannelEnum;
+import com.developer.framework.enums.payment.PaymentTypeEnum;
+import com.developer.framework.enums.payment.RedPacketsTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
@@ -12,8 +17,8 @@ import com.developer.payment.client.GroupClient;
 import com.developer.payment.client.MessageClient;
 import com.developer.payment.dto.*;
 import com.developer.framework.dto.SendRedPacketsDTO;
-import com.developer.payment.enums.RedPacketsReceiveStatusEnum;
-import com.developer.payment.enums.RedPacketsStatusEnum;
+import com.developer.framework.enums.payment.RedPacketsReceiveStatusEnum;
+import com.developer.framework.enums.payment.RedPacketsStatusEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.pojo.RedPacketsReceiveDetailsPO;
 import com.developer.payment.pojo.SendPaymentMessageLogPO;
@@ -105,7 +110,7 @@ public class BasePaymentService {
      * @param serialNo
      * @return
      */
-    public DeveloperResult<Boolean> paymentCommentConditionalJudgment(String serialNo, PaymentTypeEnum paymentTypeEnum, PaymentChannelEnum paymentChannelEnum,RedPacketsTypeEnum redPacketsTypeEnum, BigDecimal paymentAmount, Long targetId,Long userId, Integer redPacketsCount) {
+    public DeveloperResult<Boolean> paymentCommentConditionalJudgment(String serialNo, PaymentTypeEnum paymentTypeEnum, PaymentChannelEnum paymentChannelEnum, RedPacketsTypeEnum redPacketsTypeEnum, BigDecimal paymentAmount, Long targetId, Long userId, Integer redPacketsCount) {
         // 基础条件
         if (paymentAmount.compareTo(BigDecimal.ZERO) <= 0) {
             return DeveloperResult.error(serialNo, "金额最低0.01");
@@ -208,7 +213,7 @@ public class BasePaymentService {
      * @param targetId
      * @param channelEnum
      */
-    public DeveloperResult<SendRedPacketsResultDTO> sendRedPacketsMessage(String serialNo, Long targetId, PaymentChannelEnum channelEnum, Long transactionId,PaymentTypeEnum paymentTypeEnum,String messageContent,MessageContentTypeEnum messageContentTypeEnum) {
+    public DeveloperResult<SendRedPacketsResultDTO> sendRedPacketsMessage(String serialNo, Long targetId, PaymentChannelEnum channelEnum, Long transactionId, PaymentTypeEnum paymentTypeEnum, String messageContent, MessageContentTypeEnum messageContentTypeEnum) {
         if(channelEnum == null || !channelEnum.isSupportType()){
             return DeveloperResult.error(serialNo, "消息主类型不明确");
         }

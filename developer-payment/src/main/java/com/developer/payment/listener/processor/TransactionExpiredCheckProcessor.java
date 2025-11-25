@@ -1,15 +1,15 @@
 package com.developer.payment.listener.processor;
 
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.PaymentTypeEnum;
+import com.developer.framework.enums.payment.PaymentTypeEnum;
 import com.developer.framework.enums.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
 import com.developer.payment.dto.TransactionExpiredCheckDTO;
-import com.developer.payment.enums.RedPacketsStatusEnum;
-import com.developer.payment.enums.TransactionTypeEnum;
-import com.developer.payment.enums.TransferStatusEnum;
-import com.developer.payment.enums.WalletOperationTypeEnum;
+import com.developer.framework.enums.payment.RedPacketsStatusEnum;
+import com.developer.framework.enums.payment.TransactionTypeEnum;
+import com.developer.framework.enums.payment.TransferStatusEnum;
+import com.developer.framework.enums.payment.WalletOperationTypeEnum;
 import com.developer.payment.pojo.RedPacketsInfoPO;
 import com.developer.payment.pojo.TransferInfoPO;
 import com.developer.payment.repository.RedPacketsInfoRepository;

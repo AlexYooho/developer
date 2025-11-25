@@ -1,7 +1,7 @@
 package com.developer.payment.service;
 
 
-import com.developer.framework.enums.PaymentTypeEnum;
+import com.developer.framework.enums.payment.PaymentTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.payment.dto.OpenRedPacketsRequestDTO;

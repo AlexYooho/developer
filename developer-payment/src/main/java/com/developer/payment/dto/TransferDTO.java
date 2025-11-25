@@ -1,6 +1,6 @@
 package com.developer.payment.dto;
 
-import com.developer.framework.enums.PaymentChannelEnum;
+import com.developer.framework.enums.payment.PaymentChannelEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

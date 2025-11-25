@@ -2,7 +2,7 @@ package com.developer.message.dto;
 
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.developer.framework.enums.MessageTerminalTypeEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
 
 @Data
 public class LoadMessageRequestDTO {

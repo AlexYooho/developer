@@ -1,28 +1,28 @@
-package com.developer.framework.enums;
+package com.developer.framework.enums.payment;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum MessageStatusEnum {
+public enum TransactionStatusEnum {
 
-    UNSEND(0,"未送达"),
-    SENDED(1,"送达"),
-    RECALL(2,"撤回"),
-    READED(3,"已读");
+    PENDING(0,"等待处理"),
+
+    SUCCESS(1,"成功"),
+
+    FAILED(2,"失败");
 
     @EnumValue
     private final Integer code;
 
     private final String desc;
 
-
     public Integer code(){
         return this.code;
     }
 
-    public static MessageStatusEnum fromCode(Integer code){
-        for (MessageStatusEnum typeEnum:values()) {
+    public static TransactionStatusEnum fromCode(Integer code){
+        for (TransactionStatusEnum typeEnum:values()) {
             if (typeEnum.code.equals(code)) {
                 return typeEnum;
             }

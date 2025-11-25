@@ -7,6 +7,10 @@ import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.*;
 import com.developer.framework.enums.*;
+import com.developer.framework.enums.message.MessageContentTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageStatusEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
@@ -114,7 +118,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         dto.setId(privateMessage.getId());
 
         // 同步修改红包消息状态
-        if(req.getMessageContentType()==MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER){
+        if(req.getMessageContentType()== MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER){
             DeveloperResult<Boolean> modifyResult = paymentClient.modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder().serialNo(serialNo).messageStatus(1).build());
             if(!modifyResult.getIsSuccessful()){
                 return DeveloperResult.error(serialNo, modifyResult.getMsg());

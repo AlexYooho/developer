@@ -1,9 +1,9 @@
 package com.developer.framework.dto;
 
-import com.developer.framework.enums.MessageStatusEnum;
-import com.developer.framework.enums.MessageTerminalTypeEnum;
-import com.developer.framework.enums.MessageContentTypeEnum;
-import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageStatusEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.message.MessageContentTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

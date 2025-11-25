@@ -1,6 +1,6 @@
 package com.developer.im.model;
 
-import com.developer.framework.enums.MessageTerminalTypeEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
 import lombok.Data;
 
 import java.util.Collections;

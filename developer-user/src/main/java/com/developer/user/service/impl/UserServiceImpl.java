@@ -1,10 +1,9 @@
 package com.developer.user.service.impl;
 
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.enums.MessageTerminalTypeEnum;
-import com.developer.framework.enums.VerifyCodeTypeEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.message.VerifyCodeTypeEnum;
 import com.developer.framework.utils.*;
-import com.developer.rpc.service.friend.FriendRpcService;
 import com.developer.user.client.FriendClient;
 import com.developer.user.client.GroupMemberClient;
 import com.developer.user.dto.*;
@@ -13,7 +12,6 @@ import com.developer.user.repository.UserRepository;
 import com.developer.user.service.UserService;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.user.service.VerifyCodeService;
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

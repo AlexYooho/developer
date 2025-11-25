@@ -2,7 +2,7 @@ package com.developer.im.processor;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.developer.framework.enums.MessageTerminalTypeEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.IPUtils;

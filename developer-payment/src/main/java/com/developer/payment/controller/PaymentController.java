@@ -3,7 +3,7 @@ package com.developer.payment.controller;
 import com.developer.framework.dto.PaymentInfoDTO;
 import com.developer.framework.dto.SendRedPacketsDTO;
 import com.developer.framework.dto.TransferInfoDTO;
-import com.developer.framework.enums.PaymentTypeEnum;
+import com.developer.framework.enums.payment.PaymentTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.OpenRedPacketsRequestDTO;
 import com.developer.payment.dto.ReturnTransferRequestDTO;

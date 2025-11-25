@@ -1,15 +1,17 @@
-package com.developer.framework.enums;
+package com.developer.framework.enums.payment;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.baomidou.mybatisplus.annotation.IEnum;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum RedPacketsTypeEnum {
+public enum TransferStatusEnum {
+    PENDING(0,"等待处理"),
 
-    NORMAL(0,"普通红包"),
+    SUCCESS(1,"成功"),
 
-    LUCKY(1,"拼手气红包");
+    FAILED(2,"失败"),
+
+    REFUND(3,"退回");
 
     @EnumValue
     private final Integer code;
@@ -20,12 +22,14 @@ public enum RedPacketsTypeEnum {
         return this.code;
     }
 
-    public static RedPacketsTypeEnum fromCode(Integer code){
-        for (RedPacketsTypeEnum typeEnum:values()) {
+    public static TransferStatusEnum fromCode(Integer code){
+        for (TransferStatusEnum typeEnum:values()) {
             if (typeEnum.code.equals(code)) {
                 return typeEnum;
             }
         }
         return null;
     }
+
+
 }

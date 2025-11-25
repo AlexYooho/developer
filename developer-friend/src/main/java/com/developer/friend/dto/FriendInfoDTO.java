@@ -1,7 +1,7 @@
 package com.developer.friend.dto;
 
-import com.developer.friend.enums.AddFriendChannelEnum;
-import com.developer.friend.enums.FriendStatusEnum;
+import com.developer.framework.enums.friend.AddFriendChannelEnum;
+import com.developer.framework.enums.friend.FriendStatusEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 

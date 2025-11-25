@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.developer.friend.enums.AddFriendStatusEnum;
+import com.developer.framework.enums.friend.AddFriendStatusEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

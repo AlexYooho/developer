@@ -1,13 +1,16 @@
-package com.developer.payment.enums;
+package com.developer.framework.enums.payment;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum WalletStatusEnum {
+public enum RedPacketsReceiveStatusEnum {
 
-    NORMAL(0,"正常"),
-    FROZEN(1,"冻结");
+    PENDING(0,"待领取"),
+
+    SUCCESS(1,"成功"),
+
+    FAILED(2,"失败");
 
     @EnumValue
     private final Integer code;
@@ -18,8 +21,8 @@ public enum WalletStatusEnum {
         return this.code;
     }
 
-    public static WalletStatusEnum fromCode(Integer code){
-        for (WalletStatusEnum typeEnum:values()) {
+    public static RedPacketsReceiveStatusEnum fromCode(Integer code){
+        for (RedPacketsReceiveStatusEnum typeEnum:values()) {
             if (typeEnum.code.equals(code)) {
                 return typeEnum;
             }

@@ -1,13 +1,9 @@
 package com.developer.im.service.impl;
 
 import com.developer.framework.dto.ChatMessageDTO;
-import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.framework.utils.BeanUtils;
-import com.developer.im.dto.GroupMessageDTO;
-import com.developer.im.dto.PrivateMessageDTO;
 import com.developer.im.model.IMChatMessageBaseModel;
-import com.developer.im.model.IMGroupMessageModel;
 import com.developer.im.model.IMUserInfoModel;
 import com.developer.im.netty.IMClient;
 import com.developer.im.service.AbstractMessageTypeService;

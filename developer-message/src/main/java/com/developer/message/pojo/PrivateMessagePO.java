@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.developer.framework.enums.MessageContentTypeEnum;
-import com.developer.framework.enums.MessageStatusEnum;
+import com.developer.framework.enums.message.MessageContentTypeEnum;
+import com.developer.framework.enums.message.MessageStatusEnum;
 import lombok.Builder;
 import lombok.Data;
 

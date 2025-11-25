@@ -1,7 +1,7 @@
 package com.developer.payment.dto;
 
-import com.developer.framework.enums.MessageContentTypeEnum;
-import com.developer.framework.enums.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageContentTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

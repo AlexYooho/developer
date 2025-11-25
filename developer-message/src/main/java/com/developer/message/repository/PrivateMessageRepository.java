@@ -1,13 +1,11 @@
 package com.developer.message.repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.developer.framework.enums.MessageStatusEnum;
-import com.developer.framework.utils.DateTimeUtils;
+import com.developer.framework.enums.message.MessageStatusEnum;
 import com.developer.message.mappers.PrivateMessageMapper;
 import com.developer.message.pojo.PrivateMessagePO;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
 import java.util.List;
 
 @Repository

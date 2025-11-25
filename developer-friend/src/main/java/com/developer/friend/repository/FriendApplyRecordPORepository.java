@@ -1,7 +1,7 @@
 package com.developer.friend.repository;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.developer.friend.enums.AddFriendStatusEnum;
+import com.developer.framework.enums.friend.AddFriendStatusEnum;
 import com.developer.friend.mappers.FriendApplyRecordMapper;
 import com.developer.friend.pojo.FriendApplyRecordPO;
 import org.springframework.stereotype.Repository;

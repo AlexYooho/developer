@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.developer.payment.enums.TransactionStatusEnum;
-import com.developer.payment.enums.TransactionTypeEnum;
+import com.developer.framework.enums.payment.TransactionStatusEnum;
+import com.developer.framework.enums.payment.TransactionTypeEnum;
 import lombok.Builder;
 import lombok.Data;
 

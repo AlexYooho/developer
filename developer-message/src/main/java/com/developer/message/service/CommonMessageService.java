@@ -1,6 +1,6 @@
 package com.developer.message.service;
 
-import com.developer.framework.enums.MessageContentTypeEnum;
+import com.developer.framework.enums.message.MessageContentTypeEnum;
 
 public interface CommonMessageService {
 

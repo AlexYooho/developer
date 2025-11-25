@@ -1,8 +1,8 @@
 package com.developer.im.dto;
 
-import com.developer.framework.enums.MessageContentTypeEnum;
-import com.developer.framework.enums.MessageStatusEnum;
-import com.developer.framework.enums.MessageTerminalTypeEnum;
+import com.developer.framework.enums.message.MessageContentTypeEnum;
+import com.developer.framework.enums.message.MessageStatusEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
 import com.developer.im.model.IMUserInfoModel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

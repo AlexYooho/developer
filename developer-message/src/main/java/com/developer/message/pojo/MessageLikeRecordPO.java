@@ -3,8 +3,8 @@ package com.developer.message.pojo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.developer.framework.enums.MessageMainTypeEnum;
-import com.developer.message.enums.MessageLikeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageLikeEnum;
 import lombok.Builder;
 import lombok.Data;
 

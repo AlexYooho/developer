@@ -3,8 +3,8 @@ package com.developer.payment.service;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.FreezePayAmountRequestDTO;
 import com.developer.payment.dto.WalletRechargeRequestDTO;
-import com.developer.payment.enums.TransactionTypeEnum;
-import com.developer.payment.enums.WalletOperationTypeEnum;
+import com.developer.framework.enums.payment.TransactionTypeEnum;
+import com.developer.framework.enums.payment.WalletOperationTypeEnum;
 
 import java.math.BigDecimal;
 

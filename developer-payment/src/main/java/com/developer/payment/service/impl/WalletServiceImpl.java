@@ -1,15 +1,15 @@
 package com.developer.payment.service.impl;
 
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.enums.CurrencyEnum;
+import com.developer.framework.enums.payment.CurrencyEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.SerialNoHolder;
 import com.developer.payment.dto.FreezePayAmountRequestDTO;
 import com.developer.payment.dto.WalletRechargeRequestDTO;
-import com.developer.payment.enums.TransactionStatusEnum;
-import com.developer.payment.enums.TransactionTypeEnum;
-import com.developer.payment.enums.WalletOperationTypeEnum;
-import com.developer.payment.enums.WalletStatusEnum;
+import com.developer.framework.enums.payment.TransactionStatusEnum;
+import com.developer.framework.enums.payment.TransactionTypeEnum;
+import com.developer.framework.enums.payment.WalletOperationTypeEnum;
+import com.developer.framework.enums.payment.WalletStatusEnum;
 import com.developer.payment.pojo.UserWalletPO;
 import com.developer.payment.pojo.WalletTransactionRecordPO;
 import com.developer.payment.repository.UserWalletRepository;

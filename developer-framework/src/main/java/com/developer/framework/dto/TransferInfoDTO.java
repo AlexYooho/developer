@@ -1,6 +1,6 @@
 package com.developer.framework.dto;
 
-import com.developer.framework.enums.PaymentChannelEnum;
+import com.developer.framework.enums.payment.PaymentChannelEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;

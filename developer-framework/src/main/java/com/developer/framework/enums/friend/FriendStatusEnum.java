@@ -1,15 +1,14 @@
-package com.developer.friend.enums;
+package com.developer.framework.enums.friend;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum AddFriendChannelEnum {
-    UNKNOWN(0,"未知"),
-    SEARCH(1,"搜索"),
-    GROUP(2,"群聊"),
-    SHARE(3,"推荐");
+public enum FriendStatusEnum {
+    NORMAL(0,"正常"),
+    DELETE(1,"删除"),
+    BLOCKED(2,"拉黑");
 
     @EnumValue
     @JsonValue
@@ -24,4 +23,3 @@ public enum AddFriendChannelEnum {
 
     public String desc() {return this.desc;}
 }
-

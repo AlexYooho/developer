@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.developer.framework.enums.CurrencyEnum;
-import com.developer.payment.enums.WalletStatusEnum;
+import com.developer.framework.enums.payment.CurrencyEnum;
+import com.developer.framework.enums.payment.WalletStatusEnum;
 import lombok.Builder;
 import lombok.Data;
 

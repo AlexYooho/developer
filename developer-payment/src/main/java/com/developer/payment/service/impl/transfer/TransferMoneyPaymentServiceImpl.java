@@ -1,8 +1,8 @@
 package com.developer.payment.service.impl.transfer;
 
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.enums.MessageContentTypeEnum;
-import com.developer.framework.enums.PaymentTypeEnum;
+import com.developer.framework.enums.message.MessageContentTypeEnum;
+import com.developer.framework.enums.payment.PaymentTypeEnum;
 import com.developer.framework.exception.DeveloperBusinessException;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.dto.PaymentInfoDTO;
@@ -11,9 +11,9 @@ import com.developer.framework.utils.SerialNoHolder;
 import com.developer.payment.dto.OpenRedPacketsRequestDTO;
 import com.developer.payment.dto.ReturnTransferRequestDTO;
 import com.developer.payment.dto.SendRedPacketsResultDTO;
-import com.developer.payment.enums.TransactionTypeEnum;
-import com.developer.payment.enums.TransferStatusEnum;
-import com.developer.payment.enums.WalletOperationTypeEnum;
+import com.developer.framework.enums.payment.TransactionTypeEnum;
+import com.developer.framework.enums.payment.TransferStatusEnum;
+import com.developer.framework.enums.payment.WalletOperationTypeEnum;
 import com.developer.payment.pojo.TransferInfoPO;
 import com.developer.payment.repository.TransferInfoRepository;
 import com.developer.payment.service.PaymentService;

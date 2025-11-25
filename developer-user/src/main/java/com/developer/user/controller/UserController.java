@@ -1,11 +1,8 @@
 package com.developer.user.controller;
 
-import com.developer.framework.enums.VerifyCodeTypeEnum;
-import com.developer.framework.utils.SnowflakeNoUtil;
 import com.developer.user.dto.*;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.user.service.UserService;
-import com.developer.user.service.VerifyCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

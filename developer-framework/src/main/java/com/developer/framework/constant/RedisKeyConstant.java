@@ -1,8 +1,7 @@
 package com.developer.framework.constant;
 
-import com.developer.framework.enums.MessageMainTypeEnum;
-import com.developer.framework.enums.MessageTerminalTypeEnum;
-import com.developer.framework.enums.VerifyCodeTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.VerifyCodeTypeEnum;
 
 public class RedisKeyConstant {
 

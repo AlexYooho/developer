@@ -6,6 +6,10 @@ import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.ChatMessageDTO;
 import com.developer.framework.enums.*;
+import com.developer.framework.enums.message.MessageContentTypeEnum;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageStatusEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.DateTimeUtils;
@@ -159,7 +163,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         data.setUnReadCount((long) receiverIds.size());
 
         // 同步修改红包消息状态
-        if(req.getMessageContentType()==MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER){
+        if(req.getMessageContentType()== MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER){
             paymentClient.modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder().serialNo(serialNo).messageStatus(1).build());
         }
 

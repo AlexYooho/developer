@@ -1,6 +1,6 @@
 package com.developer.im.netty;
 
-import com.developer.framework.enums.MessageTerminalTypeEnum;
+import com.developer.framework.enums.message.MessageTerminalTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.im.dto.PushMessageBodyDTO;
 import com.developer.im.enums.IMCmdType;
