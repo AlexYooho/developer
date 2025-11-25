@@ -1,5 +1,7 @@
 package com.developer.message.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.model.DeveloperResult;
@@ -22,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -43,7 +46,7 @@ public class ConversationServiceImpl implements ConversationService {
         String key = RedisKeyConstant.CONVERSATION_LIST_KEY(userId);
         list = redisUtil.get(key, new TypeReference<List<ChatConversationListResponseDTO>>() {
         });
-        if (list != null) {
+        if (CollUtil.isNotEmpty(list)) {
             return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
         }
 
@@ -51,26 +54,22 @@ public class ConversationServiceImpl implements ConversationService {
         list = new ArrayList<>();
         List<MessageConversationPO> conversationPOS = messageConversationRepository.findList(userId);
 
-        if (conversationPOS == null || conversationPOS.isEmpty()) {
+        if (ObjectUtil.isEmpty(conversationPOS)) {
             return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
         }
 
         // 获取好友信息
-        DeveloperResult<List<FriendInfoResponseRpcDTO>> friendResult = RpcExecutor
-                .execute(() -> rpcClient.friendRpcService.findFriends());
+        DeveloperResult<List<FriendInfoResponseRpcDTO>> friendResult = RpcExecutor.execute(() -> rpcClient.friendRpcService.findFriends());
         Map<Long, FriendInfoResponseRpcDTO> friendMap = new HashMap<>();
-        if (friendResult.getData() != null) {
-            friendMap = friendResult.getData().stream()
-                    .collect(Collectors.toMap(FriendInfoResponseRpcDTO::getId, Function.identity()));
+        if (ObjectUtil.isNotEmpty(friendResult.getData())) {
+            friendMap = friendResult.getData().stream().collect(Collectors.toMap(FriendInfoResponseRpcDTO::getId, Function.identity()));
         }
 
         // 获取群组信息
-        DeveloperResult<List<GroupInfoResponseRpcDTO>> groupResult = RpcExecutor
-                .execute(() -> rpcClient.groupRpcService.getSelfJoinAllGroupInfo(SerialNoHolder.getSerialNo()));
+        DeveloperResult<List<GroupInfoResponseRpcDTO>> groupResult = RpcExecutor.execute(() -> rpcClient.groupRpcService.getSelfJoinAllGroupInfo(SerialNoHolder.getSerialNo()));
         Map<Long, GroupInfoResponseRpcDTO> groupMap = new HashMap<>();
-        if (groupResult.getData() != null) {
-            groupMap = groupResult.getData().stream()
-                    .collect(Collectors.toMap(GroupInfoResponseRpcDTO::getGroupId, Function.identity()));
+        if (ObjectUtil.isNotEmpty(groupResult.getData())) {
+            groupMap = groupResult.getData().stream().collect(Collectors.toMap(GroupInfoResponseRpcDTO::getGroupId, Function.identity()));
         }
 
         for (MessageConversationPO po : conversationPOS) {
@@ -80,14 +79,14 @@ public class ConversationServiceImpl implements ConversationService {
             if (po.getConvType() == 0) {
                 // 私聊
                 FriendInfoResponseRpcDTO friendInfoDTO = friendMap.get(po.getTargetId());
-                if (friendInfoDTO != null) {
+                if (ObjectUtil.isNotEmpty(friendInfoDTO)) {
                     dto.setName(friendInfoDTO.getNickName());
                     dto.setHeadImage(friendInfoDTO.getHeadImage());
                 }
             } else if (po.getConvType() == 1) {
                 // 群聊
                 GroupInfoResponseRpcDTO groupInfoDTO = groupMap.get(po.getTargetId());
-                if (groupInfoDTO != null) {
+                if (ObjectUtil.isNotEmpty(groupInfoDTO)) {
                     dto.setName(groupInfoDTO.getGroupName());
                     dto.setHeadImage(groupInfoDTO.getGroupHeadImage());
                 }
@@ -97,7 +96,7 @@ public class ConversationServiceImpl implements ConversationService {
         }
 
         // 再次存入缓存--30~60秒过期
-        redisUtil.set(key, list, 60, TimeUnit.SECONDS);
+        redisUtil.set(key, list, ThreadLocalRandom.current().nextLong(30, 61), TimeUnit.SECONDS);
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
     }
