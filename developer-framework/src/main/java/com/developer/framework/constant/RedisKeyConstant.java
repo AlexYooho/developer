@@ -9,12 +9,12 @@ public class RedisKeyConstant {
     /**
      * im-server最大id,从0开始递增
      */
-    public final static String  IM_MAX_SERVER_ID = "im:max_server_id";
+    public final static String IM_MAX_SERVER_ID = "im:max_server_id";
 
     /**
      * 用户ID所连接的IM-server的ID
      */
-    public final static String  IM_USER_SERVER_ID = "im:user:server_id";
+    public final static String IM_USER_SERVER_ID = "im:user:server_id";
 
     /**
      * 群聊消息发送结果队列
@@ -46,50 +46,50 @@ public class RedisKeyConstant {
     /**
      * 点赞记录key
      */
-    public static String MESSAGE_LIKE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId, Long userId){
-        return String.format("developer:message:like:%s:%s:%s",messageMainTypeEnum.code(),messageId,userId);
+    public static String MESSAGE_LIKE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId, Long userId) {
+        return String.format("developer:message:like:%s:%s:%s", messageMainTypeEnum.code(), messageId, userId);
     }
 
     /**
      * 用户点赞记录key
      */
-    public static String MESSAGE_LIKE_USER_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId, Long userId){
-        return String.format("developer:message:like:%s:%s:user:%s",messageMainTypeEnum.code(),messageId,userId);
+    public static String MESSAGE_LIKE_USER_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId, Long userId) {
+        return String.format("developer:message:like:%s:%s:user:%s", messageMainTypeEnum.code(), messageId, userId);
     }
 
     /**
      * 消息点赞key
      */
-    public static String MESSAGE_LIKE_MESSAGE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId){
-        return String.format("developer:message:like:%s:%s",messageMainTypeEnum.code(),messageId);
+    public static String MESSAGE_LIKE_MESSAGE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId) {
+        return String.format("developer:message:like:%s:%s", messageMainTypeEnum.code(), messageId);
     }
 
     /**
      * 抢红包锁
      */
-    public static String OPEN_RED_PACKETS_LOCK_KEY(Long redPacketsId){
-        return String.format("developer:payment:red:packets:open:lock:%s",redPacketsId);
+    public static String OPEN_RED_PACKETS_LOCK_KEY(Long redPacketsId) {
+        return String.format("developer:payment:red:packets:open:lock:%s", redPacketsId);
     }
 
     /**
      * 红包信息key
      */
-    public static String RED_PACKETS_INFO_KEY(Long redPacketsId){
-    	return String.format("developer:payment:red:packets:info:%s",redPacketsId);
+    public static String RED_PACKETS_INFO_KEY(Long redPacketsId) {
+        return String.format("developer:payment:red:packets:info:%s", redPacketsId);
     }
 
     /**
      * 用户注册验证码
      */
-    public static String verifyCode(VerifyCodeTypeEnum verifyCodeType, String account){
-    	return String.format("developer:user:verify:type:%s:%s",verifyCodeType.code(),account);
+    public static String verifyCode(VerifyCodeTypeEnum verifyCodeType, String account) {
+        return String.format("developer:user:verify:type:%s:%s", verifyCodeType.code(), account);
     }
 
     /**
      * 存在好友关系
      */
-    public static String IS_FRIEND_KEY(Long userId,Long friendId){
-        return String.format("developer:message:user:%s:friend:%s:exist:relation",userId,friendId);
+    public static String IS_FRIEND_KEY(Long userId, Long friendId) {
+        return String.format("developer:message:user:%s:friend:%s:exist:relation", userId, friendId);
     }
 
     /**
@@ -100,12 +100,17 @@ public class RedisKeyConstant {
      * user_id-> pc_id:127.0.0.1:8081
      * user_id-> android_id:127.0.0.1:8082
      */
-    public static String USER_MAP_SERVER_INFO_KEY(Long userId){
+    public static String USER_MAP_SERVER_INFO_KEY(Long userId) {
         return "developer:im:user:map:server:info:".concat(userId.toString());
     }
 
     // 好友列表key
-    public static String FRIENDS_KEY(Long userId){
+    public static String FRIENDS_KEY(Long userId) {
         return "developer:friend:list:user:".concat(userId.toString());
+    }
+
+    // 会话列表key
+    public static String CONVERSATION_LIST_KEY(Long userId) {
+        return "developer:conversation:list:user:".concat(userId.toString());
     }
 }
