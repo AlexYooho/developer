@@ -1,4 +1,4 @@
-package com.developer.framework.enums.message;
+package com.developer.framework.enums.common;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public enum MessageTerminalTypeEnum {
+public enum TerminalTypeEnum {
 
     WEB(0,"web"),
-    APP(1,"app");
+    ANDROID(1,"app"),
+    IOS(2,"ios");
 
     @EnumValue
     private Integer code;
@@ -19,8 +20,8 @@ public enum MessageTerminalTypeEnum {
     private String desc;
 
 
-    public static MessageTerminalTypeEnum fromCode(Integer code){
-        for (MessageTerminalTypeEnum typeEnum:values()) {
+    public static TerminalTypeEnum fromCode(Integer code){
+        for (TerminalTypeEnum typeEnum:values()) {
             if (typeEnum.code.equals(code)) {
                 return typeEnum;
             }
@@ -29,7 +30,7 @@ public enum MessageTerminalTypeEnum {
     }
 
     public static List<Integer> codes(){
-        return Arrays.stream(values()).map(MessageTerminalTypeEnum::code).collect(Collectors.toList());
+        return Arrays.stream(values()).map(TerminalTypeEnum::code).collect(Collectors.toList());
     }
 
     public Integer code(){

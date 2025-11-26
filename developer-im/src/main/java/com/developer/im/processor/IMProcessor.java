@@ -2,7 +2,7 @@ package com.developer.im.processor;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.IPUtils;
@@ -36,7 +36,7 @@ public class IMProcessor {
         DeveloperResult<Boolean> result = null;
         // 先看接收用户有哪些终端在线
         for (Long receiverId : dto.getMessageReceiverIds()) {
-            for (Integer terminal : MessageTerminalTypeEnum.codes()) {
+            for (Integer terminal : TerminalTypeEnum.codes()) {
                 // 判断用户终端是否在线
                 String terminalOnlineKey = String.join(":",RedisKeyConstant.IM_USER_SERVER_ID,receiverId.toString(),terminal.toString());
                 Object serverId = redisUtil.get(terminalOnlineKey,Object.class);
@@ -85,7 +85,7 @@ public class IMProcessor {
             messageBody.setCmd(cmdType);
             messageBody.setSender(message.getSender());
             messageBody.setSendResult(message.getSendResult());
-            messageBody.setMessageReceiver(new IMUserInfoModel(message.getReceiverId(), MessageTerminalTypeEnum.fromCode(terminal),""));
+            messageBody.setMessageReceiver(new IMUserInfoModel(message.getReceiverId(), TerminalTypeEnum.fromCode(terminal),""));
             messageBody.setData(message);
             AbstractMessageProcessor processor = ProcessorFactory.getHandler(cmdType);
             result = processor.handler(messageBody);
@@ -106,7 +106,7 @@ public class IMProcessor {
         for (Integer terminal : message.getReceiveTerminals()) {
             message.getReceiverIds().forEach(id -> {
                 String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, id.toString(), terminal.toString());
-                sendMap.put(key, new IMUserInfoModel(id, MessageTerminalTypeEnum.fromCode(terminal),""));
+                sendMap.put(key, new IMUserInfoModel(id, TerminalTypeEnum.fromCode(terminal),""));
             });
         }
 
@@ -144,27 +144,27 @@ public class IMProcessor {
      * @param userIds
      * @return
      */
-    public Map<Long, List<MessageTerminalTypeEnum>> getOnlineTerminal(List<Long> userIds) {
+    public Map<Long, List<TerminalTypeEnum>> getOnlineTerminal(List<Long> userIds) {
         if (CollectionUtil.isEmpty(userIds)) {
             return Collections.EMPTY_MAP;
         }
         // 把所有用户的key都存起来
         Map<String, IMUserInfoModel> userMap = new HashMap<>();
         for (Long id : userIds) {
-            for (Integer terminal : MessageTerminalTypeEnum.codes()) {
+            for (Integer terminal : TerminalTypeEnum.codes()) {
                 String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, id.toString(), terminal.toString());
-                userMap.put(key, new IMUserInfoModel(id, MessageTerminalTypeEnum.fromCode(terminal),""));
+                userMap.put(key, new IMUserInfoModel(id, TerminalTypeEnum.fromCode(terminal),""));
             }
         }
         // 批量拉取
         List<Object> serverIds = redisTemplate.opsForValue().multiGet(userMap.keySet());
         int idx = 0;
-        Map<Long, List<MessageTerminalTypeEnum>> onlineMap = new HashMap<>();
+        Map<Long, List<TerminalTypeEnum>> onlineMap = new HashMap<>();
         for (Map.Entry<String, IMUserInfoModel> entry : userMap.entrySet()) {
             // serverid有值表示用户在线
             if (serverIds.get(idx++) != null) {
                 IMUserInfoModel userInfo = entry.getValue();
-                List<MessageTerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getSenderId(), o -> new LinkedList<>());
+                List<TerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getSenderId(), o -> new LinkedList<>());
                 terminals.add(userInfo.getTerminal());
             }
         }

@@ -2,7 +2,7 @@ package com.developer.message.dto;
 
 import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
-import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -69,6 +69,6 @@ public class SendMessageRequestDTO {
      * 终端类型
      */
     @JsonProperty("terminal_type")
-    private MessageTerminalTypeEnum terminalType;
+    private TerminalTypeEnum terminalType;
 
 }

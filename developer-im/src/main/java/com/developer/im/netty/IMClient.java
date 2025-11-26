@@ -1,6 +1,6 @@
 package com.developer.im.netty;
 
-import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.im.dto.PushMessageBodyDTO;
 import com.developer.im.enums.IMCmdType;
@@ -43,7 +43,7 @@ public class IMClient {
      * @param userIds 用户id列表
      * @return 在线的用户终端
      */
-    public Map<Long,List<MessageTerminalTypeEnum>> getOnlineTerminal(List<Long> userIds){
+    public Map<Long,List<TerminalTypeEnum>> getOnlineTerminal(List<Long> userIds){
         return processors.getOnlineTerminal(userIds);
     }
 

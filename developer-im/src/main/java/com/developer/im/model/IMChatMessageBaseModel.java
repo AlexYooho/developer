@@ -2,7 +2,7 @@ package com.developer.im.model;
 
 import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageStatusEnum;
-import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -83,7 +83,7 @@ public class IMChatMessageBaseModel {
      * 接收者终端类型,默认全部
      */
     @JsonProperty("receive_terminals")
-    private List<Integer> receiveTerminals = MessageTerminalTypeEnum.codes();
+    private List<Integer> receiveTerminals = TerminalTypeEnum.codes();
 
 
     /**

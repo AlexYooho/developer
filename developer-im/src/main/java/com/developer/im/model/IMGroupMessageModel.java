@@ -1,6 +1,6 @@
 package com.developer.im.model;
 
-import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.common.TerminalTypeEnum;
 import lombok.Data;
 
 import java.util.Collections;
@@ -31,7 +31,7 @@ public class IMGroupMessageModel<T> {
     /**
      * 接收者终端类型,默认全部
      */
-    private List<Integer> recvTerminals = MessageTerminalTypeEnum.codes();
+    private List<Integer> recvTerminals = TerminalTypeEnum.codes();
 
     /**
      * 是否发送给自己的其他终端,默认true

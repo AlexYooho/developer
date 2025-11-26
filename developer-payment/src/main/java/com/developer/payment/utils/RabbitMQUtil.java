@@ -3,13 +3,11 @@ package com.developer.payment.utils;
 import com.alibaba.fastjson.JSON;
 import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.ProcessorTypeEnum;
+import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.utils.TokenUtil;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class RabbitMQUtil {

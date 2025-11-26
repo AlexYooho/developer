@@ -3,7 +3,7 @@ package com.developer.payment.service.impl;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.enums.*;
+import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.enums.payment.PaymentChannelEnum;

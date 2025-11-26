@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.developer.framework.dto.ChatMessageDTO;
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
-import com.developer.framework.enums.ProcessorTypeEnum;
+import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
 import com.developer.im.annotations.MessageRouterAspect;

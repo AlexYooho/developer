@@ -1,7 +1,7 @@
 package com.developer.message.eventlistener.processor;
 
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.ProcessorTypeEnum;
+import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
 import com.developer.framework.utils.SerialNoHolder;

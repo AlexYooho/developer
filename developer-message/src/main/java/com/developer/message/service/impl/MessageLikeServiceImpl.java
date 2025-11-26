@@ -4,7 +4,7 @@ import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
-import com.developer.framework.enums.ProcessorTypeEnum;
+import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SerialNoHolder;

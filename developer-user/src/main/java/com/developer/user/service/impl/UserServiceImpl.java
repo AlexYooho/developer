@@ -1,7 +1,7 @@
 package com.developer.user.service.impl;
 
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.enums.message.VerifyCodeTypeEnum;
 import com.developer.framework.utils.*;
 import com.developer.user.client.FriendClient;
@@ -191,10 +191,10 @@ public class UserServiceImpl implements UserService {
     public DeveloperResult<List<OnlineTerminalDTO>> findOnlineTerminal(FindOnlineTerminalRequestDTO req) {
         String serialNo = SerialNoHolder.getSerialNo();
         List<Long> userIdList = Arrays.stream(req.getUserIds().split(",")).map(Long::parseLong).collect(Collectors.toList());
-        Map<Long, List<MessageTerminalTypeEnum>> onlineTerminals = imOnlineUtil.getOnlineTerminal(userIdList);
+        Map<Long, List<TerminalTypeEnum>> onlineTerminals = imOnlineUtil.getOnlineTerminal(userIdList);
         List<OnlineTerminalDTO> list=new LinkedList<>();
         onlineTerminals.forEach((userId,terminals)->{
-            List<Integer> collect = terminals.stream().map(MessageTerminalTypeEnum::code).collect(Collectors.toList());
+            List<Integer> collect = terminals.stream().map(TerminalTypeEnum::code).collect(Collectors.toList());
             list.add(new OnlineTerminalDTO(userId,collect));
         });
         return DeveloperResult.success(serialNo,list);

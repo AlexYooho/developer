@@ -2,13 +2,13 @@ package com.developer.message.dto;
 
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.common.TerminalTypeEnum;
 
 @Data
 public class LoadMessageRequestDTO {
 
-    /**
-     * 消息最小id
+    /*
+    消息最小id
      */
     @JsonProperty("min_id")
     private Long minId;
@@ -18,4 +18,10 @@ public class LoadMessageRequestDTO {
      */
     @JsonProperty("target_id")
     private Long targetId;
+
+    /*
+    终端
+     */
+    @JsonProperty("terminal_type")
+    private TerminalTypeEnum terminalType;
 }

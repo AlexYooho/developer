@@ -1,7 +1,7 @@
 package com.developer.framework.dto;
 
 import com.developer.framework.enums.message.MessageStatusEnum;
-import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -49,7 +49,7 @@ public class ChatMessageDTO implements Serializable {
      * 终端类型
      */
     @JsonProperty("terminal_type")
-    private MessageTerminalTypeEnum terminalType;
+    private TerminalTypeEnum terminalType;
 
     /**
      * 消息id

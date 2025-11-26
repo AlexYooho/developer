@@ -1,7 +1,7 @@
 package com.developer.framework.dto;
 
 import com.alibaba.fastjson.JSON;
-import com.developer.framework.enums.ProcessorTypeEnum;
+import com.developer.framework.enums.common.ProcessorTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

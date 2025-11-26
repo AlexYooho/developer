@@ -6,11 +6,11 @@ import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.*;
-import com.developer.framework.enums.*;
+import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.enums.message.MessageStatusEnum;
-import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
@@ -48,6 +48,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
 
     /**
      * 消息主体类型
+     * 
      * @return
      */
     @Override
@@ -56,7 +57,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-    拉取最新消息--这里需要改成按会话id获取
+     * 拉取最新消息--这里需要改成按会话id获取
      */
     @Override
     public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(LoadMessageRequestDTO req) {
@@ -95,7 +96,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-    发送消息
+     * 发送消息
      */
     @Transactional
     @Override
@@ -104,66 +105,79 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
         DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getReceiverId());
-        if(!friend.getIsSuccessful()){
-            return DeveloperResult.error(SerialNoHolder.getSerialNo(),friend.getMsg());
+        if (!friend.getIsSuccessful()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), friend.getMsg());
         }
 
         // 消息入库
-        PrivateMessagePO privateMessage = this.saveMessage(userId,req);
+        PrivateMessagePO privateMessage = this.saveMessage(userId, req);
 
         // 记录消息id，兼容多端游标
-        MessageTerminalTypeEnum terminalType = req.getTerminalType() != null ? req.getTerminalType() : MessageTerminalTypeEnum.WEB;
-        redisUtil.set(RedisKeyConstant.DEVELOPER_MESSAGE_USER_PRIVATE_CHAT_MAX_ID(userId), privateMessage.getId(), 24, TimeUnit.HOURS);
+        TerminalTypeEnum terminalType = req.getTerminalType() != null ? req.getTerminalType()
+                : TerminalTypeEnum.WEB;
+        redisUtil.set(RedisKeyConstant.DEVELOPER_MESSAGE_USER_PRIVATE_CHAT_MAX_ID(userId), privateMessage.getId(), 24,
+                TimeUnit.HOURS);
 
         // 发送消息
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(),DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getMessageStatus(), terminalType, privateMessage.getId(), userId, nickName, req.getMessageContent(),privateMessage.getSendTime(),req.getReceiverId()));
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
+                DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
+                builderMQMessageDTO(req.getMessageMainType(), req.getMessageContentType(),
+                        privateMessage.getMessageStatus(), terminalType, privateMessage.getId(), userId, nickName,
+                        req.getMessageContent(), privateMessage.getSendTime(), req.getReceiverId()));
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
 
         // 同步修改红包消息状态
-        if(req.getMessageContentType()== MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER){
-            DeveloperResult<Boolean> modifyResult = paymentClient.modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder().serialNo(SerialNoHolder.getSerialNo()).messageStatus(1).build());
-            if(!modifyResult.getIsSuccessful()){
+        if (req.getMessageContentType() == MessageContentTypeEnum.RED_PACKETS
+                || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER) {
+            DeveloperResult<Boolean> modifyResult = paymentClient
+                    .modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder()
+                            .serialNo(SerialNoHolder.getSerialNo()).messageStatus(1).build());
+            if (!modifyResult.getIsSuccessful()) {
                 return DeveloperResult.error(SerialNoHolder.getSerialNo(), modifyResult.getMsg());
             }
         }
 
-        return DeveloperResult.success(SerialNoHolder.getSerialNo(),dto);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(), dto);
     }
 
     /*
-    已读消息
+     * 已读消息
      */
     @Override
     public DeveloperResult<Boolean> readMessage(ReadMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, MessageStatusEnum.READED, MessageTerminalTypeEnum.WEB, 0L, userId, nickName, "",new Date(),req.getTargetId()));
-        privateMessageRepository.updateMessageStatus(req.getTargetId(),userId,MessageStatusEnum.READED.code());
+        rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
+                DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
+                builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
+                        MessageStatusEnum.READED, TerminalTypeEnum.WEB, 0L, userId, nickName, "", new Date(),
+                        req.getTargetId()));
+        privateMessageRepository.updateMessageStatus(req.getTargetId(), userId, MessageStatusEnum.READED.code());
         return DeveloperResult.success(serialNo);
     }
 
     /*
-    撤回消息
+     * 撤回消息
      */
     @Override
     public DeveloperResult<Boolean> withdrawMessage(RecallMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
         PrivateMessagePO privateMessage = privateMessageRepository.getById(req.getMessageId());
-        if(privateMessage==null){
-            return DeveloperResult.error(serialNo,"消息不存在");
+        if (privateMessage == null) {
+            return DeveloperResult.error(serialNo, "消息不存在");
         }
 
-        if(!privateMessage.getSendId().equals(userId)){
-            return DeveloperResult.error(serialNo,"该消息不是你发送的,无法撤回");
+        if (!privateMessage.getSendId().equals(userId)) {
+            return DeveloperResult.error(serialNo, "该消息不是你发送的,无法撤回");
         }
 
-        if(System.currentTimeMillis()-privateMessage.getSendTime().getTime()> DeveloperConstant.ALLOW_RECALL_SECOND*1000){
-            return DeveloperResult.error(serialNo,"消息发送已超过一定时间,无法撤回");
+        if (System.currentTimeMillis() - privateMessage.getSendTime().getTime() > DeveloperConstant.ALLOW_RECALL_SECOND
+                * 1000) {
+            return DeveloperResult.error(serialNo, "消息发送已超过一定时间,无法撤回");
         }
 
         // 修改消息状态
@@ -171,29 +185,34 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessageRepository.updateById(privateMessage);
 
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT, MessageStatusEnum.RECALL, MessageTerminalTypeEnum.WEB, privateMessage.getId(), userId, nickName,"对方撤回了一条消息",new Date(), privateMessage.getReceiverId()));
+        rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
+                DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
+                builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
+                        MessageStatusEnum.RECALL, TerminalTypeEnum.WEB, privateMessage.getId(), userId, nickName,
+                        "对方撤回了一条消息", new Date(), privateMessage.getReceiverId()));
 
         return DeveloperResult.success(serialNo);
     }
 
     /*
-    获取历史消息
+     * 获取历史消息
      */
     @Override
     public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
-        req.setPage(req.getPage()>0?req.getPage():1);
-        req.setSize(req.getSize()>0?req.getSize():10);
+        req.setPage(req.getPage() > 0 ? req.getPage() : 1);
+        req.setSize(req.getSize() > 0 ? req.getSize() : 10);
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
-        long pageIndex = (req.getPage()-1)*req.getSize();
-        List<PrivateMessagePO> list = privateMessageRepository.getHistoryMessageList(userId, req.getTargetId(), pageIndex, req.getSize());
-        List<SendMessageResultDTO> collect = list.stream().map(a -> BeanUtils.copyProperties(a, PrivateMessageDTO.class)).collect(Collectors.toList());
-        return DeveloperResult.success(serialNo,collect);
+        long pageIndex = (req.getPage() - 1) * req.getSize();
+        List<PrivateMessagePO> list = privateMessageRepository.getHistoryMessageList(userId, req.getTargetId(),
+                pageIndex, req.getSize());
+        List<SendMessageResultDTO> collect = list.stream()
+                .map(a -> BeanUtils.copyProperties(a, PrivateMessageDTO.class)).collect(Collectors.toList());
+        return DeveloperResult.success(serialNo, collect);
     }
 
     /*
-    新增消息
+     * 新增消息
      */
     @Override
     public DeveloperResult<Boolean> insertMessage(MessageInsertDTO dto) {
@@ -206,40 +225,42 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                 .messageContentType(dto.getMessageContentType())
                 .sendTime(new Date()).build();
         boolean isSuccess = privateMessageRepository.save(privateMessage);
-        return DeveloperResult.success(serialNo,isSuccess);
+        return DeveloperResult.success(serialNo, isSuccess);
     }
 
     /*
-    删除消息
+     * 删除消息
      */
     @Override
     public DeveloperResult<Boolean> deleteMessage(RemoveMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
-        boolean isSuccess = privateMessageRepository.deleteChatMessage(userId,req.getTargetId());
-        return DeveloperResult.success(serialNo,isSuccess);
+        boolean isSuccess = privateMessageRepository.deleteChatMessage(userId, req.getTargetId());
+        return DeveloperResult.success(serialNo, isSuccess);
     }
 
     /*
-    回复消息
+     * 回复消息
      */
     @Override
-    public DeveloperResult<Boolean> replyMessage(Long id,ReplyMessageRequestDTO req) {
+    public DeveloperResult<Boolean> replyMessage(Long id, ReplyMessageRequestDTO req) {
         PrivateMessagePO messagePO = privateMessageRepository.getById(id);
         String serialNo = SerialNoHolder.getSerialNo();
-        if(messagePO==null){
-            return DeveloperResult.error(serialNo,"回复消息不存在");
+        if (messagePO == null) {
+            return DeveloperResult.error(serialNo, "回复消息不存在");
         }
 
         req.setReferenceId(id);
-        this.sendMessage(SendMessageRequestDTO.builder().serialNo(serialNo).receiverId(req.getReceiverId()).messageContent(req.getMessageContent())
-                .messageMainType(req.getMessageMainType()).messageContentType(req.getMessageContentType()).groupId(req.getGroupId()).atUserIds(req.getAtUserIds())
+        this.sendMessage(SendMessageRequestDTO.builder().serialNo(serialNo).receiverId(req.getReceiverId())
+                .messageContent(req.getMessageContent())
+                .messageMainType(req.getMessageMainType()).messageContentType(req.getMessageContentType())
+                .groupId(req.getGroupId()).atUserIds(req.getAtUserIds())
                 .referenceId(id).build());
         return DeveloperResult.success(serialNo);
     }
 
     /*
-    收藏
+     * 收藏
      */
     @Override
     public DeveloperResult<Boolean> collectionMessage(CollectionMessageRequestDTO req) {
@@ -247,14 +268,14 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-    转发消息
+     * 转发消息
      */
     @Override
     public DeveloperResult<Boolean> forwardMessage(ForwardMessageRequestDTO req) {
         PrivateMessagePO messagePO = privateMessageRepository.getById(req.getMessageId());
         String serialNo = SerialNoHolder.getSerialNo();
-        if(messagePO==null){
-            return DeveloperResult.error(serialNo,"转发消息本体不存在");
+        if (messagePO == null) {
+            return DeveloperResult.error(serialNo, "转发消息本体不存在");
         }
 
         for (Long userId : req.getUserIdList()) {
@@ -272,7 +293,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-    点赞消息
+     * 点赞消息
      */
     @Async
     @Transactional
@@ -282,7 +303,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-    取消点赞
+     * 取消点赞
      */
     @Async
     @Transactional
@@ -292,14 +313,16 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-    是否支付类型消息
+     * 是否支付类型消息
      */
     @Override
     public Boolean isPaymentMessageType(MessageContentTypeEnum messageContentTypeEnum) {
-        return messageContentTypeEnum == MessageContentTypeEnum.RED_PACKETS || messageContentTypeEnum == MessageContentTypeEnum.TRANSFER;
+        return messageContentTypeEnum == MessageContentTypeEnum.RED_PACKETS
+                || messageContentTypeEnum == MessageContentTypeEnum.TRANSFER;
     }
 
-    private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message, MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus, Long referenceId){
+    private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message,
+            MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus, Long referenceId) {
         return PrivateMessagePO.builder()
                 .sendId(sendId)
                 .receiverId(receiverId)
@@ -312,18 +335,22 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-    消息入库
+     * 消息入库
      */
-    private PrivateMessagePO saveMessage(Long userId,SendMessageRequestDTO req){
-        PrivateMessagePO privateMessage = createPrivateMessageMode(userId, req.getReceiverId(), req.getMessageContent(), req.getMessageContentType(), MessageStatusEnum.SENDED,req.getReferenceId());
+    private PrivateMessagePO saveMessage(Long userId, SendMessageRequestDTO req) {
+        PrivateMessagePO privateMessage = createPrivateMessageMode(userId, req.getReceiverId(), req.getMessageContent(),
+                req.getMessageContentType(), MessageStatusEnum.SENDED, req.getReferenceId());
         this.privateMessageRepository.save(privateMessage);
         return privateMessage;
     }
 
     /*
-    构建mq消息dto
+     * 构建mq消息dto
      */
-    private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName, String messageContent, Date sendTime,Long friendId){
+    private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
+                                               MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
+                                               TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
+                                               String messageContent, Date sendTime, Long friendId) {
         return ChatMessageDTO
                 .builder()
                 .messageMainTypeEnum(messageMainTypeEnum)
@@ -339,7 +366,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                 .build();
     }
 
-    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, MessageTerminalTypeEnum terminalType, Date sendTime) {
+    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
+                                                       MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
+                                                       String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
+                                                       MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
         return RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
@@ -359,7 +389,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-    好友申请接受消息
+     * 好友申请接受消息
      */
     @Override
     public DeveloperResult<Boolean> friendApplyAcceptMessage(Long receiverId) {
@@ -374,30 +404,44 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessageRepository.save(privateMessage);
 
         // 推送im消息
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), privateMessage.getMessageContent(), Collections.singletonList(receiverId), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
+                DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
+                builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L,
+                        SelfUserInfoContext.selfUserInfo().getUserId(),
+                        SelfUserInfoContext.selfUserInfo().getNickName(), privateMessage.getMessageContent(),
+                        Collections.singletonList(receiverId), new ArrayList<>(), MessageStatusEnum.UNSEND,
+                        TerminalTypeEnum.WEB, new Date()));
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
     /*
-    好友申请拒绝消息
+     * 好友申请拒绝消息
      */
     @Override
-    public DeveloperResult<Boolean> friendApplyRejectMessage(Long receiverId,String rejectReason) {
+    public DeveloperResult<Boolean> friendApplyRejectMessage(Long receiverId, String rejectReason) {
 
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), rejectReason, Collections.singletonList(receiverId), new ArrayList<>(), MessageStatusEnum.UNSEND, MessageTerminalTypeEnum.WEB, new Date()));
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
+                DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
+                builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L,
+                        SelfUserInfoContext.selfUserInfo().getUserId(),
+                        SelfUserInfoContext.selfUserInfo().getNickName(), rejectReason,
+                        Collections.singletonList(receiverId), new ArrayList<>(), MessageStatusEnum.UNSEND,
+                        TerminalTypeEnum.WEB, new Date()));
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
     /*
-    发送加入群聊邀请消息
+     * 发送加入群聊邀请消息
      */
     @Override
-    public DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds,String groupName,String inviterName,String groupAvatar) {
+    public DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds, String groupName,
+            String inviterName, String groupAvatar) {
 
         for (Long memberId : memberIds) {
-            String content = "邀请你加入群聊,".concat(inviterName).concat("邀请你加入群聊").concat(groupName).concat("进入可查看详情").concat(groupAvatar);
+            String content = "邀请你加入群聊,".concat(inviterName).concat("邀请你加入群聊").concat(groupName).concat("进入可查看详情")
+                    .concat(groupAvatar);
             rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(),
                     DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                     DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY,
@@ -412,10 +456,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                             Collections.singletonList(memberId),
                             new ArrayList<>(),
                             MessageStatusEnum.UNSEND,
-                            MessageTerminalTypeEnum.WEB,
+                            TerminalTypeEnum.WEB,
                             new Date()));
         }
-
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }

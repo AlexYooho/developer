@@ -1,7 +1,7 @@
 package com.developer.im.processor;
 
 import com.developer.framework.constant.RedisKeyConstant;
-import com.developer.framework.enums.message.MessageTerminalTypeEnum;
+import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.im.constant.ChannelAttrKey;
 import com.developer.im.netty.service.UserChannelCtxMap;
@@ -31,7 +31,7 @@ public class LogoutProcessor  extends AbstractMessageProcessor<Object>{
             UserChannelCtxMap.removeChannelCtx(userId,terminal);
             String key = String.join(":", RedisKeyConstant.IM_MAX_SERVER_ID,userId.toString(),terminal.toString());
             redisTemplate.delete(key);
-            log.info("用户断开链接,userid:{},终端类型：{}",userId, MessageTerminalTypeEnum.fromCode(terminal).desc());
+            log.info("用户断开链接,userid:{},终端类型：{}",userId, TerminalTypeEnum.fromCode(terminal).desc());
         }
     }
 
