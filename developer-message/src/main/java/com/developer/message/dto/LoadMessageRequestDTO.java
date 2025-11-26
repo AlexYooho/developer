@@ -13,9 +13,9 @@ public class LoadMessageRequestDTO {
     @JsonProperty("min_id")
     private Long minId;
 
-    /**
-     * 终端类型
+    /*
+    目标用户
      */
-    @JsonProperty("terminal_type")
-    private MessageTerminalTypeEnum terminalType;
+    @JsonProperty("target_id")
+    private Long targetId;
 }

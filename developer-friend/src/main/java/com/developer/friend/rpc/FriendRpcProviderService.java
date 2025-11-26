@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @DubboService
-@Component
 @RequiredArgsConstructor
 public class FriendRpcProviderService implements FriendRpcService {
 
@@ -29,7 +28,16 @@ public class FriendRpcProviderService implements FriendRpcService {
 
         List<FriendInfoResponseRpcDTO> list = result.getData().stream().map(x -> {
             FriendInfoResponseRpcDTO dto = new FriendInfoResponseRpcDTO();
-
+            dto.setId(x.getId());
+            dto.setAlias(x.getAlias());
+            dto.setTagName(x.getTagName());
+            dto.setAccount(x.getAccount());
+            dto.setNickName(x.getNickName());
+            dto.setHeadImage(x.getHeadImage());
+            dto.setHeadImageThumb(x.getHeadImageThumb());
+            dto.setArea(x.getArea());
+            dto.setUserName(x.getUserName());
+            dto.setSex(x.getSex());
             return dto;
         }).collect(Collectors.toList());
         return DeveloperResult.success(SerialNoHolder.getSerialNo(),list);

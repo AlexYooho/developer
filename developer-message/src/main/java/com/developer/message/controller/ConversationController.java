@@ -17,8 +17,11 @@ public class ConversationController {
 
     private final ConversationService conversationService;
 
+    /*
+    获取会话列表
+     */
     @GetMapping("list")
-    public DeveloperResult<List<ChatConversationListResponseDTO>> getConversationList() {
+    public DeveloperResult<List<ChatConversationListResponseDTO>> findConversationList() {
         return conversationService.findChatConversationList();
     }
 }

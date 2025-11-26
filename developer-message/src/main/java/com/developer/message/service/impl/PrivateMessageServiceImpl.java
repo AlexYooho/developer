@@ -62,30 +62,35 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(LoadMessageRequestDTO req) {
         List<LoadMessageListResponseDTO> list = new ArrayList<>();
 
-        // 是否有新消息 有：拉取、没有：直接返回
-        String key = RedisKeyConstant.DEVELOPER_MESSAGE_USER_PRIVATE_CHAT_MAX_ID(SelfUserInfoContext.selfUserInfo().getUserId());
-        Long maxMessageId = redisUtil.get(key, Long.class);
-        if (maxMessageId != 0L && req.getMinId().equals(maxMessageId)) {
-            return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
-        }
-
         // 获取当前用户的最新聊天消息
-        List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(req.getMinId(), SelfUserInfoContext.selfUserInfo().getUserId());
+        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
+        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
+        List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(req.getMinId(), uidA, uidB);
+
+        // 将所有消息改为已读状态
         List<Long> ids = messages.stream()
-                .filter(x -> !x.getSendId().equals(SelfUserInfoContext.selfUserInfo().getUserId()) && x.getMessageStatus().equals(MessageStatusEnum.UNSEND))
+                .filter(x -> !x.getSendId().equals(SelfUserInfoContext.selfUserInfo().getUserId()))
                 .map(PrivateMessagePO::getId)
                 .collect(Collectors.toList());
-        if (!ids.isEmpty()) {
-            this.privateMessageRepository.updateMessageStatus(ids, MessageStatusEnum.SENDED);
-        }
+        privateMessageRepository.updateMessageStatus(ids, MessageStatusEnum.READED);
 
-        // 只在有新消息时更新 maxMessageId，且取本次拉取到的消息的最大 id
-        if (!messages.isEmpty()) {
-            Long newMaxId = messages.stream().mapToLong(PrivateMessagePO::getId).max().getAsLong();
-            redisUtil.set(key, newMaxId, 24, TimeUnit.HOURS);
-        }
-        // 如果没有新消息，不回写 redis，保持原有 maxMessageId
-        messages.stream().map(m -> BeanUtils.copyProperties(m, PrivateMessageDTO.class)).collect(Collectors.toList());
+        // 聚合返回数据
+        list = messages.stream().map(x -> {
+            LoadMessageListResponseDTO dto = new LoadMessageListResponseDTO();
+            dto.setId(x.getId());
+            dto.setSendId(x.getSendId());
+            dto.setReceiverId(x.getReceiverId());
+            dto.setConvSeq(x.getConvSeq());
+            dto.setMessageContent(x.getMessageContent());
+            dto.setMessageContentType(x.getMessageContentType());
+            dto.setMessageStatus(x.getMessageStatus());
+            dto.setReadStatus(x.getReadStatus());
+            dto.setSendNickName("");
+            dto.setSendTime(x.getSendTime());
+            dto.setReferenceId(x.getReferenceId());
+            dto.setLikeCount(x.getLikeCount());
+            return dto;
+        }).collect(Collectors.toList());
         return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
     }
 

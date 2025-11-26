@@ -36,10 +36,11 @@ public class MessageController {
     /*
     拉取消息
      */
-    @GetMapping("/{type}/loadMessage/{min_id}")
-    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("min_id") Long minId) {
+    @GetMapping("/{type}/loadMessage/{min_id}/{target_id}")
+    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("min_id") Long minId,@PathVariable("target_id") Long targetId) {
         LoadMessageRequestDTO dto = new LoadMessageRequestDTO();
         dto.setMinId(minId);
+        dto.setTargetId(targetId);
         return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(dto);
     }
 

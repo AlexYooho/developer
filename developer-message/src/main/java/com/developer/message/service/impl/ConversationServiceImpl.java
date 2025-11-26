@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
+import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SerialNoHolder;
@@ -76,14 +77,14 @@ public class ConversationServiceImpl implements ConversationService {
             ChatConversationListResponseDTO dto = new ChatConversationListResponseDTO();
             BeanUtils.copyProperties(po, dto);
 
-            if (po.getConvType() == 0) {
+            if (po.getConvType() == MessageMainTypeEnum.PRIVATE_MESSAGE) {
                 // 私聊
                 FriendInfoResponseRpcDTO friendInfoDTO = friendMap.get(po.getTargetId());
                 if (ObjectUtil.isNotEmpty(friendInfoDTO)) {
                     dto.setName(friendInfoDTO.getNickName());
                     dto.setHeadImage(friendInfoDTO.getHeadImage());
                 }
-            } else if (po.getConvType() == 1) {
+            } else if (po.getConvType() == MessageMainTypeEnum.GROUP_MESSAGE) {
                 // 群聊
                 GroupInfoResponseRpcDTO groupInfoDTO = groupMap.get(po.getTargetId());
                 if (ObjectUtil.isNotEmpty(groupInfoDTO)) {
