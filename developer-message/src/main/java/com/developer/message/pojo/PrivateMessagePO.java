@@ -12,7 +12,6 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-@Builder
 @TableName("private_message")
 public class PrivateMessagePO {
     /**

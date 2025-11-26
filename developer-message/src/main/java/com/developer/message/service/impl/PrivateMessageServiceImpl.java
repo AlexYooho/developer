@@ -124,13 +124,35 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
+        // 需要更新会话的maxSeq
+        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
+        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
+
         DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getReceiverId());
         if (!friend.getIsSuccessful()) {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), friend.getMsg());
         }
 
         // 消息入库
-        PrivateMessagePO privateMessage = this.saveMessage(userId, req);
+        PrivateMessagePO privateMessage = new PrivateMessagePO();
+        privateMessage.setUidA(uidA);
+        privateMessage.setUidB(uidB);
+        privateMessage.setSendId(userId);
+        privateMessage.setReceiverId(req.getReceiverId());
+        privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA,uidB));
+        privateMessage.setClientMsgId(req.getClientMsgId());
+        privateMessage.setMessageContent(req.getMessageContent());
+        privateMessage.setMessageContentType(req.getMessageContentType());
+        privateMessage.setMessageStatus(MessageStatusEnum.UNSEND);
+        privateMessage.setReadStatus(0);
+        privateMessage.setSendTime(new Date());
+        privateMessage.setReferenceId(req.getReferenceId());
+        privateMessage.setLikeCount(0L);
+        privateMessage.setExtra("");
+        privateMessage.setDeleted(false);
+        privateMessage.setCreateTime(new Date());
+        privateMessage.setUpdateTime(new Date());
+        privateMessageRepository.save(privateMessage);
 
         // 记录消息id，兼容多端游标
         TerminalTypeEnum terminalType = req.getTerminalType() != null ? req.getTerminalType()
@@ -159,9 +181,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
             }
         }
 
-        // 需要更新会话的maxSeq
-        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
-        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
+
 
         // 判断当前聊天会话是否有新的消息
         String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA, uidB);
@@ -245,13 +265,27 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     @Override
     public DeveloperResult<Boolean> insertMessage(MessageInsertDTO dto) {
         String serialNo = SerialNoHolder.getSerialNo();
-        PrivateMessagePO privateMessage = PrivateMessagePO.builder()
-                .messageStatus(dto.getMessageStatus())
-                .messageContent(dto.getMessageContent())
-                .sendId(dto.getSendId())
-                .receiverId(dto.getReceiverId())
-                .messageContentType(dto.getMessageContentType())
-                .sendTime(new Date()).build();
+
+        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), dto.getReceiverId());
+        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), dto.getReceiverId());
+        PrivateMessagePO privateMessage = new PrivateMessagePO();
+        privateMessage.setUidA(uidA);
+        privateMessage.setUidB(uidB);
+        privateMessage.setSendId(dto.getSendId());
+        privateMessage.setReceiverId(dto.getReceiverId());
+        privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA,uidB));
+        privateMessage.setClientMsgId("");
+        privateMessage.setMessageContent(dto.getMessageContent());
+        privateMessage.setMessageContentType(dto.getMessageContentType());
+        privateMessage.setMessageStatus(MessageStatusEnum.UNSEND);
+        privateMessage.setReadStatus(0);
+        privateMessage.setSendTime(new Date());
+        privateMessage.setReferenceId(0L);
+        privateMessage.setLikeCount(0L);
+        privateMessage.setExtra("");
+        privateMessage.setDeleted(false);
+        privateMessage.setCreateTime(new Date());
+        privateMessage.setUpdateTime(new Date());
         boolean isSuccess = privateMessageRepository.save(privateMessage);
         return DeveloperResult.success(serialNo, isSuccess);
     }
@@ -349,29 +383,6 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                 || messageContentTypeEnum == MessageContentTypeEnum.TRANSFER;
     }
 
-    private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message,
-                                                      MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus, Long referenceId) {
-        return PrivateMessagePO.builder()
-                .sendId(sendId)
-                .receiverId(receiverId)
-                .messageContent(message)
-                .messageContentType(messageContentType)
-                .messageStatus(messageStatus)
-                .sendTime(new Date())
-                .referenceId(referenceId)
-                .build();
-    }
-
-    /*
-     * 消息入库
-     */
-    private PrivateMessagePO saveMessage(Long userId, SendMessageRequestDTO req) {
-        PrivateMessagePO privateMessage = createPrivateMessageMode(userId, req.getReceiverId(), req.getMessageContent(),
-                req.getMessageContentType(), MessageStatusEnum.SENDED, req.getReferenceId());
-        this.privateMessageRepository.save(privateMessage);
-        return privateMessage;
-    }
-
     /*
      * 构建mq消息dto
      */
@@ -422,13 +433,26 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     @Override
     public DeveloperResult<Boolean> friendApplyAcceptMessage(Long receiverId) {
         // 新增消息记录
-        PrivateMessagePO privateMessage = PrivateMessagePO.builder()
-                .sendId(SelfUserInfoContext.selfUserInfo().getUserId())
-                .receiverId(receiverId)
-                .messageContent("我们已经是好友啦")
-                .messageContentType(MessageContentTypeEnum.TEXT)
-                .messageStatus(MessageStatusEnum.SENDED)
-                .sendTime(new Date()).build();
+        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), receiverId);
+        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), receiverId);
+        PrivateMessagePO privateMessage = new PrivateMessagePO();
+        privateMessage.setUidA(uidA);
+        privateMessage.setUidB(uidB);
+        privateMessage.setSendId(SelfUserInfoContext.selfUserInfo().getUserId());
+        privateMessage.setReceiverId(receiverId);
+        privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA,uidB));
+        privateMessage.setClientMsgId("");
+        privateMessage.setMessageContent("我们已经是好友啦");
+        privateMessage.setMessageContentType(MessageContentTypeEnum.TEXT);
+        privateMessage.setMessageStatus(MessageStatusEnum.UNSEND);
+        privateMessage.setReadStatus(0);
+        privateMessage.setSendTime(new Date());
+        privateMessage.setReferenceId(0L);
+        privateMessage.setLikeCount(0L);
+        privateMessage.setExtra("");
+        privateMessage.setDeleted(false);
+        privateMessage.setCreateTime(new Date());
+        privateMessage.setUpdateTime(new Date());
         privateMessageRepository.save(privateMessage);
 
         // 推送im消息
@@ -489,5 +513,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         }
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
+    }
+
+    private long getCurrentConversationNextConvSeq(Long uidA,Long uidB){
+        String key = RedisKeyConstant.CURRENT_CONVERSATION_NEXT_CONV_SEQ_KEY(uidA,uidB);
+        return redisUtil.increment(key,1L);
     }
 }

@@ -71,4 +71,10 @@ public class SendMessageRequestDTO {
     @JsonProperty("terminal_type")
     private TerminalTypeEnum terminalType;
 
+    /*
+    客户端消息id
+     */
+    @JsonProperty("client_msg_id")
+    private String clientMsgId;
+
 }

@@ -121,4 +121,8 @@ public class RedisKeyConstant {
     public static String CURRENT_TERMINAL_LAST_SEQ_KEY(Long uidA,Long uidB,Integer terminal){
         return "developer:message:last:seq:".concat(uidA.toString()).concat(uidB.toString()).concat(terminal.toString());
     }
+
+    public static String CURRENT_CONVERSATION_NEXT_CONV_SEQ_KEY(Long uidA,Long uidB){
+        return "developer:message:next:conv:seq:".concat(uidA.toString()).concat(uidB.toString());
+    }
 }
