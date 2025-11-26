@@ -100,13 +100,12 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     @Transactional
     @Override
     public DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req) {
-        String serialNo = SerialNoHolder.getSerialNo();
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
         DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getReceiverId());
         if(!friend.getIsSuccessful()){
-            return DeveloperResult.error(serialNo,friend.getMsg());
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),friend.getMsg());
         }
 
         // 消息入库
@@ -117,20 +116,20 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         redisUtil.set(RedisKeyConstant.DEVELOPER_MESSAGE_USER_PRIVATE_CHAT_MAX_ID(userId), privateMessage.getId(), 24, TimeUnit.HOURS);
 
         // 发送消息
-        rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getMessageStatus(), terminalType, privateMessage.getId(), userId, nickName, req.getMessageContent(),privateMessage.getSendTime(),req.getReceiverId()));
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(),DeveloperMQConstant.MESSAGE_IM_EXCHANGE,DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(),req.getMessageContentType(), privateMessage.getMessageStatus(), terminalType, privateMessage.getId(), userId, nickName, req.getMessageContent(),privateMessage.getSendTime(),req.getReceiverId()));
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
 
         // 同步修改红包消息状态
         if(req.getMessageContentType()== MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER){
-            DeveloperResult<Boolean> modifyResult = paymentClient.modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder().serialNo(serialNo).messageStatus(1).build());
+            DeveloperResult<Boolean> modifyResult = paymentClient.modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder().serialNo(SerialNoHolder.getSerialNo()).messageStatus(1).build());
             if(!modifyResult.getIsSuccessful()){
-                return DeveloperResult.error(serialNo, modifyResult.getMsg());
+                return DeveloperResult.error(SerialNoHolder.getSerialNo(), modifyResult.getMsg());
             }
         }
 
-        return DeveloperResult.success(serialNo,dto);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(),dto);
     }
 
     /*
