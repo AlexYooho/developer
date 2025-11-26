@@ -1,5 +1,6 @@
 package com.developer.message.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.MQMessageTypeConstant;
@@ -48,7 +49,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
 
     /**
      * 消息主体类型
-     * 
+     *
      * @return
      */
     @Override
@@ -57,23 +58,42 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-     * 拉取最新消息--这里需要改成按会话id获取
+    拉取最新消息--这里需要改成按会话id获取
      */
     @Override
     public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(LoadMessageRequestDTO req) {
         List<LoadMessageListResponseDTO> list = new ArrayList<>();
 
-        // 获取当前用户的最新聊天消息
         Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
         Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
-        List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(req.getMinId(), uidA, uidB);
+
+        // 判断当前聊天会话是否有新的消息
+        // 和当前对象会话的maxSeq
+        String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA, uidB);
+        Long maxSeq = Optional.ofNullable(redisUtil.get(maxSeqKey, Long.class)).orElse(0L);
+        // 当前设备终端最大的convSeq
+        String lastSeqKey = RedisKeyConstant.CURRENT_TERMINAL_LAST_SEQ_KEY(uidA, uidB, req.getTerminalType().code());
+        Long lastSeq = Optional.ofNullable(redisUtil.get(lastSeqKey, Long.class)).orElse(0L);
+        if (maxSeq > 0 && lastSeq > 0) {
+            if (maxSeq.equals(lastSeq)) {
+                return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
+            }
+        }
+
+        // 获取当前用户的最新聊天消息
+        List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(lastSeq, uidA, uidB);
 
         // 将所有消息改为已读状态
         List<Long> ids = messages.stream()
                 .filter(x -> !x.getSendId().equals(SelfUserInfoContext.selfUserInfo().getUserId()))
                 .map(PrivateMessagePO::getId)
                 .collect(Collectors.toList());
-        privateMessageRepository.updateMessageStatus(ids, MessageStatusEnum.READED);
+        if (CollUtil.isNotEmpty(ids)) {
+            privateMessageRepository.updateMessageStatus(ids, MessageStatusEnum.READED);
+
+            // 修改当前终端的lastSeq
+            redisUtil.set(lastSeqKey, Collections.max(ids));
+        }
 
         // 聚合返回数据
         list = messages.stream().map(x -> {
@@ -138,6 +158,14 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                 return DeveloperResult.error(SerialNoHolder.getSerialNo(), modifyResult.getMsg());
             }
         }
+
+        // 需要更新会话的maxSeq
+        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
+        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
+
+        // 判断当前聊天会话是否有新的消息
+        String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA, uidB);
+        redisUtil.set(maxSeqKey, privateMessage.getConvSeq());
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo(), dto);
     }
@@ -322,7 +350,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     private PrivateMessagePO createPrivateMessageMode(Long sendId, Long receiverId, String message,
-            MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus, Long referenceId) {
+                                                      MessageContentTypeEnum messageContentType, MessageStatusEnum messageStatus, Long referenceId) {
         return PrivateMessagePO.builder()
                 .sendId(sendId)
                 .receiverId(receiverId)
@@ -437,7 +465,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      */
     @Override
     public DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds, String groupName,
-            String inviterName, String groupAvatar) {
+                                                               String inviterName, String groupAvatar) {
 
         for (Long memberId : memberIds) {
             String content = "邀请你加入群聊,".concat(inviterName).concat("邀请你加入群聊").concat(groupName).concat("进入可查看详情")

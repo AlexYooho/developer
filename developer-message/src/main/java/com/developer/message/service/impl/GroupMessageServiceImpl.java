@@ -80,7 +80,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         List<GroupMessageMemberReceiveRecordPO> curUserSendMessageList = groupMessageMemberReceiveRecordRepository.findAllMessageBySendId(userId);
 
         Date minDate = DateTimeUtils.addMonths(new Date(), -3);
-        List<GroupMessagePO> messages = groupMessageRepository.find(req.getMinId(), minDate, groupIds);
+        List<GroupMessagePO> messages = groupMessageRepository.find(req.getLastSeq(), minDate, groupIds);
         List<SendMessageResultDTO> vos = messages.stream().map(x -> {
             GroupMessageDTO vo = BeanUtils.copyProperties(x, GroupMessageDTO.class);
             if (vo == null) {

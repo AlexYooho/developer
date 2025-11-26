@@ -10,8 +10,8 @@ public class LoadMessageRequestDTO {
     /*
     消息最小id
      */
-    @JsonProperty("min_id")
-    private Long minId;
+    @JsonProperty("last_seq")
+    private Long lastSeq;
 
     /*
     目标用户

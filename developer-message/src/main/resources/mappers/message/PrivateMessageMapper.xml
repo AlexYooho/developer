@@ -11,7 +11,7 @@
     <select id="findMessageList" resultMap="BaseResultMap">
         SELECT <include refid="Base_Column_list"/>
             FROM private_message
-        WHERE id > #{min_id}
+        WHERE conv_seq > #{last_seq}
         AND deleted = false
         AND uid_a = #{uid_a}
         AND uid_b = #{uid_b}

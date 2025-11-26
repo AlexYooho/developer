@@ -110,6 +110,15 @@ public class RedisKeyConstant {
 
     // 会话列表key
     public static String CONVERSATION_LIST_KEY(Long userId) {
-        return "developer:conversation:list:user:".concat(userId.toString());
+        return "developer:message:conversation:list:user:".concat(userId.toString());
+    }
+
+    // 当前会话maxSeq
+    public static String CURRENT_CONVERSATION_MAX_SEQ_KEY(Long uidA,Long uidB){
+        return "developer:message:max:seq:".concat(uidA.toString()).concat(":").concat(uidB.toString());
+    }
+
+    public static String CURRENT_TERMINAL_LAST_SEQ_KEY(Long uidA,Long uidB,Integer terminal){
+        return "developer:message:last:seq:".concat(uidA.toString()).concat(uidB.toString()).concat(terminal.toString());
     }
 }

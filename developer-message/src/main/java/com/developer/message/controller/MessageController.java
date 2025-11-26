@@ -1,5 +1,6 @@
 package com.developer.message.controller;
 
+import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.*;
@@ -36,11 +37,11 @@ public class MessageController {
     /*
     拉取消息
      */
-    @GetMapping("/{type}/loadMessage/{min_id}/{target_id}")
-    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type,@PathVariable("min_id") Long minId,@PathVariable("target_id") Long targetId) {
+    @GetMapping("/{type}/loadMessage/{terminal_type}/{target_id}")
+    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(@PathVariable("type") MessageMainTypeEnum type, @PathVariable("terminal_type") TerminalTypeEnum terminalType, @PathVariable("target_id") Long targetId) {
         LoadMessageRequestDTO dto = new LoadMessageRequestDTO();
-        dto.setMinId(minId);
         dto.setTargetId(targetId);
+        dto.setTerminalType(terminalType);
         return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(dto);
     }
 

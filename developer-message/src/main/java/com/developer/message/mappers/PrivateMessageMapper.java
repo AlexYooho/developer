@@ -11,7 +11,7 @@ import java.util.List;
 @Mapper
 public interface PrivateMessageMapper extends BaseMapper<PrivateMessagePO> {
 
-    List<PrivateMessagePO> findMessageList(@Param("min_id") Long minId, @Param("uid_a") Long uidA, @Param("uid_b") Long uidB);
+    List<PrivateMessagePO> findMessageList(@Param("last_seq") Long lastSeq, @Param("uid_a") Long uidA, @Param("uid_b") Long uidB);
 
     void modifyMessageStatus(@Param("status")MessageStatusEnum status,@Param("ids") List<Long> ids);
 
