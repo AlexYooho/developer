@@ -84,11 +84,11 @@ public class TransferMoneyPaymentServiceImpl extends BasePaymentService implemen
         }
 
         // 4、推送转账消息
-        String messageContent = "你收到一笔转账";
-        DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo,dto.getTransferInfoDTO().getTargetId(), dto.getTransferInfoDTO().getPaymentChannel(),transferInfoPO.getId(),PaymentTypeEnum.TRANSFER,messageContent, MessageContentTypeEnum.TRANSFER);
-        if (!sendMessageResult.getIsSuccessful()) {
-            throw new DeveloperBusinessException(serialNo,sendMessageResult.getMsg());
-        }
+//        String messageContent = "你收到一笔转账";
+//        DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo,dto.getTransferInfoDTO().getTargetId(), dto.getTransferInfoDTO().getPaymentChannel(),transferInfoPO.getId(),PaymentTypeEnum.TRANSFER,messageContent, MessageContentTypeEnum.TRANSFER);
+//        if (!sendMessageResult.getIsSuccessful()) {
+//            throw new DeveloperBusinessException(serialNo,sendMessageResult.getMsg());
+//        }
 
         // 5、推送转账过期延迟检查事件
         transactionExpiredCheckEvent(serialNo,PaymentTypeEnum.TRANSFER,transferInfoPO.getId(),transferInfoPO.getExpireTime().getTime());

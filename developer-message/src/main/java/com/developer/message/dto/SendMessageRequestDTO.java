@@ -3,12 +3,15 @@ package com.developer.message.dto;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.enums.common.TerminalTypeEnum;
+import com.developer.framework.enums.payment.PaymentTypeEnum;
+import com.developer.framework.enums.payment.RedPacketsTypeEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -76,5 +79,28 @@ public class SendMessageRequestDTO {
      */
     @JsonProperty("client_msg_id")
     private String clientMsgId;
+
+    /*
+    支付信息
+     */
+    @JsonProperty("payment_info")
+    private PaymentInfoDTO paymentInfoDTO;
+
+    @Data
+    public static class PaymentInfoDTO{
+
+        @JsonProperty("payment_type")
+        private PaymentTypeEnum paymentType;
+
+        @JsonProperty("payment_amount")
+        private BigDecimal paymentAmount;
+
+        @JsonProperty("red_packets_total_count")
+        private Integer redPacketsTotalCount;
+
+        @JsonProperty("red_packets_type")
+        private RedPacketsTypeEnum redPacketsType;
+
+    }
 
 }

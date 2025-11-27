@@ -49,9 +49,6 @@ public class LuckPaymentServiceImpl extends BasePaymentService implements RedPac
     @Autowired
     private RedPacketsReceiveDetailsRepository redPacketsReceiveDetailsRepository;
 
-    @Autowired
-    private SnowflakeNoUtil snowflakeNoUtil;
-
     @Override
     public RedPacketsTypeEnum redPacketsType() {
         return RedPacketsTypeEnum.LUCKY;
@@ -85,10 +82,10 @@ public class LuckPaymentServiceImpl extends BasePaymentService implements RedPac
         }
 
         // 4、推送红包消息
-        DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel(), redPacketsInfoPO.getId(),PaymentTypeEnum.RED_PACKETS,"红包来啦", MessageContentTypeEnum.RED_PACKETS);
-        if (!sendMessageResult.getIsSuccessful()) {
-            throw new DeveloperBusinessException(serialNo,sendMessageResult.getMsg());
-        }
+//        DeveloperResult sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel(), redPacketsInfoPO.getId(),PaymentTypeEnum.RED_PACKETS,"红包来啦", MessageContentTypeEnum.RED_PACKETS);
+//        if (!sendMessageResult.getIsSuccessful()) {
+//            throw new DeveloperBusinessException(serialNo,sendMessageResult.getMsg());
+//        }
 
         // 5、红包过期退回金额
         this.transactionExpiredCheckEvent(serialNo,PaymentTypeEnum.RED_PACKETS, redPacketsInfoPO.getId(), redPacketsInfoPO.getExpireTime().getTime());

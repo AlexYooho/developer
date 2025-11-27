@@ -12,6 +12,7 @@ import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.enums.message.MessageStatusEnum;
 import com.developer.framework.enums.common.TerminalTypeEnum;
+import com.developer.framework.enums.payment.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
@@ -24,6 +25,9 @@ import com.developer.message.service.AbstractMessageAdapterService;
 import com.developer.message.service.FriendService;
 import com.developer.message.service.MessageLikeService;
 import com.developer.message.util.RabbitMQUtil;
+import com.developer.rpc.client.RpcClient;
+import com.developer.rpc.client.RpcExecutor;
+import com.developer.rpc.dto.payment.request.InvokeRedPacketsTransferRequestRpcDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -46,6 +50,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     private final PaymentClient paymentClient;
     private final MessageLikeService messageLikeService;
     private final PrivateMessageRepository privateMessageRepository;
+    private final RpcClient rpcClient;
 
     /**
      * 消息主体类型
@@ -160,36 +165,35 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessage.setUpdateTime(new Date());
         privateMessageRepository.save(privateMessage);
 
-        // 记录消息id，兼容多端游标
-        TerminalTypeEnum terminalType = req.getTerminalType() != null ? req.getTerminalType()
-                : TerminalTypeEnum.WEB;
-        redisUtil.set(RedisKeyConstant.DEVELOPER_MESSAGE_USER_PRIVATE_CHAT_MAX_ID(userId), privateMessage.getId(), 24,
-                TimeUnit.HOURS);
+        // 红包转账消息调用支付接口
+        if (req.getMessageContentType().equals(MessageContentTypeEnum.TRANSFER) || req.getMessageContentType().equals(MessageContentTypeEnum.RED_PACKETS)) {
+            InvokeRedPacketsTransferRequestRpcDTO paymentDto = new InvokeRedPacketsTransferRequestRpcDTO();
+            paymentDto.setPaymentType(req.getPaymentInfoDTO().getPaymentType());
+            paymentDto.setPaymentAmount(req.getPaymentInfoDTO().getPaymentAmount());
+            paymentDto.setTargetId(req.getReceiverId());
+            paymentDto.setRedPacketsTotalCount(req.getPaymentInfoDTO().getRedPacketsTotalCount());
+            paymentDto.setRedPacketsType(req.getPaymentInfoDTO().getRedPacketsType());
+            paymentDto.setMessageId(privateMessage.getId());
+            paymentDto.setPaymentChannel(PaymentChannelEnum.FRIEND);
+            DeveloperResult<Boolean> execute = RpcExecutor.execute(() -> rpcClient.paymentRpcService.invokeRedPacketsTransfer(paymentDto));
+            if (!execute.getIsSuccessful()) {
+                return DeveloperResult.error(SerialNoHolder.getSerialNo(), execute.getMsg());
+            }
+        }
 
         // 发送消息
         rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                 DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
                 builderMQMessageDTO(req.getMessageMainType(), req.getMessageContentType(),
-                        privateMessage.getMessageStatus(), terminalType, privateMessage.getId(), userId, nickName,
+                        privateMessage.getMessageStatus(), req.getTerminalType(), privateMessage.getId(), userId, nickName,
                         req.getMessageContent(), privateMessage.getSendTime(), req.getReceiverId()));
+
+        // 更新当前聊天会话maxSeq
+        String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA, uidB);
+        redisUtil.set(maxSeqKey, privateMessage.getConvSeq());
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
-
-        // 同步修改红包消息状态
-        if (req.getMessageContentType() == MessageContentTypeEnum.RED_PACKETS
-                || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER) {
-            DeveloperResult<Boolean> modifyResult = paymentClient
-                    .modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder()
-                            .serialNo(SerialNoHolder.getSerialNo()).messageStatus(1).build());
-            if (!modifyResult.getIsSuccessful()) {
-                return DeveloperResult.error(SerialNoHolder.getSerialNo(), modifyResult.getMsg());
-            }
-        }
-
-        // 判断当前聊天会话是否有新的消息
-        String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA, uidB);
-        redisUtil.set(maxSeqKey, privateMessage.getConvSeq());
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo(), dto);
     }
@@ -391,9 +395,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      * 构建mq消息dto
      */
     private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
-            MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
-            TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
-            String messageContent, Date sendTime, Long friendId) {
+                                               MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
+                                               TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
+                                               String messageContent, Date sendTime, Long friendId) {
         return ChatMessageDTO
                 .builder()
                 .messageMainTypeEnum(messageMainTypeEnum)
@@ -410,9 +414,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
-            MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
-            String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
-            MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
+                                                       MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
+                                                       String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
+                                                       MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
         return RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
@@ -493,7 +497,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      */
     @Override
     public DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds, String groupName,
-            String inviterName, String groupAvatar) {
+                                                               String inviterName, String groupAvatar) {
 
         for (Long memberId : memberIds) {
             String content = "邀请你加入群聊,".concat(inviterName).concat("邀请你加入群聊").concat(groupName).concat("进入可查看详情")

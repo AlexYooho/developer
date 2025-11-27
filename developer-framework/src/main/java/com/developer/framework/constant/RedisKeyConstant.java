@@ -36,13 +36,6 @@ public class RedisKeyConstant {
     public final static String IM_GROUP_READED_POSITION = "im:readed:group:position";
 
     /**
-     * 用户私聊最大消息id（多端）
-     */
-    public static String DEVELOPER_MESSAGE_USER_PRIVATE_CHAT_MAX_ID(Long userId) {
-        return String.format("developer:message:user:%s:private:chat:max:id", userId);
-    }
-
-    /**
      * 点赞记录key
      */
     public static String MESSAGE_LIKE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId, Long userId) {

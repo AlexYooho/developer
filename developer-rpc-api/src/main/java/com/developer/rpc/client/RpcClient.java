@@ -29,8 +29,8 @@ public class RpcClient {
     // @DubboReference(timeout = 5000)
     // public OssRpcService ossRpcService;
     //
-    // @DubboReference(timeout = 5000)
-    // public PaymentRpcService paymentRpcService;
+     @DubboReference(timeout = 5000)
+     public PaymentRpcService paymentRpcService;
     //
     // @DubboReference(timeout = 5000)
     // public SsoRpcService ssoRpcService;

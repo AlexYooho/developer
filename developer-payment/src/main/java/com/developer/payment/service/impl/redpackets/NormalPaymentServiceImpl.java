@@ -85,16 +85,16 @@ public class NormalPaymentServiceImpl extends BasePaymentService implements RedP
         }
 
         // 4、推送红包消息
-        DeveloperResult<SendRedPacketsResultDTO> sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel(), redPacketsInfoPO.getId(),PaymentTypeEnum.RED_PACKETS,"红包来啦", MessageContentTypeEnum.RED_PACKETS);
-        if (!sendMessageResult.getIsSuccessful()) {
-            throw new DeveloperBusinessException(serialNo,sendMessageResult.getMsg());
-        }
+//        DeveloperResult<SendRedPacketsResultDTO> sendMessageResult = sendRedPacketsMessage(serialNo, dto.getTargetId(), dto.getPaymentChannel(), redPacketsInfoPO.getId(),PaymentTypeEnum.RED_PACKETS,"红包来啦", MessageContentTypeEnum.RED_PACKETS);
+//        if (!sendMessageResult.getIsSuccessful()) {
+//            throw new DeveloperBusinessException(serialNo,sendMessageResult.getMsg());
+//        }
 
         // 5、推送红包过期延迟检查事件
         this.transactionExpiredCheckEvent(serialNo,PaymentTypeEnum.RED_PACKETS, redPacketsInfoPO.getId(), redPacketsInfoPO.getExpireTime().getTime());
 
         SendRedPacketsResultDTO resultDto = new SendRedPacketsResultDTO();
-        resultDto.setMessageId(sendMessageResult.getData().getMessageId());
+        //resultDto.setMessageId(sendMessageResult.getData().getMessageId());
 
         return DeveloperResult.success(serialNo,resultDto);
     }
