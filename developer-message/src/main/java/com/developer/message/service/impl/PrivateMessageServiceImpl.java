@@ -124,14 +124,15 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
-        // 需要更新会话的maxSeq
-        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
-        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
-
+        // 好友关系校验
         DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getReceiverId());
         if (!friend.getIsSuccessful()) {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), friend.getMsg());
         }
+
+        // 发送者、接收者id
+        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
+        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
 
         // 消息入库
         PrivateMessagePO privateMessage = new PrivateMessagePO();

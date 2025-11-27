@@ -85,13 +85,6 @@ public class RedisKeyConstant {
     }
 
     /**
-     * 存在好友关系
-     */
-    public static String IS_FRIEND_KEY(Long userId, Long friendId) {
-        return String.format("developer:message:user:%s:friend:%s:exist:relation", userId, friendId);
-    }
-
-    /**
      * 维护 用户:服务端节点信息
      * 数据类型：hash
      * 用户ID-> ChannelID:服务端节点信息
