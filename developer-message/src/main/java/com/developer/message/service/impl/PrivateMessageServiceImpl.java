@@ -58,7 +58,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-    拉取最新消息--这里需要改成按会话id获取
+     * 拉取最新消息--这里需要改成按会话id获取
      */
     @Override
     public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(LoadMessageRequestDTO req) {
@@ -124,10 +124,15 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
+        // 不能给自己发送消息
+        if (userId.equals(req.getReceiverId())) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "不能给自己发送消息");
+        }
+
         // 好友关系校验
         DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getReceiverId());
-        if (!friend.getIsSuccessful()) {
-            return DeveloperResult.error(SerialNoHolder.getSerialNo(), friend.getMsg());
+        if (!friend.getIsSuccessful() || !friend.getData()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "您还不是对方的好友");
         }
 
         // 发送者、接收者id
@@ -140,7 +145,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessage.setUidB(uidB);
         privateMessage.setSendId(userId);
         privateMessage.setReceiverId(req.getReceiverId());
-        privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA,uidB));
+        privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA, uidB));
         privateMessage.setClientMsgId(req.getClientMsgId());
         privateMessage.setMessageContent(req.getMessageContent());
         privateMessage.setMessageContentType(req.getMessageContentType());
@@ -181,8 +186,6 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                 return DeveloperResult.error(SerialNoHolder.getSerialNo(), modifyResult.getMsg());
             }
         }
-
-
 
         // 判断当前聊天会话是否有新的消息
         String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA, uidB);
@@ -274,7 +277,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessage.setUidB(uidB);
         privateMessage.setSendId(dto.getSendId());
         privateMessage.setReceiverId(dto.getReceiverId());
-        privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA,uidB));
+        privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA, uidB));
         privateMessage.setClientMsgId("");
         privateMessage.setMessageContent(dto.getMessageContent());
         privateMessage.setMessageContentType(dto.getMessageContentType());
@@ -388,9 +391,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      * 构建mq消息dto
      */
     private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
-                                               MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
-                                               TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
-                                               String messageContent, Date sendTime, Long friendId) {
+            MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
+            TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
+            String messageContent, Date sendTime, Long friendId) {
         return ChatMessageDTO
                 .builder()
                 .messageMainTypeEnum(messageMainTypeEnum)
@@ -407,9 +410,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
-                                                       MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
-                                                       String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
-                                                       MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
+            MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
+            String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
+            MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
         return RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
@@ -441,7 +444,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessage.setUidB(uidB);
         privateMessage.setSendId(SelfUserInfoContext.selfUserInfo().getUserId());
         privateMessage.setReceiverId(receiverId);
-        privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA,uidB));
+        privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA, uidB));
         privateMessage.setClientMsgId("");
         privateMessage.setMessageContent("我们已经是好友啦");
         privateMessage.setMessageContentType(MessageContentTypeEnum.TEXT);
@@ -490,7 +493,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      */
     @Override
     public DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds, String groupName,
-                                                               String inviterName, String groupAvatar) {
+            String inviterName, String groupAvatar) {
 
         for (Long memberId : memberIds) {
             String content = "邀请你加入群聊,".concat(inviterName).concat("邀请你加入群聊").concat(groupName).concat("进入可查看详情")
@@ -516,8 +519,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
-    private long getCurrentConversationNextConvSeq(Long uidA,Long uidB){
-        String key = RedisKeyConstant.CURRENT_CONVERSATION_NEXT_CONV_SEQ_KEY(uidA,uidB);
-        return redisUtil.increment(key,1L);
+    private long getCurrentConversationNextConvSeq(Long uidA, Long uidB) {
+        String key = RedisKeyConstant.CURRENT_CONVERSATION_NEXT_CONV_SEQ_KEY(uidA, uidB);
+        return redisUtil.increment(key, 1L);
     }
 }
