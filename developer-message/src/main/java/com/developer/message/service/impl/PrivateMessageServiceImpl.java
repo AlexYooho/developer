@@ -166,7 +166,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessageRepository.save(privateMessage);
 
         // 红包转账消息调用支付接口
-        if (req.getMessageContentType().equals(MessageContentTypeEnum.TRANSFER) || req.getMessageContentType().equals(MessageContentTypeEnum.RED_PACKETS)) {
+        if (req.getMessageContentType().equals(MessageContentTypeEnum.TRANSFER)
+                || req.getMessageContentType().equals(MessageContentTypeEnum.RED_PACKETS)) {
             InvokeRedPacketsTransferRequestRpcDTO paymentDto = new InvokeRedPacketsTransferRequestRpcDTO();
             paymentDto.setPaymentType(req.getPaymentInfoDTO().getPaymentType());
             paymentDto.setPaymentAmount(req.getPaymentInfoDTO().getPaymentAmount());
@@ -175,7 +176,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
             paymentDto.setRedPacketsType(req.getPaymentInfoDTO().getRedPacketsType());
             paymentDto.setMessageId(privateMessage.getId());
             paymentDto.setPaymentChannel(PaymentChannelEnum.FRIEND);
-            DeveloperResult<Boolean> execute = RpcExecutor.execute(() -> rpcClient.paymentRpcService.invokeRedPacketsTransfer(paymentDto));
+            DeveloperResult<Boolean> execute = RpcExecutor
+                    .execute(() -> rpcClient.paymentRpcService.invokeRedPacketsTransfer(paymentDto));
             if (!execute.getIsSuccessful()) {
                 return DeveloperResult.error(SerialNoHolder.getSerialNo(), execute.getMsg());
             }
@@ -185,7 +187,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                 DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
                 builderMQMessageDTO(req.getMessageMainType(), req.getMessageContentType(),
-                        privateMessage.getMessageStatus(), req.getTerminalType(), privateMessage.getId(), userId, nickName,
+                        privateMessage.getMessageStatus(), req.getTerminalType(), privateMessage.getId(), userId,
+                        nickName,
                         req.getMessageContent(), privateMessage.getSendTime(), req.getReceiverId()));
 
         // 更新当前聊天会话maxSeq
@@ -395,9 +398,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      * 构建mq消息dto
      */
     private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
-                                               MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
-                                               TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
-                                               String messageContent, Date sendTime, Long friendId) {
+            MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
+            TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
+            String messageContent, Date sendTime, Long friendId) {
         return ChatMessageDTO
                 .builder()
                 .messageMainTypeEnum(messageMainTypeEnum)
@@ -414,9 +417,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
-                                                       MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
-                                                       String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
-                                                       MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
+            MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
+            String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
+            MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
         return RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
@@ -497,7 +500,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      */
     @Override
     public DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds, String groupName,
-                                                               String inviterName, String groupAvatar) {
+            String inviterName, String groupAvatar) {
 
         for (Long memberId : memberIds) {
             String content = "邀请你加入群聊,".concat(inviterName).concat("邀请你加入群聊").concat(groupName).concat("进入可查看详情")
