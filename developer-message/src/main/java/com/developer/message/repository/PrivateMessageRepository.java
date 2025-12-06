@@ -41,4 +41,24 @@ public class PrivateMessageRepository extends ServiceImpl<PrivateMessageMapper, 
                 .remove();
     }
 
+    public List<PrivateMessagePO> findMessageByStatus(Long uidA,Long uidB,MessageStatusEnum messageStatus){
+        return baseMapper.findMessageByStatus(uidA,uidB,messageStatus);
+    }
+
+    public PrivateMessagePO findMessageByMessageId(Long uidA,Long uidB,Long messageId){
+        return baseMapper.findMessageByMessageId(uidA,uidB,messageId);
+    }
+
+    public PrivateMessagePO findMessageByMessageId(Long messageId){
+        return baseMapper.findMessageByMessageId2(messageId);
+    }
+
+    public List<PrivateMessagePO> findAllMessageByTarget(Long uidA,Long uidB){
+        return baseMapper.findAllMessageByTarget(uidA,uidB);
+    }
+
+    public void updateDeleteStatus(List<Long> messageIds,Boolean delete){
+        baseMapper.updateDeleteStatus(messageIds,delete);
+    }
+
 }

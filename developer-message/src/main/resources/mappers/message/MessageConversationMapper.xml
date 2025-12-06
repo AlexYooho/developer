@@ -16,4 +16,20 @@
         ORDER BY last_msg_time DESC
     </select>
 
+    <update id="updateConversationInfo">
+        UPDATE message_conversation
+        SET last_msg_seq = #{po.lastMsgSeq},
+            last_msg_id = #{po.lastMsgId},
+            last_msg_content = #{po.lastMsgContent},
+            last_msg_type = #{po.lastMsgType},
+            last_msg_time = #{po.lastMsgTime},
+            unread_count = #{po.unreadCount},
+            pinned = #{po.pinned},
+            muted = #{po.muted},
+            deleted = #{po.deleted},
+            draft = #{po.draft},
+            update_time = #{po.updateTime}
+        WHERE id = #{po.id}
+    </update>
+
 </mapper>

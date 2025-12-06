@@ -107,8 +107,8 @@ public class PrivateMessagePO {
     /*
     是否逻辑删除
      */
-    @TableField("deleted")
-    private Boolean deleted;
+    @TableField("visible_to_oneself")
+    private Boolean visibleToOneself;
 
     /*
     创建时间

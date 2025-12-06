@@ -12,4 +12,6 @@ public interface MessageConversationMapper extends BaseMapper<MessageConversatio
 
     List<MessageConversationPO> findList(@Param("user_id") Long userId);
 
+    void updateConversationInfo(@Param("po") MessageConversationPO po);
+
 }

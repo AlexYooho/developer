@@ -14,4 +14,7 @@ public class MessageConversationRepository extends ServiceImpl<MessageConversati
         return baseMapper.findList(userId);
     }
 
+    public void updateConversationInfo(MessageConversationPO po){
+        baseMapper.updateConversationInfo(po);
+    }
 }

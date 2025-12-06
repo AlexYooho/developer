@@ -207,7 +207,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
      * @return
      */
     @Override
-    public DeveloperResult<Boolean> withdrawMessage(RecallMessageRequestDTO req) {
+    public DeveloperResult<Boolean> withdrawMessage(WithdrawMessageRequestDTO req) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
         GroupMessagePO groupMessage = groupMessageRepository.getById(req.getMessageId());
@@ -245,7 +245,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
      * @return
      */
     @Override
-    public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
+    public DeveloperResult<List<QueryHistoryMessageResponseDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
         req.setPage(req.getPage() > 0 ? req.getPage() : 1);
         req.setSize(req.getSize() > 0 ? req.getSize() : 10);
         String serialNo = SerialNoHolder.getSerialNo();
@@ -257,7 +257,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         }
 
         List<GroupMessagePO> messages = groupMessageRepository.findHistoryMessage(req.getTargetId(), selfJoinGroupInfoDTO.getCreatedTime(), stIdx, req.getSize());
-        List<SendMessageResultDTO> list = messages.stream().map(x -> BeanUtils.copyProperties(x, GroupMessageDTO.class)).collect(Collectors.toList());
+        List<QueryHistoryMessageResponseDTO> list = messages.stream().map(x -> BeanUtils.copyProperties(x, QueryHistoryMessageResponseDTO.class)).collect(Collectors.toList());
         return DeveloperResult.success(serialNo, list);
     }
 

@@ -31,7 +31,7 @@ public abstract class AbstractMessageAdapterService implements MessageService{
     }
 
     @Override
-    public DeveloperResult<Boolean> withdrawMessage(RecallMessageRequestDTO req) {
+    public DeveloperResult<Boolean> withdrawMessage(WithdrawMessageRequestDTO req) {
         return null;
     }
 
@@ -46,7 +46,7 @@ public abstract class AbstractMessageAdapterService implements MessageService{
     }
 
     @Override
-    public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
+    public DeveloperResult<List<QueryHistoryMessageResponseDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
         return null;
     }
 

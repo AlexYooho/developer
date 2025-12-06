@@ -30,7 +30,7 @@ public class MessageController {
     撤回消息
      */
     @PostMapping("/{type}/withdraw")
-    public DeveloperResult<Boolean> withdrawMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody RecallMessageRequestDTO req) {
+    public DeveloperResult<Boolean> withdrawMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody WithdrawMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).withdrawMessage(req);
     }
 
@@ -57,7 +57,7 @@ public class MessageController {
     查询聊天记录
      */
     @PostMapping("/{type}/history")
-    public DeveloperResult<List<SendMessageResultDTO>> recallMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody QueryHistoryMessageRequestDTO req) {
+    public DeveloperResult<List<QueryHistoryMessageResponseDTO>> recallMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody QueryHistoryMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).findHistoryMessage(req);
     }
 

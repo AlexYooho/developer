@@ -40,7 +40,7 @@ public interface BasicMessageService {
      * @param req
      * @return
      */
-    DeveloperResult<Boolean> withdrawMessage(RecallMessageRequestDTO req);
+    DeveloperResult<Boolean> withdrawMessage(WithdrawMessageRequestDTO req);
 
     /**
      * 新增消息
@@ -61,6 +61,6 @@ public interface BasicMessageService {
      * @param req
      * @return
      */
-    DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req);
+    DeveloperResult<List<QueryHistoryMessageResponseDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req);
 
 }

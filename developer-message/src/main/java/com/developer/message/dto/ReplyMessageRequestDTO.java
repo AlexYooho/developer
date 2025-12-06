@@ -10,12 +10,6 @@ import java.util.List;
 @Data
 public class ReplyMessageRequestDTO {
 
-    @JsonProperty("serial_no")
-    private String serialNo;
-
-    @JsonProperty("message_id")
-    private Long messageId;
-
     /**
      * 接收人
      */

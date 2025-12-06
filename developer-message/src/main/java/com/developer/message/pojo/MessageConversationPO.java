@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +12,6 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-@Builder
 @TableName("message_conversation")
 public class MessageConversationPO {
     @TableId(type = IdType.AUTO)
@@ -67,7 +67,7 @@ public class MessageConversationPO {
     最后一条消息的类型
      */
     @TableField("last_msg_type")
-    private Integer lastMsgType = 0;
+    private MessageContentTypeEnum lastMsgType;
 
     /*
     最后活跃时间，用于排序

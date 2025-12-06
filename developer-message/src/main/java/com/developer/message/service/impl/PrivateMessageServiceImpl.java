@@ -1,6 +1,7 @@
 package com.developer.message.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.MQMessageTypeConstant;
@@ -17,11 +18,11 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SerialNoHolder;
-import com.developer.message.client.PaymentClient;
 import com.developer.message.dto.*;
 import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.PrivateMessageRepository;
 import com.developer.message.service.AbstractMessageAdapterService;
+import com.developer.message.service.ConversationService;
 import com.developer.message.service.FriendService;
 import com.developer.message.service.MessageLikeService;
 import com.developer.message.util.RabbitMQUtil;
@@ -36,7 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,10 +47,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     private final RedisUtil redisUtil;
     private final RabbitMQUtil rabbitMQUtil;
     private final FriendService friendService;
-    private final PaymentClient paymentClient;
     private final MessageLikeService messageLikeService;
     private final PrivateMessageRepository privateMessageRepository;
     private final RpcClient rpcClient;
+    private final ConversationService conversationService;
 
     /**
      * 消息主体类型
@@ -160,27 +160,25 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessage.setReferenceId(req.getReferenceId());
         privateMessage.setLikeCount(0L);
         privateMessage.setExtra("");
-        privateMessage.setDeleted(false);
+        privateMessage.setVisibleToOneself(true);
         privateMessage.setCreateTime(new Date());
         privateMessage.setUpdateTime(new Date());
         privateMessageRepository.save(privateMessage);
 
         // 红包转账消息调用支付接口
-        if (req.getMessageContentType().equals(MessageContentTypeEnum.TRANSFER)
-                || req.getMessageContentType().equals(MessageContentTypeEnum.RED_PACKETS)) {
-            InvokeRedPacketsTransferRequestRpcDTO paymentDto = new InvokeRedPacketsTransferRequestRpcDTO();
-            paymentDto.setPaymentType(req.getPaymentInfoDTO().getPaymentType());
-            paymentDto.setPaymentAmount(req.getPaymentInfoDTO().getPaymentAmount());
-            paymentDto.setTargetId(req.getReceiverId());
-            paymentDto.setRedPacketsTotalCount(req.getPaymentInfoDTO().getRedPacketsTotalCount());
-            paymentDto.setRedPacketsType(req.getPaymentInfoDTO().getRedPacketsType());
-            paymentDto.setMessageId(privateMessage.getId());
-            paymentDto.setPaymentChannel(PaymentChannelEnum.FRIEND);
-            DeveloperResult<Boolean> execute = RpcExecutor
-                    .execute(() -> rpcClient.paymentRpcService.invokeRedPacketsTransfer(paymentDto));
+        if (req.getMessageContentType().equals(MessageContentTypeEnum.TRANSFER) || req.getMessageContentType().equals(MessageContentTypeEnum.RED_PACKETS)) {
+            InvokeRedPacketsTransferRequestRpcDTO paymentDto = buildPacketsTransferRequestRpcDTO(req, privateMessage);
+            DeveloperResult<Boolean> execute = RpcExecutor.execute(() -> rpcClient.paymentRpcService.invokeRedPacketsTransfer(paymentDto));
             if (!execute.getIsSuccessful()) {
                 return DeveloperResult.error(SerialNoHolder.getSerialNo(), execute.getMsg());
             }
+        }
+
+        // 维护会话列表
+        UpsertConversationRequestDTO conversationRequestDTO = buildUpsertConversationRequestDTO(req, privateMessage);
+        DeveloperResult<Boolean> conversationResult = conversationService.upsertCurrentConversation(conversationRequestDTO);
+        if (!conversationResult.getIsSuccessful()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), conversationResult.getMsg());
         }
 
         // 发送消息
@@ -202,71 +200,125 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
+    新增修改会话参数DTO
+     */
+    private static UpsertConversationRequestDTO buildUpsertConversationRequestDTO(SendMessageRequestDTO req, PrivateMessagePO privateMessage) {
+        UpsertConversationRequestDTO conversationRequestDTO = new UpsertConversationRequestDTO();
+        conversationRequestDTO.setTargetId(req.getReceiverId());
+        conversationRequestDTO.setLastMsgSeq(privateMessage.getConvSeq());
+        conversationRequestDTO.setLastMsgId(privateMessage.getId());
+        conversationRequestDTO.setLastMsgContent(req.getMessageContent());
+        conversationRequestDTO.setLastMsgType(req.getMessageContentType());
+        conversationRequestDTO.setLastMsgTime(new Date());
+        return conversationRequestDTO;
+    }
+
+    /*
+    支付rpc参数DTO
+     */
+    private static InvokeRedPacketsTransferRequestRpcDTO buildPacketsTransferRequestRpcDTO(SendMessageRequestDTO req, PrivateMessagePO privateMessage) {
+        InvokeRedPacketsTransferRequestRpcDTO paymentDto = new InvokeRedPacketsTransferRequestRpcDTO();
+        paymentDto.setPaymentType(req.getPaymentInfoDTO().getPaymentType());
+        paymentDto.setPaymentAmount(req.getPaymentInfoDTO().getPaymentAmount());
+        paymentDto.setTargetId(req.getReceiverId());
+        paymentDto.setRedPacketsTotalCount(req.getPaymentInfoDTO().getRedPacketsTotalCount());
+        paymentDto.setRedPacketsType(req.getPaymentInfoDTO().getRedPacketsType());
+        paymentDto.setMessageId(privateMessage.getId());
+        paymentDto.setPaymentChannel(PaymentChannelEnum.FRIEND);
+        return paymentDto;
+    }
+
+    /*
      * 已读消息
      */
     @Override
     public DeveloperResult<Boolean> readMessage(ReadMessageRequestDTO req) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
-        String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
+        // 校验当前聊天会话是否有未读消息
+        List<ChatConversationListResponseDTO> conversationList = conversationService.findChatConversationList().getData();
+        if (CollUtil.isEmpty(conversationList)) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "不存在会话内容");
+        }
+        boolean existUnread = conversationList.stream().anyMatch(x -> x.getTargetId().equals(req.getTargetId()) && x.getUnreadCount() > 0);
+        if (!existUnread) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "当前会话不存在未读消息");
+        }
+
+        // 再去校验和当前用户的聊天记录是否存在未读的
+        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
+        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
+        List<PrivateMessagePO> messageList = privateMessageRepository.findMessageByStatus(uidA, uidB, MessageStatusEnum.SENDED);
+        if (CollUtil.isEmpty(messageList)) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "当前会话不存在未读消息");
+        }
+
+        // 通知消息发送者已读
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                 DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
                 builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
-                        MessageStatusEnum.READED, TerminalTypeEnum.WEB, 0L, userId, nickName, "", new Date(),
+                        MessageStatusEnum.READED, TerminalTypeEnum.WEB, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), "", new Date(),
                         req.getTargetId()));
-        privateMessageRepository.updateMessageStatus(req.getTargetId(), userId, MessageStatusEnum.READED.code());
-        return DeveloperResult.success(serialNo);
+
+        // 修改消息状态为已读状态
+        privateMessageRepository.updateMessageStatus(messageList.stream().map(PrivateMessagePO::getId).collect(Collectors.toList()), MessageStatusEnum.READED);
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
     /*
      * 撤回消息
      */
     @Override
-    public DeveloperResult<Boolean> withdrawMessage(RecallMessageRequestDTO req) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
-        PrivateMessagePO privateMessage = privateMessageRepository.getById(req.getMessageId());
+    public DeveloperResult<Boolean> withdrawMessage(WithdrawMessageRequestDTO req) {
+
+        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
+        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
+
+        // 检验消息是否存在
+        PrivateMessagePO privateMessage = privateMessageRepository.findMessageByMessageId(uidA, uidB, req.getMessageId());
         if (privateMessage == null) {
-            return DeveloperResult.error(serialNo, "消息不存在");
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "消息不存在");
         }
 
-        if (!privateMessage.getSendId().equals(userId)) {
-            return DeveloperResult.error(serialNo, "该消息不是你发送的,无法撤回");
+        // 是否重复操作
+        if (privateMessage.getMessageStatus().equals(MessageStatusEnum.RECALL)) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "不能重复操作");
         }
 
-        if (System.currentTimeMillis() - privateMessage.getSendTime().getTime() > DeveloperConstant.ALLOW_RECALL_SECOND
-                * 1000) {
-            return DeveloperResult.error(serialNo, "消息发送已超过一定时间,无法撤回");
+        // 校验发送者
+        if (!privateMessage.getSendId().equals(SelfUserInfoContext.selfUserInfo().getUserId())) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "该消息不是你发送的,无法撤回");
+        }
+
+        // 校验撤回时间限制
+        if (System.currentTimeMillis() - privateMessage.getSendTime().getTime() > DeveloperConstant.ALLOW_RECALL_SECOND * 1000) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "消息发送已超过一定时间,无法撤回");
         }
 
         // 修改消息状态
-        privateMessage.setMessageStatus(MessageStatusEnum.RECALL);
-        privateMessageRepository.updateById(privateMessage);
+        privateMessageRepository.updateMessageStatus(Collections.singletonList(privateMessage.getId()), MessageStatusEnum.RECALL);
 
-        String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
+        // 通知撤回
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                 DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
                 builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
-                        MessageStatusEnum.RECALL, TerminalTypeEnum.WEB, privateMessage.getId(), userId, nickName,
-                        "对方撤回了一条消息", new Date(), privateMessage.getReceiverId()));
+                        MessageStatusEnum.RECALL, TerminalTypeEnum.WEB, privateMessage.getId(), SelfUserInfoContext.selfUserInfo().getUserId(),
+                        SelfUserInfoContext.selfUserInfo().getNickName(), "对方撤回了一条消息", new Date(), privateMessage.getReceiverId()));
 
-        return DeveloperResult.success(serialNo);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
     /*
      * 获取历史消息
      */
     @Override
-    public DeveloperResult<List<SendMessageResultDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
+    public DeveloperResult<List<QueryHistoryMessageResponseDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
         req.setPage(req.getPage() > 0 ? req.getPage() : 1);
         req.setSize(req.getSize() > 0 ? req.getSize() : 10);
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
         long pageIndex = (req.getPage() - 1) * req.getSize();
-        List<PrivateMessagePO> list = privateMessageRepository.getHistoryMessageList(userId, req.getTargetId(),
-                pageIndex, req.getSize());
-        List<SendMessageResultDTO> collect = list.stream()
-                .map(a -> BeanUtils.copyProperties(a, PrivateMessageDTO.class)).collect(Collectors.toList());
+        List<PrivateMessagePO> list = privateMessageRepository.getHistoryMessageList(userId, req.getTargetId(), pageIndex, req.getSize());
+        List<QueryHistoryMessageResponseDTO> collect = list.stream().map(a -> BeanUtils.copyProperties(a, QueryHistoryMessageResponseDTO.class)).collect(Collectors.toList());
         return DeveloperResult.success(serialNo, collect);
     }
 
@@ -294,7 +346,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessage.setReferenceId(0L);
         privateMessage.setLikeCount(0L);
         privateMessage.setExtra("");
-        privateMessage.setDeleted(false);
+        privateMessage.setVisibleToOneself(true);
         privateMessage.setCreateTime(new Date());
         privateMessage.setUpdateTime(new Date());
         boolean isSuccess = privateMessageRepository.save(privateMessage);
@@ -306,30 +358,56 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      */
     @Override
     public DeveloperResult<Boolean> deleteMessage(RemoveMessageRequestDTO req) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String serialNo = SerialNoHolder.getSerialNo();
-        boolean isSuccess = privateMessageRepository.deleteChatMessage(userId, req.getTargetId());
-        return DeveloperResult.success(serialNo, isSuccess);
+        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
+        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
+
+        // 是否删除与目标用户的所有聊天记录
+        List<Long> messageIds = new ArrayList<>();
+        if (req.getAll()) {
+            List<PrivateMessagePO> messages = privateMessageRepository.findAllMessageByTarget(uidA,uidB);
+            if(CollUtil.isNotEmpty(messages)){
+                messageIds = messages.stream().map(PrivateMessagePO::getId).collect(Collectors.toList());
+            }
+        } else {
+            PrivateMessagePO message = privateMessageRepository.findMessageByMessageId(uidA,uidB, req.getMessageId());
+            if(ObjectUtil.isNotEmpty(message)){
+                messageIds.add(message.getId());
+            }
+        }
+
+        // 判断是否有消息需要移除
+        if(CollUtil.isEmpty(messageIds)){
+            return DeveloperResult.error("没有需要删除的消息");
+        }
+
+        // 修改消息的删除状态--是否对自己可见
+        privateMessageRepository.updateDeleteStatus(messageIds,false);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
     /*
      * 回复消息
      */
+    @Transactional
     @Override
     public DeveloperResult<Boolean> replyMessage(Long id, ReplyMessageRequestDTO req) {
-        PrivateMessagePO messagePO = privateMessageRepository.getById(id);
-        String serialNo = SerialNoHolder.getSerialNo();
-        if (messagePO == null) {
-            return DeveloperResult.error(serialNo, "回复消息不存在");
+        PrivateMessagePO messagePO = privateMessageRepository.findMessageByMessageId(id);
+        if (ObjectUtil.isEmpty(messagePO)) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "回复消息不存在");
         }
 
-        req.setReferenceId(id);
-        this.sendMessage(SendMessageRequestDTO.builder().serialNo(serialNo).receiverId(req.getReceiverId())
+        SendMessageRequestDTO dto = SendMessageRequestDTO.builder()
+                .receiverId(req.getReceiverId())
                 .messageContent(req.getMessageContent())
-                .messageMainType(req.getMessageMainType()).messageContentType(req.getMessageContentType())
-                .groupId(req.getGroupId()).atUserIds(req.getAtUserIds())
-                .referenceId(id).build());
-        return DeveloperResult.success(serialNo);
+                .messageMainType(req.getMessageMainType())
+                .messageContentType(req.getMessageContentType())
+                .groupId(req.getGroupId())
+                .atUserIds(req.getAtUserIds())
+                .referenceId(id)
+                .build();
+
+        sendMessage(dto);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
     /*
@@ -343,9 +421,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     /*
      * 转发消息
      */
+    @Transactional
     @Override
     public DeveloperResult<Boolean> forwardMessage(ForwardMessageRequestDTO req) {
-        PrivateMessagePO messagePO = privateMessageRepository.getById(req.getMessageId());
+        PrivateMessagePO messagePO = privateMessageRepository.findMessageByMessageId(req.getMessageId());
         String serialNo = SerialNoHolder.getSerialNo();
         if (messagePO == null) {
             return DeveloperResult.error(serialNo, "转发消息本体不存在");
@@ -360,7 +439,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                     .messageMainType(MessageMainTypeEnum.PRIVATE_MESSAGE)
                     .build();
 
-            this.sendMessage(dto);
+            sendMessage(dto);
         }
         return DeveloperResult.success(serialNo);
     }
@@ -386,21 +465,12 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-     * 是否支付类型消息
-     */
-    @Override
-    public Boolean isPaymentMessageType(MessageContentTypeEnum messageContentTypeEnum) {
-        return messageContentTypeEnum == MessageContentTypeEnum.RED_PACKETS
-                || messageContentTypeEnum == MessageContentTypeEnum.TRANSFER;
-    }
-
-    /*
      * 构建mq消息dto
      */
     private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
-            MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
-            TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
-            String messageContent, Date sendTime, Long friendId) {
+                                               MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
+                                               TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
+                                               String messageContent, Date sendTime, Long friendId) {
         return ChatMessageDTO
                 .builder()
                 .messageMainTypeEnum(messageMainTypeEnum)
@@ -417,9 +487,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
-            MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
-            String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
-            MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
+                                                       MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
+                                                       String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
+                                                       MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
         return RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
@@ -461,7 +531,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessage.setReferenceId(0L);
         privateMessage.setLikeCount(0L);
         privateMessage.setExtra("");
-        privateMessage.setDeleted(false);
+        privateMessage.setVisibleToOneself(true);
         privateMessage.setCreateTime(new Date());
         privateMessage.setUpdateTime(new Date());
         privateMessageRepository.save(privateMessage);
@@ -500,7 +570,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      */
     @Override
     public DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds, String groupName,
-            String inviterName, String groupAvatar) {
+                                                               String inviterName, String groupAvatar) {
 
         for (Long memberId : memberIds) {
             String content = "邀请你加入群聊,".concat(inviterName).concat("邀请你加入群聊").concat(groupName).concat("进入可查看详情")

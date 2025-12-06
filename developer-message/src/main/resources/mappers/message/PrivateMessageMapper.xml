@@ -5,14 +5,14 @@
     <resultMap id="BaseResultMap" type="com.developer.message.pojo.PrivateMessagePO"/>
 
     <sql id="Base_Column_list">
-        id, uid_a, uid_b, send_id, receiver_id, conv_seq, client_msg_id, content, `type`, status, read_status, send_time, reference_id, like_count, extra, deleted, create_time, update_time
+        id, uid_a, uid_b, send_id, receiver_id, conv_seq, client_msg_id, content, `type`, status, read_status, send_time, reference_id, like_count, extra, visible_to_oneself, create_time, update_time
     </sql>
 
     <select id="findMessageList" resultMap="BaseResultMap">
         SELECT <include refid="Base_Column_list"/>
             FROM private_message
         WHERE conv_seq > #{last_seq}
-        AND deleted = false
+        AND visible_to_oneself = true
         AND uid_a = #{uid_a}
         AND uid_b = #{uid_b}
         ORDER BY id ASC
@@ -25,6 +25,49 @@
             update_time = now()
         WHERE id IN
         <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="findMessageByStatus" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+            FROM private_message
+        WHERE visible_to_oneself = true
+        AND uid_a = #{uid_a}
+        AND uid_b = #{uid_b}
+        AND status = #{message_status}
+    </select>
+
+    <select id="findMessageByMessageId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+        FROM private_message
+        WHERE visible_to_oneself = true
+        AND uid_a = #{uid_a}
+        AND uid_b = #{uid_b}
+        AND id = #{id}
+    </select>
+
+    <select id="findMessageByMessageId2" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+        FROM private_message
+        WHERE visible_to_oneself = true
+        AND id = #{id}
+    </select>
+
+    <select id="findAllMessageByTarget" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+            FROM private_message
+        WHERE visible_to_oneself = true
+        AND uid_a = #{uid_a}
+        AND uid_b = #{uid_b}
+    </select>
+
+    <update id="updateDeleteStatus">
+        UPDATE private_message
+        SET visible_to_oneself = #{delete},
+            update_time = now()
+        WHERE id IN
+        <foreach collection="message_ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </update>
