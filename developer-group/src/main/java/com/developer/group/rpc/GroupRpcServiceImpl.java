@@ -20,8 +20,7 @@ public class GroupRpcServiceImpl implements GroupRpcService {
     private final GroupService groupService;
 
     @Override
-    public DeveloperResult<List<GroupInfoResponseRpcDTO>> getSelfJoinAllGroupInfo(String serialNo) {
-        SerialNoHolder.setSerialNo(serialNo);
+    public DeveloperResult<List<GroupInfoResponseRpcDTO>> getSelfJoinAllGroupInfo() {
         DeveloperResult<List<SelfJoinGroupInfoDTO>> result = groupService.findSelfJoinAllGroupInfo();
         List<GroupInfoResponseRpcDTO> list = new ArrayList<>();
         if (result.getData() != null) {

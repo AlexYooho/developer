@@ -36,4 +36,12 @@ public class GroupMessageRepository extends ServiceImpl<GroupMessageMapper, Grou
                 .list();
     }
 
+    public List<GroupMessagePO> findMessageList(Long groupId,Long lastSeq){
+        return baseMapper.findMessageList(groupId,lastSeq);
+    }
+
+    public void updateMessageReadCount(Long groupId,List<Long> msgIds){
+        baseMapper.updateMessageReadCount(groupId,msgIds);
+    }
+
 }

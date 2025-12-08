@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class LoadMessageListResponseDTO {
@@ -27,6 +28,12 @@ public class LoadMessageListResponseDTO {
      */
     @JsonProperty("receiver_id")
     private Long receiverId;
+
+    /*
+    接受群id
+     */
+    @JsonProperty("group_id")
+    private Long groupId;
 
     /*
     消息序列号
@@ -81,5 +88,11 @@ public class LoadMessageListResponseDTO {
      */
     @JsonProperty("like_count")
     private Long likeCount;
+
+    @JsonProperty("at_user_ids")
+    private String atUserIds;
+
+    @JsonProperty("un_read_count")
+    private Long unReadCount;
 
 }

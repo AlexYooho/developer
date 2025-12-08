@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface GroupRpcService {
 
-    DeveloperResult<List<GroupInfoResponseRpcDTO>> getSelfJoinAllGroupInfo(String serialNo);
+    DeveloperResult<List<GroupInfoResponseRpcDTO>> getSelfJoinAllGroupInfo();
 
 }

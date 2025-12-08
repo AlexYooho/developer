@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.developer.message.mappers.GroupMessageMapper">
+
+    <resultMap id="BaseResultMap" type="com.developer.message.pojo.GroupMessagePO"/>
+
+    <sql id="Base_Column_list">
+        id, group_id, msg_seq, sender_id, sender_nick, sender_role, `type`, content, reference_id, at_user_ids, status, deleted, like_count, read_count, send_time, create_time, update_time
+    </sql>
+
+    <select id="findMessageList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+        FROM group_message
+        WHERE conv_seq > #{last_seq}
+        AND deleted = false
+        AND group_id = #{group_id}
+        ORDER BY msg_seq DESC
+    </select>
+
+    <update id="updateMessageReadCount">
+        UPDATE group_message
+        SET read_count = read_count+1,
+            update_time = now()
+        WHERE group_id = #{group_id}
+        AND id IN
+        <foreach collection="msg_ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

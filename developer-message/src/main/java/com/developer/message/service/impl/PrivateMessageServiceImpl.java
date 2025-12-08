@@ -74,10 +74,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
 
         // 判断当前聊天会话是否有新的消息
         // 和当前对象会话的maxSeq
-        String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA, uidB);
+        String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA.toString(), uidB.toString());
         Long maxSeq = Optional.ofNullable(redisUtil.get(maxSeqKey, Long.class)).orElse(0L);
         // 当前设备终端最大的convSeq
-        String lastSeqKey = RedisKeyConstant.CURRENT_TERMINAL_LAST_SEQ_KEY(uidA, uidB, req.getTerminalType().code());
+        String lastSeqKey = RedisKeyConstant.CURRENT_TERMINAL_LAST_SEQ_KEY(uidA.toString(), uidB.toString(), req.getTerminalType().code());
         Long lastSeq = Optional.ofNullable(redisUtil.get(lastSeqKey, Long.class)).orElse(0L);
         if (maxSeq > 0 && lastSeq > 0) {
             if (maxSeq.equals(lastSeq)) {
@@ -190,7 +190,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                         req.getMessageContent(), privateMessage.getSendTime(), req.getReceiverId()));
 
         // 更新当前聊天会话maxSeq
-        String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA, uidB);
+        String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA.toString(), uidB.toString());
         redisUtil.set(maxSeqKey, privateMessage.getConvSeq());
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
@@ -597,7 +597,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     private long getCurrentConversationNextConvSeq(Long uidA, Long uidB) {
-        String key = RedisKeyConstant.CURRENT_CONVERSATION_NEXT_CONV_SEQ_KEY(uidA, uidB);
+        String key = RedisKeyConstant.CURRENT_CONVERSATION_NEXT_CONV_SEQ_KEY(uidA.toString(), uidB.toString());
         return redisUtil.increment(key, 1L);
     }
 }

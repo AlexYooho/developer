@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.developer.message.mappers.GroupMessageReadMapper">
+
+    <resultMap id="BaseResultMap" type="com.developer.message.pojo.GroupMessageReadPO"/>
+
+    <sql id="Base_Column_list">
+        msg_id, group_id, user_id, read_time
+    </sql>
+
+    <select id="findUserReadGroupMessageList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+        FROM group_message_read
+        WHERE group_id = #{group_id}
+        AND user_id = #{user_id}
+    </select>
+
+</mapper>

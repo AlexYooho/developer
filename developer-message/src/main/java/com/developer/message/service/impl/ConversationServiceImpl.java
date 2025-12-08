@@ -69,7 +69,7 @@ public class ConversationServiceImpl implements ConversationService {
         }
 
         // 获取群组信息
-        DeveloperResult<List<GroupInfoResponseRpcDTO>> groupResult = RpcExecutor.execute(() -> rpcClient.groupRpcService.getSelfJoinAllGroupInfo(SerialNoHolder.getSerialNo()));
+        DeveloperResult<List<GroupInfoResponseRpcDTO>> groupResult = RpcExecutor.execute(() -> rpcClient.groupRpcService.getSelfJoinAllGroupInfo());
         Map<Long, GroupInfoResponseRpcDTO> groupMap = new HashMap<>();
         if (ObjectUtil.isNotEmpty(groupResult.getData())) {
             groupMap = groupResult.getData().stream().collect(Collectors.toMap(GroupInfoResponseRpcDTO::getGroupId, Function.identity()));

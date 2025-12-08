@@ -100,15 +100,15 @@ public class RedisKeyConstant {
     }
 
     // 当前会话maxSeq
-    public static String CURRENT_CONVERSATION_MAX_SEQ_KEY(Long uidA,Long uidB){
-        return "developer:message:max:seq:".concat(uidA.toString()).concat(":").concat(uidB.toString());
+    public static String CURRENT_CONVERSATION_MAX_SEQ_KEY(String uidA,String uidB){
+        return "developer:message:max:seq:".concat(uidA).concat(":").concat(uidB);
     }
 
-    public static String CURRENT_TERMINAL_LAST_SEQ_KEY(Long uidA,Long uidB,Integer terminal){
-        return "developer:message:last:seq:".concat(uidA.toString()).concat(uidB.toString()).concat(terminal.toString());
+    public static String CURRENT_TERMINAL_LAST_SEQ_KEY(String uidA,String uidB,Integer terminal){
+        return "developer:message:last:seq:".concat(uidA).concat(":").concat(uidB).concat(":").concat(terminal.toString());
     }
 
-    public static String CURRENT_CONVERSATION_NEXT_CONV_SEQ_KEY(Long uidA,Long uidB){
-        return "developer:message:next:conv:seq:".concat(uidA.toString()).concat(uidB.toString());
+    public static String CURRENT_CONVERSATION_NEXT_CONV_SEQ_KEY(String uidA,String uidB){
+        return "developer:message:next:conv:seq:".concat(uidA).concat(":").concat(uidB);
     }
 }
