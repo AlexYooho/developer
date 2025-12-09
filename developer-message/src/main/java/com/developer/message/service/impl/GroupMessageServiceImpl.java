@@ -386,11 +386,6 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         return messageLikeService.unLike(req, MessageMainTypeEnum.GROUP_MESSAGE);
     }
 
-    @Override
-    public Boolean isPaymentMessageType(MessageContentTypeEnum messageContentTypeEnum) {
-        return null;
-    }
-
     private long getCurrentConversationNextConvSeq(Long groupId) {
         String key = RedisKeyConstant.CURRENT_GROUP_CONVERSATION_NEXT_CONV_SEQ_KEY(groupId.toString());
         return redisUtil.increment(key, 1L);
