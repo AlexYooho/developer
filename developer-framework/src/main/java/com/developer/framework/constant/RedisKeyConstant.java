@@ -111,4 +111,8 @@ public class RedisKeyConstant {
     public static String CURRENT_CONVERSATION_NEXT_CONV_SEQ_KEY(String uidA,String uidB){
         return "developer:message:next:conv:seq:".concat(uidA).concat(":").concat(uidB);
     }
+
+    public static String CURRENT_GROUP_CONVERSATION_NEXT_CONV_SEQ_KEY(String groupId){
+        return "developer:message:next:conv:seq:group:".concat(groupId);
+    }
 }

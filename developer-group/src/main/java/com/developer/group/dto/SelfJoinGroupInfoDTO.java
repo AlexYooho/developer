@@ -1,5 +1,6 @@
 package com.developer.group.dto;
 
+import com.developer.framework.enums.group.GroupMemberRoleEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -49,5 +50,11 @@ public class SelfJoinGroupInfoDTO {
      */
     @JsonProperty("create_time")
     private Date createTime;
+
+    /*
+   群角色
+    */
+    @JsonProperty("group_role")
+    private GroupMemberRoleEnum groupRole;
 
 }

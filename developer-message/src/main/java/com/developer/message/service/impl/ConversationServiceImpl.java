@@ -91,7 +91,7 @@ public class ConversationServiceImpl implements ConversationService {
                 GroupInfoResponseRpcDTO groupInfoDTO = groupMap.get(po.getTargetId());
                 if (ObjectUtil.isNotEmpty(groupInfoDTO)) {
                     dto.setName(groupInfoDTO.getGroupName());
-                    dto.setHeadImage(groupInfoDTO.getGroupHeadImage());
+                    dto.setHeadImage(groupInfoDTO.getGroupAvatar());
                 }
             }
 

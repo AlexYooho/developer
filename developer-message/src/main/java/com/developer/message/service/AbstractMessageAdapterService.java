@@ -2,8 +2,13 @@ package com.developer.message.service;
 
 import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.payment.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
+import com.developer.framework.utils.SerialNoHolder;
 import com.developer.message.dto.*;
+import com.developer.rpc.client.RpcClient;
+import com.developer.rpc.client.RpcExecutor;
+import com.developer.rpc.dto.payment.request.InvokeRedPacketsTransferRequestRpcDTO;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -93,5 +98,35 @@ public abstract class AbstractMessageAdapterService implements MessageService{
     @Override
     public DeveloperResult<Boolean> sendJoinGroupInviteMessage(List<Long> memberIds,String groupName,String inviterName,String groupAvatar) {
         return null;
+    }
+
+    /*
+    发起支付
+     */
+    public DeveloperResult<Boolean> invokePay(Long messageId, RpcClient rpcClient,SendMessageRequestDTO req){
+        if (!req.getMessageContentType().equals(MessageContentTypeEnum.TRANSFER) && !req.getMessageContentType().equals(MessageContentTypeEnum.RED_PACKETS)) {
+            return DeveloperResult.success(SerialNoHolder.getSerialNo());
+        }
+        InvokeRedPacketsTransferRequestRpcDTO paymentDto = buildPacketsTransferRequestRpcDTO(req, messageId);
+        DeveloperResult<Boolean> execute = RpcExecutor.execute(() -> rpcClient.paymentRpcService.invokeRedPacketsTransfer(paymentDto));
+        if (!execute.getIsSuccessful()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), execute.getMsg());
+        }
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
+    }
+
+    /*
+    支付rpc参数DTO
+     */
+    private static InvokeRedPacketsTransferRequestRpcDTO buildPacketsTransferRequestRpcDTO(SendMessageRequestDTO req, Long messageId) {
+        InvokeRedPacketsTransferRequestRpcDTO paymentDto = new InvokeRedPacketsTransferRequestRpcDTO();
+        paymentDto.setPaymentType(req.getPaymentInfoDTO().getPaymentType());
+        paymentDto.setPaymentAmount(req.getPaymentInfoDTO().getPaymentAmount());
+        paymentDto.setTargetId(req.getReceiverId());
+        paymentDto.setRedPacketsTotalCount(req.getPaymentInfoDTO().getRedPacketsTotalCount());
+        paymentDto.setRedPacketsType(req.getPaymentInfoDTO().getRedPacketsType());
+        paymentDto.setMessageId(messageId);
+        paymentDto.setPaymentChannel(PaymentChannelEnum.FRIEND);
+        return paymentDto;
     }
 }

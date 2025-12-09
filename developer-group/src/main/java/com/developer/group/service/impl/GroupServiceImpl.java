@@ -403,6 +403,7 @@ public class GroupServiceImpl implements GroupService {
             dto.setUserId(x.getUserId());
             dto.setQuit(x.getQuit());
             dto.setMemberAlias(x.getAlias());
+            dto.setGroupRole(x.getMemberRole());
 
             // 群信息
             GroupInfoPO groupInfo = groupInfoList.stream().filter(xx -> xx.getId().equals(x.getGroupId())).findFirst().orElse(new GroupInfoPO());

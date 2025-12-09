@@ -12,6 +12,7 @@ import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.enums.message.MessageStatusEnum;
 import com.developer.framework.enums.common.TerminalTypeEnum;
+import com.developer.framework.enums.payment.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.DateTimeUtils;
@@ -24,6 +25,7 @@ import com.developer.message.dto.*;
 import com.developer.message.pojo.GroupMessageMemberReceiveRecordPO;
 import com.developer.message.pojo.GroupMessagePO;
 import com.developer.message.pojo.GroupMessageReadPO;
+import com.developer.message.pojo.PrivateMessagePO;
 import com.developer.message.repository.GroupMessageMemberReceiveRecordRepository;
 import com.developer.message.repository.GroupMessageReadRepository;
 import com.developer.message.repository.GroupMessageRepository;
@@ -33,6 +35,8 @@ import com.developer.message.util.RabbitMQUtil;
 import com.developer.rpc.client.RpcClient;
 import com.developer.rpc.client.RpcExecutor;
 import com.developer.rpc.dto.group.response.GroupInfoResponseRpcDTO;
+import com.developer.rpc.dto.group.response.GroupMemberResponseRpcDTO;
+import com.developer.rpc.dto.payment.request.InvokeRedPacketsTransferRequestRpcDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -49,7 +53,6 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
 
     private final RedisUtil redisUtil;
     private final RabbitMQUtil rabbitMQUtil;
-    private final PaymentClient paymentClient;
     private final GroupInfoClient groupInfoClient;
     private final GroupMemberClient groupMemberClient;
     private final MessageLikeService messageLikeService;
@@ -60,6 +63,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
 
     /**
      * 消息主体类型
+     *
      * @return
      */
     @Override
@@ -76,13 +80,13 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
 
         // 首先校验当前群是否存在
         DeveloperResult<List<GroupInfoResponseRpcDTO>> execute = RpcExecutor.execute(() -> rpcClient.groupRpcService.getSelfJoinAllGroupInfo());
-        if(!execute.getIsSuccessful()){
-            return DeveloperResult.error(SerialNoHolder.getSerialNo(),execute.getMsg());
+        if (!execute.getIsSuccessful()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), execute.getMsg());
         }
 
         GroupInfoResponseRpcDTO groupInfo = execute.getData().stream().filter(x -> x.getGroupId().equals(req.getTargetId())).findFirst().orElse(null);
-        if(ObjectUtil.isEmpty(groupInfo)){
-            return DeveloperResult.error(SerialNoHolder.getSerialNo(),"群不存在,拉取消息失败");
+        if (ObjectUtil.isEmpty(groupInfo)) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "群不存在,拉取消息失败");
         }
 
         // 判断当前聊天会话是否有新的消息
@@ -104,7 +108,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         // 获取在此群中未读的消息
         List<GroupMessageReadPO> unreadMsgList = new ArrayList<>();
         List<GroupMessageReadPO> readMessageList = groupMessageReadRepository.findUserReadGroupMessageList(groupInfo.getGroupId(), SelfUserInfoContext.selfUserInfo().getUserId());
-        if(CollUtil.isNotEmpty(readMessageList)){
+        if (CollUtil.isNotEmpty(readMessageList)) {
             Set<Long> readMsgIdSet = readMessageList.stream()
                     .map(GroupMessageReadPO::getMsgId)
                     .collect(Collectors.toSet());
@@ -124,7 +128,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         }
 
         // 未读改为已读
-        if(CollUtil.isNotEmpty(unreadMsgList)){
+        if (CollUtil.isNotEmpty(unreadMsgList)) {
             // 新增已读回执
             groupMessageReadRepository.saveBatch(unreadMsgList);
 
@@ -136,13 +140,8 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         redisUtil.set(lastSeqKey, Collections.max(messageList.stream().map(GroupMessagePO::getId).collect(Collectors.toList())));
 
         // 聚合参数返回
-        list = messageList.stream().map(x->{
+        list = messageList.stream().map(x -> {
             LoadMessageListResponseDTO dto = new LoadMessageListResponseDTO();
-
-            dto.setGroupId(x.getGroupId());
-            dto.setAtUserIds(x.getAtUserIds());
-            dto.setUnReadCount(0L);
-            dto.setReadStatus(0);
             dto.setId(x.getId());
             dto.setSendId(x.getSendId());
             dto.setMessageContent(x.getMessageContent());
@@ -153,6 +152,11 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
             dto.setSendNickName(x.getSendNickName());
             dto.setReferenceId(x.getReferenceId());
             dto.setLikeCount(x.getLikeCount());
+
+            dto.setGroupId(x.getGroupId());
+            dto.setAtUserIds(x.getAtUserIds());
+            dto.setUnReadCount(0L);
+            dto.setReadStatus(0);
             return dto;
         }).collect(Collectors.toList());
         return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
@@ -163,61 +167,62 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
      */
     @Override
     public DeveloperResult<SendMessageResultDTO> sendMessage(SendMessageRequestDTO req) {
-        Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
-        String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
-        String serialNo = SerialNoHolder.getSerialNo();
-        DeveloperResult<GroupInfoDTO> findGroupResult = groupInfoClient.findGroup(FindGroupRequestDTO.builder().groupId(req.getGroupId()).serialNo(serialNo).build());
-        if (!findGroupResult.getIsSuccessful()) {
-            return DeveloperResult.error(serialNo, findGroupResult.getMsg());
+        // 1、校验群信息
+        DeveloperResult<List<GroupInfoResponseRpcDTO>> groupResult = RpcExecutor.execute(() -> rpcClient.groupRpcService.getSelfJoinAllGroupInfo());
+        if (!groupResult.getIsSuccessful()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), groupResult.getMsg());
+        }
+        // 1.1、是否在群内
+        GroupInfoResponseRpcDTO groupInfo = groupResult.getData().stream().filter(x -> x.getGroupId().equals(req.getGroupId())).findFirst().orElse(null);
+        if(ObjectUtil.isEmpty(groupInfo)){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),"群不存在,发送失败");
         }
 
-        GroupInfoDTO groupInfoDTO = findGroupResult.getData();
-        if (groupInfoDTO.getDeleted()) {
-            return DeveloperResult.error(serialNo, "群已解散");
-        }
-
-        List<SelfJoinGroupInfoDTO> joinGroupInfoList = groupInfoClient.getSelfJoinAllGroupInfo(serialNo).getData();
-        if (joinGroupInfoList.stream().noneMatch(x -> x.getGroupId().equals(req.getGroupId()) && x.getQuit())) {
-            return DeveloperResult.error(serialNo, "您已不在该群聊中,无法发送消息");
+        assert groupInfo != null;
+        if(!groupInfo.getQuit()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),"你已退出群聊,发送失败");
         }
 
         // 消息入库
-        GroupMessagePO message = this.createGroupMessageMode(req.getGroupId(), userId, nickName, req.getAtUserIds(), req.getMessageContent(), req.getMessageContentType());
+        GroupMessagePO message = new GroupMessagePO();
+        message.setGroupId(groupInfo.getGroupId());
+        message.setMsgSeq(getCurrentConversationNextConvSeq(groupInfo.getGroupId()));
+        message.setSendId(SelfUserInfoContext.selfUserInfo().getUserId());
+        message.setSendNickName(SelfUserInfoContext.selfUserInfo().getNickName());
+        message.setSenderRole(groupInfo.getGroupRole().code());
+        message.setMessageContentType(req.getMessageContentType().code());
+        message.setMessageContent(req.getMessageContent());
+        message.setReferenceId(req.getReferenceId());
+        message.setAtUserIds(req.getAtUserIds().toString());
+        message.setMessageStatus(MessageStatusEnum.UNSEND.code());
+        message.setDeleted(false);
+        message.setLikeCount(0L);
+        message.setReadCount(0L);
+        message.setSendTime(new Date());
+        message.setCreateTime(new Date());
+        message.setUpdateTime(new Date());
         this.groupMessageRepository.save(message);
 
         // 需要接受消息的成员
-        List<Long> receiverIds = groupMemberClient.findGroupMemberUserId(FindGroupMemberUserIdRequestDTO.builder().groupId(groupInfoDTO.getId()).serialNo(serialNo).build()).getData();
-        receiverIds = receiverIds.stream().filter(id -> !userId.equals(id)).collect(Collectors.toList());
-
-        List<GroupMessageMemberReceiveRecordPO> receiveRecords = new ArrayList<>();
-        for (Long receiverId : receiverIds) {
-            GroupMessageMemberReceiveRecordPO record = new GroupMessageMemberReceiveRecordPO();
-            record.setGroupId(req.getGroupId());
-            record.setReceiverId(receiverId);
-            record.setStatus(0);
-            record.setCreateTime(new Date());
-            record.setUpdateTime(new Date());
-            record.setSendId(userId);
-            record.setMessageId(message.getId());
-            receiveRecords.add(record);
+        DeveloperResult<List<GroupMemberResponseRpcDTO>> groupMemberResult = RpcExecutor.execute(() -> rpcClient.groupRpcService.findGroupMemberList(groupInfo.getGroupId()));
+        if(!groupMemberResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),groupMemberResult.getMsg());
         }
+        List<Long> groupMemberUserIds = groupMemberResult.getData().stream().filter(x -> !x.getMemberUserId().equals(SelfUserInfoContext.selfUserInfo().getUserId())).map(GroupMemberResponseRpcDTO::getMemberUserId).collect(Collectors.toList());
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(), req.getMessageContentType(), message.getId(), message.getGroupId(), SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), req.getMessageContent(), groupMemberUserIds, req.getAtUserIds(), MessageStatusEnum.fromCode(message.getMessageStatus()), TerminalTypeEnum.WEB, message.getSendTime()));
 
-        groupMessageMemberReceiveRecordRepository.saveBatch(receiveRecords);
-
-        rabbitMQUtil.sendMessage(serialNo, DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(req.getMessageMainType(), req.getMessageContentType(), message.getId(), message.getGroupId(), userId, nickName, req.getMessageContent(), receiverIds, req.getAtUserIds(), MessageStatusEnum.fromCode(message.getMessageStatus()), TerminalTypeEnum.WEB, message.getSendTime()));
-
+        // 红包转账消息调用支付接口
+        DeveloperResult<Boolean> invokedPayResult = invokePay(message.getId(), rpcClient, req);
+        if(!invokedPayResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),invokedPayResult.getMsg());
+        }
 
         GroupMessageDTO data = new GroupMessageDTO();
         data.setId(message.getId());
         data.setReadCount(0L);
-        data.setUnReadCount((long) receiverIds.size());
+        data.setUnReadCount((long) groupMemberUserIds.size());
 
-        // 同步修改红包消息状态
-        if(req.getMessageContentType()== MessageContentTypeEnum.RED_PACKETS || req.getMessageContentType() == MessageContentTypeEnum.TRANSFER){
-            paymentClient.modifyRedPacketsMessageStatus(ModifyRedPacketsMessageStatusRequestDTO.builder().serialNo(serialNo).messageStatus(1).build());
-        }
-
-        return DeveloperResult.success(serialNo, data);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(), data);
     }
 
     /*
@@ -386,19 +391,9 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         return null;
     }
 
-    private GroupMessagePO createGroupMessageMode(Long groupId, Long sendId, String sendNickName, List<Long> atUserIds, String message, MessageContentTypeEnum messageContentType) {
-        GroupMessagePO groupMessage = new GroupMessagePO();
-        groupMessage.setGroupId(groupId);
-        groupMessage.setSendId(sendId);
-        groupMessage.setSendNickName(sendNickName);
-        groupMessage.setMessageContent(message);
-        groupMessage.setMessageContentType(messageContentType.code());
-        groupMessage.setMessageStatus(0);
-        groupMessage.setSendTime(new Date());
-        if (atUserIds != null) {
-            groupMessage.setAtUserIds(atUserIds.toString());
-        }
-        return groupMessage;
+    private long getCurrentConversationNextConvSeq(Long groupId) {
+        String key = RedisKeyConstant.CURRENT_GROUP_CONVERSATION_NEXT_CONV_SEQ_KEY(groupId.toString());
+        return redisUtil.increment(key, 1L);
     }
 
     private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {

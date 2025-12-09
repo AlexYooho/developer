@@ -166,12 +166,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessageRepository.save(privateMessage);
 
         // 红包转账消息调用支付接口
-        if (req.getMessageContentType().equals(MessageContentTypeEnum.TRANSFER) || req.getMessageContentType().equals(MessageContentTypeEnum.RED_PACKETS)) {
-            InvokeRedPacketsTransferRequestRpcDTO paymentDto = buildPacketsTransferRequestRpcDTO(req, privateMessage);
-            DeveloperResult<Boolean> execute = RpcExecutor.execute(() -> rpcClient.paymentRpcService.invokeRedPacketsTransfer(paymentDto));
-            if (!execute.getIsSuccessful()) {
-                return DeveloperResult.error(SerialNoHolder.getSerialNo(), execute.getMsg());
-            }
+        DeveloperResult<Boolean> invokedPayResult = invokePay(privateMessage.getId(), rpcClient, req);
+        if(!invokedPayResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),invokedPayResult.getMsg());
         }
 
         // 维护会话列表
@@ -216,14 +213,14 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     /*
     支付rpc参数DTO
      */
-    private static InvokeRedPacketsTransferRequestRpcDTO buildPacketsTransferRequestRpcDTO(SendMessageRequestDTO req, PrivateMessagePO privateMessage) {
+    private static InvokeRedPacketsTransferRequestRpcDTO buildPacketsTransferRequestRpcDTO(SendMessageRequestDTO req, Long messageId) {
         InvokeRedPacketsTransferRequestRpcDTO paymentDto = new InvokeRedPacketsTransferRequestRpcDTO();
         paymentDto.setPaymentType(req.getPaymentInfoDTO().getPaymentType());
         paymentDto.setPaymentAmount(req.getPaymentInfoDTO().getPaymentAmount());
         paymentDto.setTargetId(req.getReceiverId());
         paymentDto.setRedPacketsTotalCount(req.getPaymentInfoDTO().getRedPacketsTotalCount());
         paymentDto.setRedPacketsType(req.getPaymentInfoDTO().getRedPacketsType());
-        paymentDto.setMessageId(privateMessage.getId());
+        paymentDto.setMessageId(messageId);
         paymentDto.setPaymentChannel(PaymentChannelEnum.FRIEND);
         return paymentDto;
     }
