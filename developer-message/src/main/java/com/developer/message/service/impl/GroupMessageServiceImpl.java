@@ -52,7 +52,6 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
 
     private final RedisUtil redisUtil;
     private final RabbitMQUtil rabbitMQUtil;
-    private final GroupInfoClient groupInfoClient;
     private final MessageLikeService messageLikeService;
     private final GroupMessageRepository groupMessageRepository;
     private final RpcClient rpcClient;
@@ -84,7 +83,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         }
 
         GroupInfoResponseRpcDTO groupInfo = execute.getData().stream().filter(x -> x.getGroupId().equals(req.getTargetId())).findFirst().orElse(null);
-        if (ObjectUtil.isEmpty(groupInfo)) {
+        if (ObjectUtil.isNull(groupInfo)) {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), "群不存在,拉取消息失败");
         }
 
@@ -297,7 +296,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), groupInfoResult.getMsg());
         }
         GroupInfoResponseRpcDTO groupInfo = groupInfoResult.getData().stream().filter(x -> x.getGroupId().equals(req.getTargetId())).findFirst().orElse(null);
-        if (ObjectUtil.isEmpty(groupInfo)) {
+        if (ObjectUtil.isNull(groupInfo)) {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), "你不在此群中,操作失败");
         }
 
@@ -333,17 +332,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
     public DeveloperResult<List<QueryHistoryMessageResponseDTO>> findHistoryMessage(QueryHistoryMessageRequestDTO req) {
         req.setPage(req.getPage() > 0 ? req.getPage() : 1);
         req.setSize(req.getSize() > 0 ? req.getSize() : 10);
-        String serialNo = SerialNoHolder.getSerialNo();
-        long stIdx = (req.getPage() - 1) * req.getSize();
-
-        SelfJoinGroupInfoDTO selfJoinGroupInfoDTO = groupInfoClient.getSelfJoinAllGroupInfo(serialNo).getData().stream().filter(x -> x.getGroupId().equals(req.getTargetId()) && !x.getQuit()).findFirst().get();
-        if (selfJoinGroupInfoDTO == null) {
-            return DeveloperResult.error(serialNo, "您已不在群聊");
-        }
-
-        List<GroupMessagePO> messages = groupMessageRepository.findHistoryMessage(req.getTargetId(), selfJoinGroupInfoDTO.getCreatedTime(), stIdx, req.getSize());
-        List<QueryHistoryMessageResponseDTO> list = messages.stream().map(x -> BeanUtils.copyProperties(x, QueryHistoryMessageResponseDTO.class)).collect(Collectors.toList());
-        return DeveloperResult.success(serialNo, list);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
     /*
@@ -357,7 +346,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), groupInfoResult.getMsg());
         }
         GroupInfoResponseRpcDTO groupInfo = groupInfoResult.getData().stream().filter(x -> x.getGroupId().equals(req.getTargetId())).findFirst().orElse(null);
-        if (ObjectUtil.isEmpty(groupInfo)) {
+        if (ObjectUtil.isNull(groupInfo)) {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), "你不在此群中,操作失败");
         }
 
