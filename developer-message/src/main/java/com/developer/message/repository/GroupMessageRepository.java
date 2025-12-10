@@ -44,4 +44,11 @@ public class GroupMessageRepository extends ServiceImpl<GroupMessageMapper, Grou
         baseMapper.updateMessageReadCount(groupId,msgIds);
     }
 
+    public List<GroupMessagePO> findUnreadMessageList(Long groupId,List<Long> readMessageIds){
+        return baseMapper.findUnreadMessageList(groupId,readMessageIds);
+    }
+
+    public GroupMessagePO findMessageById(Long groupId,Long messageId){
+        return baseMapper.findMessageById(groupId,messageId);
+    }
 }

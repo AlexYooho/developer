@@ -28,4 +28,22 @@
         </foreach>
     </update>
 
+    <select id="findUnreadMessageList" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+            FROM group_message
+        WHERE group_id = #{group_id}
+        AND id NOT IN
+        <foreach collection="read_message_ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findMessageById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+            FROM group_message
+        FROM group_id = #{group_id}
+        AND id = #{id}
+        LIMIT 1;
+    </select>
+
 </mapper>

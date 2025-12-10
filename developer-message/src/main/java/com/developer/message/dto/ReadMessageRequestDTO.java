@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ReadMessageRequestDTO {
 
     /**
-     * 已读消息id
+     * 会话目标
      */
     @JsonProperty("target_id")
     private Long targetId;

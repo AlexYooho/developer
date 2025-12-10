@@ -248,6 +248,15 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), "当前会话不存在未读消息");
         }
 
+        // 修改会话列表
+        UpsertConversationRequestDTO conversationRequestDTO = new UpsertConversationRequestDTO();
+        conversationRequestDTO.setTargetId(req.getTargetId());
+        conversationRequestDTO.setUnreadCount(0);
+        DeveloperResult<Boolean> updateConversationResult = conversationService.upsertCurrentConversation(conversationRequestDTO);
+        if(!updateConversationResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), updateConversationResult.getMsg());
+        }
+
         // 通知消息发送者已读
         rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                 DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
