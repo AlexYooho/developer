@@ -81,6 +81,12 @@ public class ChatMessageDTO implements Serializable {
     @JsonProperty("send_time")
     private Date sendTime;
 
+    /*
+    消息目标对象id
+     */
+    @JsonProperty("target_id")
+    private Long targetId;
+
     // --------------------------私聊参数----------------------------------
     /**
      * 好友用户id

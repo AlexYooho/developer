@@ -23,6 +23,8 @@ public class GroupMessageService extends AbstractMessageTypeService {
 
     @Override
     public DeveloperResult<Boolean> handler(ChatMessageDTO dto) {
+
+        // 只是组装了个对象
         IMChatMessageBaseModel model = new IMChatMessageBaseModel();
         model.setSerialNo(dto.getSerialNo());
         model.setMessageId(dto.getMessageId());

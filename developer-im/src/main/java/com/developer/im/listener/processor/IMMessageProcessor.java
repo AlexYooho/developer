@@ -29,20 +29,34 @@ public class IMMessageProcessor implements IMessageProcessor {
     @Override
     @MessageRouterAspect
     public DeveloperResult<Boolean> processor(RabbitMQMessageBodyDTO dto) {
+        // 数据转换
         ChatMessageDTO chatMessageDTO = dto.parseData(ChatMessageDTO.class);
         chatMessageDTO.setSerialNo(dto.getSerialNo());
 
-        MessageConversationTypeEnum messageConversationTypeEnum = chatMessageDTO.getMessageConversationTypeEnum();
-        if(chatMessageDTO.getMessageConversationTypeEnum().equals(MessageConversationTypeEnum.PRIVATE_MESSAGE) ||
-                chatMessageDTO.getMessageConversationTypeEnum().equals(MessageConversationTypeEnum.GROUP_MESSAGE)){
-            messageConversationTypeEnum = MessageConversationTypeEnum.CHAT_MESSAGE;
-        }
+        // 会话类型
+        MessageConversationTypeEnum messageConversationTypeEnum = getMessageConversationType(chatMessageDTO.getMessageConversationTypeEnum());
 
+        // 获取对应的消息处理器
         AbstractMessageTypeService messageService = dispatchFactory.getInstance(messageConversationTypeEnum);
         if(messageService==null){
             log.info("【IM消息服务】消息内容:{},没有对应的消息处理器", JSON.toJSON(dto));
             return DeveloperResult.error(dto.getSerialNo(),"【IM消息服务】消息内容:"+JSON.toJSON(dto)+",没有对应的消息处理器");
         }
         return messageService.handler(chatMessageDTO);
+    }
+
+    /*
+    获取会话类型
+     */
+    private MessageConversationTypeEnum getMessageConversationType(MessageConversationTypeEnum conversationTypeEnum){
+        if(conversationTypeEnum.equals(MessageConversationTypeEnum.PRIVATE_MESSAGE)){
+            return MessageConversationTypeEnum.CHAT_MESSAGE;
+        }
+
+        if(conversationTypeEnum.equals(MessageConversationTypeEnum.GROUP_MESSAGE)){
+            return MessageConversationTypeEnum.CHAT_MESSAGE;
+        }
+
+        return conversationTypeEnum;
     }
 }
