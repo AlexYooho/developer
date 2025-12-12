@@ -3,7 +3,7 @@ package com.developer.message.pojo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.message.MessageLikeEnum;
 import lombok.Builder;
 import lombok.Data;
@@ -30,7 +30,7 @@ public class MessageLikeRecordPO {
      * 消息类型
      */
     @TableField(value = "message_type")
-    private MessageMainTypeEnum messageType;
+    private MessageConversationTypeEnum messageType;
 
     /**
      * 点赞用户id

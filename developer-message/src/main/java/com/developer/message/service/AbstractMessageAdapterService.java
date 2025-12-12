@@ -1,7 +1,7 @@
 package com.developer.message.service;
 
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.payment.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.SerialNoHolder;
@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 public abstract class AbstractMessageAdapterService implements MessageService{
 
     @Override
-    public MessageMainTypeEnum messageMainType() {
+    public MessageConversationTypeEnum messageMainType() {
         return null;
     }
 
@@ -122,7 +122,7 @@ public abstract class AbstractMessageAdapterService implements MessageService{
         InvokeRedPacketsTransferRequestRpcDTO paymentDto = new InvokeRedPacketsTransferRequestRpcDTO();
         paymentDto.setPaymentType(req.getPaymentInfoDTO().getPaymentType());
         paymentDto.setPaymentAmount(req.getPaymentInfoDTO().getPaymentAmount());
-        paymentDto.setTargetId(req.getReceiverId());
+        paymentDto.setTargetId(req.getTargetId());
         paymentDto.setRedPacketsTotalCount(req.getPaymentInfoDTO().getRedPacketsTotalCount());
         paymentDto.setRedPacketsType(req.getPaymentInfoDTO().getRedPacketsType());
         paymentDto.setMessageId(messageId);

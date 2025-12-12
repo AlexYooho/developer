@@ -3,7 +3,7 @@ package com.developer.message.service.impl;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.RedisUtil;
@@ -43,15 +43,15 @@ public class MessageLikeServiceImpl implements MessageLikeService {
     private RabbitMQUtil rabbitMQUtil;
 
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> like(MessageLikeRequestDTO req, MessageMainTypeEnum messageMainTypeEnum) {
+    public CompletableFuture<DeveloperResult<Boolean>> like(MessageLikeRequestDTO req, MessageConversationTypeEnum messageConversationTypeEnum) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
-        String lockKey = RedisKeyConstant.MESSAGE_LIKE_KEY(messageMainTypeEnum, req.getMessageId(), userId);
-        String messageLikeStatusKey = RedisKeyConstant.MESSAGE_LIKE_USER_KEY(messageMainTypeEnum, req.getMessageId(), userId);
-        String messageLikeCountKey = RedisKeyConstant.MESSAGE_LIKE_MESSAGE_KEY(messageMainTypeEnum,req.getMessageId());
+        String lockKey = RedisKeyConstant.MESSAGE_LIKE_KEY(messageConversationTypeEnum, req.getMessageId(), userId);
+        String messageLikeStatusKey = RedisKeyConstant.MESSAGE_LIKE_USER_KEY(messageConversationTypeEnum, req.getMessageId(), userId);
+        String messageLikeCountKey = RedisKeyConstant.MESSAGE_LIKE_MESSAGE_KEY(messageConversationTypeEnum,req.getMessageId());
         if(!redisUtil.hasKey(messageLikeCountKey)){
             // 做缓存预热
-            Long likeCount = getMessageLikeCount(req.getMessageId(),messageMainTypeEnum);
+            Long likeCount = getMessageLikeCount(req.getMessageId(), messageConversationTypeEnum);
             if(likeCount>0){
                 redisUtil.set(messageLikeCountKey,likeCount,1, TimeUnit.HOURS);
             }
@@ -72,7 +72,7 @@ public class MessageLikeServiceImpl implements MessageLikeService {
                 redisUtil.setExpire(messageLikeCountKey,1,TimeUnit.HOURS);
 
                 // 推送mq事件，更新数据库
-                rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(req.getMessageId()).userId(userId).messageMainTypeEnum(messageMainTypeEnum).build());
+                rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(req.getMessageId()).userId(userId).messageConversationTypeEnum(messageConversationTypeEnum).build());
 
                 return CompletableFuture.completedFuture(DeveloperResult.success(serialNo,true));
             }else{
@@ -90,16 +90,16 @@ public class MessageLikeServiceImpl implements MessageLikeService {
     }
 
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> unLike(MessageLikeRequestDTO req, MessageMainTypeEnum messageMainTypeEnum) {
+    public CompletableFuture<DeveloperResult<Boolean>> unLike(MessageLikeRequestDTO req, MessageConversationTypeEnum messageConversationTypeEnum) {
         return null;
     }
 
-    private Long getMessageLikeCount(Long messageId, MessageMainTypeEnum messageMainTypeEnum){
+    private Long getMessageLikeCount(Long messageId, MessageConversationTypeEnum messageConversationTypeEnum){
         Long likeCount = 0L;
-        if(messageMainTypeEnum== MessageMainTypeEnum.PRIVATE_MESSAGE) {
+        if(messageConversationTypeEnum == MessageConversationTypeEnum.PRIVATE_MESSAGE) {
             PrivateMessagePO groupMessagePO = privateMessageRepository.getById(messageId);
             likeCount = groupMessagePO.getLikeCount();
-        }else if(messageMainTypeEnum== MessageMainTypeEnum.GROUP_MESSAGE){
+        }else if(messageConversationTypeEnum == MessageConversationTypeEnum.GROUP_MESSAGE){
             GroupMessagePO groupMessagePO = groupMessageRepository.getById(messageId);
             likeCount = groupMessagePO.getLikeCount();
         }

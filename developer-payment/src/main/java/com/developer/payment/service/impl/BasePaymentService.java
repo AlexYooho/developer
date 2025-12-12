@@ -5,7 +5,7 @@ import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.payment.PaymentChannelEnum;
 import com.developer.framework.enums.payment.PaymentTypeEnum;
 import com.developer.framework.enums.payment.RedPacketsTypeEnum;
@@ -228,12 +228,12 @@ public class BasePaymentService {
                 .remark("")
                 .build());
 
-        MessageMainTypeEnum messageMainTypeEnum = channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : channelEnum == PaymentChannelEnum.SCAN_CODE ? MessageMainTypeEnum.SYSTEM_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE;
-        DeveloperResult<SendRedPacketsResultDTO> result = this.messageClient.sendMessage(serialNo,messageMainTypeEnum, SendMessageRequestDTO.builder()
+        MessageConversationTypeEnum messageConversationTypeEnum = channelEnum == PaymentChannelEnum.FRIEND ? MessageConversationTypeEnum.PRIVATE_MESSAGE : channelEnum == PaymentChannelEnum.SCAN_CODE ? MessageConversationTypeEnum.SYSTEM_MESSAGE : MessageConversationTypeEnum.GROUP_MESSAGE;
+        DeveloperResult<SendRedPacketsResultDTO> result = this.messageClient.sendMessage(serialNo, messageConversationTypeEnum, SendMessageRequestDTO.builder()
                 .serialNo(serialNo)
                 .receiverId(targetId)
                 .messageContent(messageContent)
-                .messageMainType(messageMainTypeEnum)
+                .messageMainType(messageConversationTypeEnum)
                 .messageContentType(messageContentTypeEnum)
                 .groupId(targetId)
                 .atUserIds(null)
@@ -299,7 +299,7 @@ public class BasePaymentService {
         SendChatMessageDTO dto = SendChatMessageDTO.builder()
                 .receiverId(targetId)
                 .messageContent(SelfUserInfoContext.selfUserInfo().getNickName() + "领取了你的红包")
-                .messageMainType(channelEnum == PaymentChannelEnum.FRIEND ? MessageMainTypeEnum.PRIVATE_MESSAGE : MessageMainTypeEnum.GROUP_MESSAGE)
+                .messageMainType(channelEnum == PaymentChannelEnum.FRIEND ? MessageConversationTypeEnum.PRIVATE_MESSAGE : MessageConversationTypeEnum.GROUP_MESSAGE)
                 .messageContentType(MessageContentTypeEnum.TEXT)
                 .groupId(targetId)
                 .build();

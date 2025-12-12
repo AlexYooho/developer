@@ -1,6 +1,6 @@
 package com.developer.message.service;
 
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.*;
 
@@ -12,7 +12,7 @@ public interface BasicMessageService {
      * 消息主体类型
      * @return
      */
-    MessageMainTypeEnum messageMainType();
+    MessageConversationTypeEnum messageMainType();
 
     /**
      * 加载消息

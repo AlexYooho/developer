@@ -1,6 +1,6 @@
 package com.developer.framework.constant;
 
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.message.VerifyCodeTypeEnum;
 
 public class RedisKeyConstant {
@@ -38,22 +38,22 @@ public class RedisKeyConstant {
     /**
      * 点赞记录key
      */
-    public static String MESSAGE_LIKE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId, Long userId) {
-        return String.format("developer:message:like:%s:%s:%s", messageMainTypeEnum.code(), messageId, userId);
+    public static String MESSAGE_LIKE_KEY(MessageConversationTypeEnum messageConversationTypeEnum, Long messageId, Long userId) {
+        return String.format("developer:message:like:%s:%s:%s", messageConversationTypeEnum.code(), messageId, userId);
     }
 
     /**
      * 用户点赞记录key
      */
-    public static String MESSAGE_LIKE_USER_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId, Long userId) {
-        return String.format("developer:message:like:%s:%s:user:%s", messageMainTypeEnum.code(), messageId, userId);
+    public static String MESSAGE_LIKE_USER_KEY(MessageConversationTypeEnum messageConversationTypeEnum, Long messageId, Long userId) {
+        return String.format("developer:message:like:%s:%s:user:%s", messageConversationTypeEnum.code(), messageId, userId);
     }
 
     /**
      * 消息点赞key
      */
-    public static String MESSAGE_LIKE_MESSAGE_KEY(MessageMainTypeEnum messageMainTypeEnum, Long messageId) {
-        return String.format("developer:message:like:%s:%s", messageMainTypeEnum.code(), messageId);
+    public static String MESSAGE_LIKE_MESSAGE_KEY(MessageConversationTypeEnum messageConversationTypeEnum, Long messageId) {
+        return String.format("developer:message:like:%s:%s", messageConversationTypeEnum.code(), messageId);
     }
 
     /**

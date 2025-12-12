@@ -1,6 +1,6 @@
 package com.developer.message.rpc;
 
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.SerialNoHolder;
 import com.developer.message.dto.RemoveMessageRequestDTO;
@@ -21,7 +21,7 @@ public class MessageRpcProviderService implements MessageRpcService {
      */
     @Override
     public DeveloperResult<Boolean> sendFriendApplyAcceptMessage(Long receiverId) {
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.PRIVATE_MESSAGE).friendApplyAcceptMessage(receiverId);
+        return messageTypeProcessorDispatchFactory.getInstance(MessageConversationTypeEnum.PRIVATE_MESSAGE).friendApplyAcceptMessage(receiverId);
     }
 
     /*
@@ -29,7 +29,7 @@ public class MessageRpcProviderService implements MessageRpcService {
      */
     @Override
     public DeveloperResult<Boolean> sendFriendApplyRejectMessage(Long receiverId,String rejectReason) {
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.PRIVATE_MESSAGE).friendApplyRejectMessage(receiverId,rejectReason);
+        return messageTypeProcessorDispatchFactory.getInstance(MessageConversationTypeEnum.PRIVATE_MESSAGE).friendApplyRejectMessage(receiverId,rejectReason);
     }
 
     /*
@@ -39,7 +39,7 @@ public class MessageRpcProviderService implements MessageRpcService {
     public DeveloperResult<Boolean> clearFriendChatMessage(Long friendId) {
         RemoveMessageRequestDTO dto = new RemoveMessageRequestDTO();
         dto.setTargetId(friendId);
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.PRIVATE_MESSAGE).deleteMessage(dto);
+        return messageTypeProcessorDispatchFactory.getInstance(MessageConversationTypeEnum.PRIVATE_MESSAGE).deleteMessage(dto);
     }
 
     /*
@@ -47,7 +47,7 @@ public class MessageRpcProviderService implements MessageRpcService {
      */
     @Override
     public DeveloperResult<Boolean> sendJoinGroupInviteMessage(SendJoinGroupInviteMessageRequestRpcDTO dto) {
-        return messageTypeProcessorDispatchFactory.getInstance(MessageMainTypeEnum.PRIVATE_MESSAGE).sendJoinGroupInviteMessage(dto.getInviteMemberIds(),dto.getGroupName(),dto.getInviterName(),dto.getGroupAvatar());
+        return messageTypeProcessorDispatchFactory.getInstance(MessageConversationTypeEnum.PRIVATE_MESSAGE).sendJoinGroupInviteMessage(dto.getInviteMemberIds(),dto.getGroupName(),dto.getInviterName(),dto.getGroupAvatar());
     }
 
     /*

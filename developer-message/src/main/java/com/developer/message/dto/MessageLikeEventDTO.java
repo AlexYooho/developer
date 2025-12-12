@@ -1,6 +1,6 @@
 package com.developer.message.dto;
 
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,6 +12,6 @@ public class MessageLikeEventDTO {
 
     private Long messageId;
 
-    private MessageMainTypeEnum messageMainTypeEnum;
+    private MessageConversationTypeEnum messageConversationTypeEnum;
 
 }

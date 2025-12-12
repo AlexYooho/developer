@@ -1,7 +1,7 @@
 package com.developer.message.dto;
 
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.enums.payment.PaymentTypeEnum;
 import com.developer.framework.enums.payment.RedPacketsTypeEnum;
@@ -20,41 +20,35 @@ import java.util.List;
 @Builder
 public class SendMessageRequestDTO {
 
-    /**
-     * 操作编号
+    /*
+    发消息目标对象id
      */
-    @JsonProperty("serial_no")
-    private String serialNo;
+    @JsonProperty("target_id")
+    private Long targetId;
 
-    /**
-     * 接收人
-     */
-    @JsonProperty("receiver_id")
-    private Long receiverId;
-
-    /**
-     * 消息内容
-     */
-    @JsonProperty("message_content")
-    private String messageContent;
-
-    /**
-     * 消息主类型
+    /*
+    消息会话类型
      */
     @JsonProperty("message_main_type")
-    private MessageMainTypeEnum messageMainType;
+    private MessageConversationTypeEnum messageMainType;
 
-    /**
-     * 消息内容类型
+    /*
+    消息内容类型
      */
     @JsonProperty("message_content_type")
     private MessageContentTypeEnum messageContentType;
 
-    /**
-     * 群id
+    /*
+    发送终端类型
      */
-    @JsonProperty("group_id")
-    private Long groupId;
+    @JsonProperty("terminal_type")
+    private TerminalTypeEnum terminalType;
+
+    /*
+    消息内容
+     */
+    @JsonProperty("message_content")
+    private String messageContent;
 
     /**
      * @ 用户id
@@ -67,12 +61,6 @@ public class SendMessageRequestDTO {
      */
     @JsonProperty("reference_id")
     private Long referenceId;
-
-    /**
-     * 终端类型
-     */
-    @JsonProperty("terminal_type")
-    private TerminalTypeEnum terminalType;
 
     /*
     客户端消息id

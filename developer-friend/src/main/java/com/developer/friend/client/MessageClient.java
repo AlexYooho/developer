@@ -1,6 +1,6 @@
 package com.developer.friend.client;
 
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.friend.dto.MessageInsertDTO;
 import com.developer.friend.dto.RemoveMessageRequestDTO;
@@ -16,8 +16,8 @@ public interface MessageClient {
 
 
     @PostMapping("/message-module/api/message/{type}/add")
-    DeveloperResult<Boolean> insertMessage(@PathVariable("type") MessageMainTypeEnum type, @RequestBody MessageInsertDTO dto);
+    DeveloperResult<Boolean> insertMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody MessageInsertDTO dto);
 
     @DeleteMapping("/message-module/api/message/{type}/remove")
-    DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") MessageMainTypeEnum type,@RequestBody RemoveMessageRequestDTO req);
+    DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody RemoveMessageRequestDTO req);
 }

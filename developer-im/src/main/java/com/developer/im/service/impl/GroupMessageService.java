@@ -1,7 +1,7 @@
 package com.developer.im.service.impl;
 
 import com.developer.framework.dto.ChatMessageDTO;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.im.model.IMChatMessageBaseModel;
 import com.developer.im.model.IMUserInfoModel;
@@ -17,8 +17,8 @@ public class GroupMessageService extends AbstractMessageTypeService {
     private IMClient imClients;
 
     @Override
-    public MessageMainTypeEnum messageMainTypeEnum() {
-        return MessageMainTypeEnum.GROUP_MESSAGE;
+    public MessageConversationTypeEnum messageMainTypeEnum() {
+        return MessageConversationTypeEnum.GROUP_MESSAGE;
     }
 
     @Override

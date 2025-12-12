@@ -3,7 +3,7 @@ package com.developer.framework.dto;
 import com.developer.framework.enums.message.MessageStatusEnum;
 import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,7 +31,7 @@ public class ChatMessageDTO implements Serializable {
      * 消息主类型
      */
     @JsonProperty("message_main_type")
-    private MessageMainTypeEnum messageMainTypeEnum;
+    private MessageConversationTypeEnum messageConversationTypeEnum;
 
     /**
      * 消息内容类型

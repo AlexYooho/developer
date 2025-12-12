@@ -13,7 +13,7 @@ import com.developer.framework.dto.ChatMessageDTO;
 import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.enums.friend.AddFriendStatusEnum;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.message.MessageStatusEnum;
 import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.model.DeveloperResult;
@@ -224,7 +224,7 @@ public class FriendServiceImpl implements FriendService {
         }
 
         // 发送添加请求
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, TerminalTypeEnum.WEB, new Date()));
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageConversationTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), req.getRemark(), Collections.singletonList(req.getFriendId()), new ArrayList<>(), MessageStatusEnum.UNSEND, TerminalTypeEnum.WEB, new Date()));
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
@@ -382,11 +382,11 @@ public class FriendServiceImpl implements FriendService {
     public void bindFriend(Long userId, Long friendId) {
     }
 
-    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
+    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageConversationTypeEnum messageConversationTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
         return RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
-                .data(ChatMessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
+                .data(ChatMessageDTO.builder().messageConversationTypeEnum(messageConversationTypeEnum)
                         .messageContentTypeEnum(messageContentTypeEnum)
                         .messageId(messageId)
                         .groupId(groupId)

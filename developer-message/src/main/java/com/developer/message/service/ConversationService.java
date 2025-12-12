@@ -1,7 +1,5 @@
 package com.developer.message.service;
 
-import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.message.dto.ChatConversationListResponseDTO;
 import com.developer.message.dto.UpsertConversationRequestDTO;

@@ -1,7 +1,7 @@
 package com.developer.message.eventlistener.processor;
 
 import com.developer.framework.dto.RabbitMQMessageBodyDTO;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.processor.IMessageProcessor;
@@ -40,12 +40,12 @@ public class MessageLikeProcessor implements IMessageProcessor {
         Long userId = event.getUserId();
 
         // 再次检查数据库中是否已存在点赞记录
-        MessageLikeRecordPO likeRecord = messageLikeRecordRepository.findLikeRecord(messageId, userId, MessageMainTypeEnum.GROUP_MESSAGE);
+        MessageLikeRecordPO likeRecord = messageLikeRecordRepository.findLikeRecord(messageId, userId, MessageConversationTypeEnum.GROUP_MESSAGE);
         if (likeRecord == null) {
             // 插入新的点赞记录
             messageLikeRecordRepository.save(MessageLikeRecordPO.builder()
                     .messageId(messageId)
-                    .messageType(event.getMessageMainTypeEnum())
+                    .messageType(event.getMessageConversationTypeEnum())
                     .userId(userId)
                     .LikeStatus(MessageLikeEnum.LIKE)
                     .LikeTime(new Date())
@@ -54,7 +54,7 @@ public class MessageLikeProcessor implements IMessageProcessor {
                     .build());
         }
 
-        if(event.getMessageMainTypeEnum().equals(MessageMainTypeEnum.GROUP_MESSAGE)) {
+        if(event.getMessageConversationTypeEnum().equals(MessageConversationTypeEnum.GROUP_MESSAGE)) {
             // 更新消息的点赞数
             GroupMessagePO message = groupMessageRepository.getById(messageId);
             if (message != null) {

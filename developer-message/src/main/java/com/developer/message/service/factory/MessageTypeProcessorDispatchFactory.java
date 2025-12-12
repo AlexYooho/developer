@@ -1,6 +1,6 @@
 package com.developer.message.service.factory;
 
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.message.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -15,11 +15,11 @@ public class MessageTypeProcessorDispatchFactory {
     private ApplicationContext context;
 
 
-    public MessageService getInstance(MessageMainTypeEnum messageMainTypeEnum) {
+    public MessageService getInstance(MessageConversationTypeEnum messageConversationTypeEnum) {
         Map<String, MessageService> beansMap = context.getBeansOfType(MessageService.class);
         MessageService instance = null;
         for (MessageService item : beansMap.values()) {
-            if (item.messageMainType() != messageMainTypeEnum) {
+            if (item.messageMainType() != messageConversationTypeEnum) {
                 continue;
             }
 

@@ -1,6 +1,6 @@
 package com.developer.payment.client;
 
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.payment.dto.CheckVerifyCodeRequestDTO;
 import com.developer.payment.dto.SendMessageRequestDTO;
@@ -16,6 +16,6 @@ public interface MessageClient {
     DeveloperResult<Boolean> verifyCodeCheck(@RequestBody CheckVerifyCodeRequestDTO req);
 
     @PostMapping("/message-module/api/message/{type}/send")
-    DeveloperResult<SendRedPacketsResultDTO> sendMessage(@RequestHeader("serial_no") String serialNo, @PathVariable("type")MessageMainTypeEnum type, @RequestBody SendMessageRequestDTO req);
+    DeveloperResult<SendRedPacketsResultDTO> sendMessage(@RequestHeader("serial_no") String serialNo, @PathVariable("type") MessageConversationTypeEnum type, @RequestBody SendMessageRequestDTO req);
 
 }

@@ -2,29 +2,21 @@ package com.developer.message.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.developer.framework.constant.DeveloperMQConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.ChatMessageDTO;
 import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.message.MessageStatusEnum;
 import com.developer.framework.enums.common.TerminalTypeEnum;
-import com.developer.framework.enums.payment.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.framework.utils.BeanUtils;
-import com.developer.framework.utils.DateTimeUtils;
 import com.developer.framework.utils.RedisUtil;
 import com.developer.framework.utils.SerialNoHolder;
-import com.developer.message.client.GroupInfoClient;
-import com.developer.message.client.GroupMemberClient;
-import com.developer.message.client.PaymentClient;
 import com.developer.message.dto.*;
 import com.developer.message.pojo.*;
 import com.developer.message.repository.GroupMessageDeleteRepository;
-import com.developer.message.repository.GroupMessageMemberReceiveRecordRepository;
 import com.developer.message.repository.GroupMessageReadRepository;
 import com.developer.message.repository.GroupMessageRepository;
 import com.developer.message.service.AbstractMessageAdapterService;
@@ -35,7 +27,6 @@ import com.developer.rpc.client.RpcClient;
 import com.developer.rpc.client.RpcExecutor;
 import com.developer.rpc.dto.group.response.GroupInfoResponseRpcDTO;
 import com.developer.rpc.dto.group.response.GroupMemberResponseRpcDTO;
-import com.developer.rpc.dto.payment.request.InvokeRedPacketsTransferRequestRpcDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -43,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,8 +55,8 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
      * @return
      */
     @Override
-    public MessageMainTypeEnum messageMainType() {
-        return MessageMainTypeEnum.GROUP_MESSAGE;
+    public MessageConversationTypeEnum messageMainType() {
+        return MessageConversationTypeEnum.GROUP_MESSAGE;
     }
 
     /*
@@ -171,7 +161,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), groupResult.getMsg());
         }
         // 1.1、是否在群内
-        GroupInfoResponseRpcDTO groupInfo = groupResult.getData().stream().filter(x -> x.getGroupId().equals(req.getGroupId())).findFirst().orElse(null);
+        GroupInfoResponseRpcDTO groupInfo = groupResult.getData().stream().filter(x -> x.getGroupId().equals(req.getTargetId())).findFirst().orElse(null);
         if (ObjectUtil.isEmpty(groupInfo)) {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), "群不存在,发送失败");
         }
@@ -279,7 +269,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
 
         // 7、向消息发送者发送已读通知
         for (GroupMessagePO item : unreadMessageList) {
-            rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, item.getId(), req.getTargetId(), SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), "", Collections.singletonList(item.getSendId()), new ArrayList<>(), MessageStatusEnum.READED, TerminalTypeEnum.WEB, new Date()));
+            rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageConversationTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, item.getId(), req.getTargetId(), SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), "", Collections.singletonList(item.getSendId()), new ArrayList<>(), MessageStatusEnum.READED, TerminalTypeEnum.WEB, new Date()));
         }
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
@@ -320,7 +310,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         }
         List<Long> memberUserIds = groupMemberExecute.getData().stream().filter(x->!SelfUserInfoContext.selfUserInfo().getUserId().equals(x.getMemberUserId())).map(GroupMemberResponseRpcDTO::getMemberUserId).collect(Collectors.toList());
         String message = String.format("%s 撤回了一条消息", groupInfo.getMemberAlias());
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageMainTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(), groupMessage.getSendId(), groupMessage.getSendNickName(), message, memberUserIds, new ArrayList<>(), MessageStatusEnum.fromCode(groupMessage.getMessageStatus()), TerminalTypeEnum.WEB, new Date()));
+        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE, DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM, builderMQMessageDTO(MessageConversationTypeEnum.GROUP_MESSAGE, MessageContentTypeEnum.TEXT, groupMessage.getId(), groupMessage.getGroupId(), groupMessage.getSendId(), groupMessage.getSendNickName(), message, memberUserIds, new ArrayList<>(), MessageStatusEnum.fromCode(groupMessage.getMessageStatus()), TerminalTypeEnum.WEB, new Date()));
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
@@ -399,8 +389,8 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), "消息不存在");
         }
 
-        sendMessage(SendMessageRequestDTO.builder().serialNo(SerialNoHolder.getSerialNo()).receiverId(req.getReceiverId()).messageContent(req.getMessageContent())
-                .messageMainType(req.getMessageMainType()).messageContentType(req.getMessageContentType()).groupId(req.getGroupId()).atUserIds(req.getAtUserIds())
+        sendMessage(SendMessageRequestDTO.builder().targetId(req.getReceiverId()).messageContent(req.getMessageContent())
+                .messageMainType(req.getMessageMainType()).messageContentType(req.getMessageContentType()).atUserIds(req.getAtUserIds())
                 .referenceId(id).build());
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
@@ -419,23 +409,20 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
     @Override
     public DeveloperResult<Boolean> forwardMessage(ForwardMessageRequestDTO req) {
         GroupMessagePO groupMessagePO = groupMessageRepository.getById(req.getMessageId());
-        String serialNo = SerialNoHolder.getSerialNo();
-        req.setSerialNo(serialNo);
         if (groupMessagePO == null) {
-            return DeveloperResult.error(serialNo, "转发消息本体不存在");
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "转发消息本体不存在");
         }
 
         for (Long userId : req.getUserIdList()) {
             SendMessageRequestDTO dto = new SendMessageRequestDTO();
-            dto.setSerialNo(serialNo);
             dto.setMessageContent(groupMessagePO.getMessageContent());
-            dto.setReceiverId(userId);
+            dto.setTargetId(userId);
             dto.setMessageContentType(MessageContentTypeEnum.fromCode(groupMessagePO.getMessageContentType()));
-            dto.setMessageMainType(MessageMainTypeEnum.GROUP_MESSAGE);
+            dto.setMessageMainType(MessageConversationTypeEnum.GROUP_MESSAGE);
 
             this.sendMessage(dto);
         }
-        return DeveloperResult.success(serialNo);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
     /*
@@ -445,7 +432,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
     @Transactional
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> likeMessage(MessageLikeRequestDTO req) {
-        return messageLikeService.like(req, MessageMainTypeEnum.GROUP_MESSAGE);
+        return messageLikeService.like(req, MessageConversationTypeEnum.GROUP_MESSAGE);
     }
 
     /*
@@ -455,7 +442,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
     @Transactional
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(MessageLikeRequestDTO req) {
-        return messageLikeService.unLike(req, MessageMainTypeEnum.GROUP_MESSAGE);
+        return messageLikeService.unLike(req, MessageConversationTypeEnum.GROUP_MESSAGE);
     }
 
     private long getCurrentConversationNextConvSeq(Long groupId) {
@@ -463,10 +450,10 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         return redisUtil.increment(key, 1L);
     }
 
-    private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
+    private ChatMessageDTO builderMQMessageDTO(MessageConversationTypeEnum messageConversationTypeEnum, MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId, String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds, MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
         return ChatMessageDTO
                 .builder()
-                .messageMainTypeEnum(messageMainTypeEnum)
+                .messageConversationTypeEnum(messageConversationTypeEnum)
                 .messageContentTypeEnum(messageContentTypeEnum)
                 .messageId(messageId)
                 .groupId(groupId)

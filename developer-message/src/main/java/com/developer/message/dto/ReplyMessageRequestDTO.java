@@ -1,7 +1,7 @@
 package com.developer.message.dto;
 
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -26,7 +26,7 @@ public class ReplyMessageRequestDTO {
      * 消息主类型
      */
     @JsonProperty("message_main_type")
-    private MessageMainTypeEnum messageMainType;
+    private MessageConversationTypeEnum messageMainType;
 
     /**
      * 消息内容类型

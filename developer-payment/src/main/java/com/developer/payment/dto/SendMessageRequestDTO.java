@@ -1,7 +1,7 @@
 package com.developer.payment.dto;
 
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,7 +37,7 @@ public class SendMessageRequestDTO {
      * 消息主类型
      */
     @JsonProperty("message_main_type")
-    private MessageMainTypeEnum messageMainType;
+    private MessageConversationTypeEnum messageMainType;
 
     /**
      * 消息内容类型

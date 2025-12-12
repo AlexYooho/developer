@@ -1,6 +1,6 @@
 package com.developer.message.dto;
 
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
@@ -22,7 +22,7 @@ public class ChatConversationListResponseDTO {
     会话类型
      */
     @JsonProperty("conv_type")
-    private MessageMainTypeEnum convType;
+    private MessageConversationTypeEnum convType;
 
     /*
     会话对象名字

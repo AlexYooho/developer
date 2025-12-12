@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum MessageMainTypeEnum {
+public enum MessageConversationTypeEnum {
 
     PRIVATE_MESSAGE(0,"私聊消息"),
 
@@ -26,8 +26,8 @@ public enum MessageMainTypeEnum {
         return this.code;
     }
 
-    public static MessageMainTypeEnum fromCode(Integer code){
-        for (MessageMainTypeEnum typeEnum:values()) {
+    public static MessageConversationTypeEnum fromCode(Integer code){
+        for (MessageConversationTypeEnum typeEnum:values()) {
             if (typeEnum.code.equals(code)) {
                 return typeEnum;
             }

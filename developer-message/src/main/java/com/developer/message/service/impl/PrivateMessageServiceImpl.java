@@ -10,7 +10,7 @@ import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.*;
 import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.message.MessageStatusEnum;
 import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.enums.payment.PaymentChannelEnum;
@@ -27,7 +27,6 @@ import com.developer.message.service.FriendService;
 import com.developer.message.service.MessageLikeService;
 import com.developer.message.util.RabbitMQUtil;
 import com.developer.rpc.client.RpcClient;
-import com.developer.rpc.client.RpcExecutor;
 import com.developer.rpc.dto.payment.request.InvokeRedPacketsTransferRequestRpcDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,8 +57,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      * @return
      */
     @Override
-    public MessageMainTypeEnum messageMainType() {
-        return MessageMainTypeEnum.PRIVATE_MESSAGE;
+    public MessageConversationTypeEnum messageMainType() {
+        return MessageConversationTypeEnum.PRIVATE_MESSAGE;
     }
 
     /*
@@ -130,26 +129,26 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         String nickName = SelfUserInfoContext.selfUserInfo().getNickName();
 
         // 不能给自己发送消息
-        if (userId.equals(req.getReceiverId())) {
+        if (userId.equals(req.getTargetId())) {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), "不能给自己发送消息");
         }
 
         // 好友关系校验
-        DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getReceiverId());
+        DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getTargetId());
         if (!friend.getIsSuccessful() || !friend.getData()) {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), "您还不是对方的好友");
         }
 
         // 发送者、接收者id
-        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
-        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getReceiverId());
+        Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
+        Long uidB = Math.max(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
 
         // 消息入库
         PrivateMessagePO privateMessage = new PrivateMessagePO();
         privateMessage.setUidA(uidA);
         privateMessage.setUidB(uidB);
         privateMessage.setSendId(userId);
-        privateMessage.setReceiverId(req.getReceiverId());
+        privateMessage.setReceiverId(req.getTargetId());
         privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA, uidB));
         privateMessage.setClientMsgId(req.getClientMsgId());
         privateMessage.setMessageContent(req.getMessageContent());
@@ -178,13 +177,11 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), conversationResult.getMsg());
         }
 
-        // 发送消息
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
-                DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(req.getMessageMainType(), req.getMessageContentType(),
-                        privateMessage.getMessageStatus(), req.getTerminalType(), privateMessage.getId(), userId,
-                        nickName,
-                        req.getMessageContent(), privateMessage.getSendTime(), req.getReceiverId()));
+        // 发送消息--会话类型、消息内容类型、消息内容、目标对象、发送者信息、发送终端类型、发送时间
+        ChatMessageDTO chatMessageDTO = builderMQMessageDTO(req.getMessageMainType(), req.getMessageContentType(),
+                privateMessage.getMessageStatus(), req.getTerminalType(), privateMessage.getId(), userId,nickName,
+                req.getMessageContent(), privateMessage.getSendTime(), req.getTargetId());
+        rabbitMQUtil.sendChatMessage(chatMessageDTO);
 
         // 更新当前聊天会话maxSeq
         String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA.toString(), uidB.toString());
@@ -201,28 +198,13 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      */
     private static UpsertConversationRequestDTO buildUpsertConversationRequestDTO(SendMessageRequestDTO req, PrivateMessagePO privateMessage) {
         UpsertConversationRequestDTO conversationRequestDTO = new UpsertConversationRequestDTO();
-        conversationRequestDTO.setTargetId(req.getReceiverId());
+        conversationRequestDTO.setTargetId(req.getTargetId());
         conversationRequestDTO.setLastMsgSeq(privateMessage.getConvSeq());
         conversationRequestDTO.setLastMsgId(privateMessage.getId());
         conversationRequestDTO.setLastMsgContent(req.getMessageContent());
         conversationRequestDTO.setLastMsgType(req.getMessageContentType());
         conversationRequestDTO.setLastMsgTime(new Date());
         return conversationRequestDTO;
-    }
-
-    /*
-    支付rpc参数DTO
-     */
-    private static InvokeRedPacketsTransferRequestRpcDTO buildPacketsTransferRequestRpcDTO(SendMessageRequestDTO req, Long messageId) {
-        InvokeRedPacketsTransferRequestRpcDTO paymentDto = new InvokeRedPacketsTransferRequestRpcDTO();
-        paymentDto.setPaymentType(req.getPaymentInfoDTO().getPaymentType());
-        paymentDto.setPaymentAmount(req.getPaymentInfoDTO().getPaymentAmount());
-        paymentDto.setTargetId(req.getReceiverId());
-        paymentDto.setRedPacketsTotalCount(req.getPaymentInfoDTO().getRedPacketsTotalCount());
-        paymentDto.setRedPacketsType(req.getPaymentInfoDTO().getRedPacketsType());
-        paymentDto.setMessageId(messageId);
-        paymentDto.setPaymentChannel(PaymentChannelEnum.FRIEND);
-        return paymentDto;
     }
 
     /*
@@ -260,7 +242,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         // 通知消息发送者已读
         rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                 DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
+                builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
                         MessageStatusEnum.READED, TerminalTypeEnum.WEB, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), "", new Date(),
                         req.getTargetId()));
 
@@ -306,7 +288,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         // 通知撤回
         rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                 DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
+                builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
                         MessageStatusEnum.RECALL, TerminalTypeEnum.WEB, privateMessage.getId(), SelfUserInfoContext.selfUserInfo().getUserId(),
                         SelfUserInfoContext.selfUserInfo().getNickName(), "对方撤回了一条消息", new Date(), privateMessage.getReceiverId()));
 
@@ -403,11 +385,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         }
 
         SendMessageRequestDTO dto = SendMessageRequestDTO.builder()
-                .receiverId(req.getReceiverId())
+                .targetId(req.getReceiverId())
                 .messageContent(req.getMessageContent())
                 .messageMainType(req.getMessageMainType())
                 .messageContentType(req.getMessageContentType())
-                .groupId(req.getGroupId())
                 .atUserIds(req.getAtUserIds())
                 .referenceId(id)
                 .build();
@@ -431,23 +412,21 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     @Override
     public DeveloperResult<Boolean> forwardMessage(ForwardMessageRequestDTO req) {
         PrivateMessagePO messagePO = privateMessageRepository.findMessageByMessageId(req.getMessageId());
-        String serialNo = SerialNoHolder.getSerialNo();
         if (messagePO == null) {
-            return DeveloperResult.error(serialNo, "转发消息本体不存在");
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "转发消息本体不存在");
         }
 
         for (Long userId : req.getUserIdList()) {
             SendMessageRequestDTO dto = SendMessageRequestDTO.builder()
-                    .serialNo(serialNo)
                     .messageContent(messagePO.getMessageContent())
-                    .receiverId(userId)
+                    .targetId(userId)
                     .messageContentType(messagePO.getMessageContentType())
-                    .messageMainType(MessageMainTypeEnum.PRIVATE_MESSAGE)
+                    .messageMainType(MessageConversationTypeEnum.PRIVATE_MESSAGE)
                     .build();
 
             sendMessage(dto);
         }
-        return DeveloperResult.success(serialNo);
+        return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
     /*
@@ -457,7 +436,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     @Transactional
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> likeMessage(MessageLikeRequestDTO req) {
-        return messageLikeService.like(req, MessageMainTypeEnum.PRIVATE_MESSAGE);
+        return messageLikeService.like(req, MessageConversationTypeEnum.PRIVATE_MESSAGE);
     }
 
     /*
@@ -467,19 +446,19 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     @Transactional
     @Override
     public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(MessageLikeRequestDTO req) {
-        return messageLikeService.unLike(req, MessageMainTypeEnum.PRIVATE_MESSAGE);
+        return messageLikeService.unLike(req, MessageConversationTypeEnum.PRIVATE_MESSAGE);
     }
 
     /*
      * 构建mq消息dto
      */
-    private ChatMessageDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
+    private ChatMessageDTO builderMQMessageDTO(MessageConversationTypeEnum messageConversationTypeEnum,
                                                MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
                                                TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
                                                String messageContent, Date sendTime, Long friendId) {
         return ChatMessageDTO
                 .builder()
-                .messageMainTypeEnum(messageMainTypeEnum)
+                .messageConversationTypeEnum(messageConversationTypeEnum)
                 .messageContentTypeEnum(messageContentTypeEnum)
                 .messageStatus(messageStatus)
                 .terminalType(terminalType)
@@ -492,14 +471,14 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                 .build();
     }
 
-    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageMainTypeEnum messageMainTypeEnum,
+    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageConversationTypeEnum messageConversationTypeEnum,
                                                        MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
                                                        String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
                                                        MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
         return RabbitMQMessageBodyDTO.builder()
                 .serialNo(UUID.randomUUID().toString())
                 .type(MQMessageTypeConstant.SENDMESSAGE)
-                .data(ChatMessageDTO.builder().messageMainTypeEnum(messageMainTypeEnum)
+                .data(ChatMessageDTO.builder().messageConversationTypeEnum(messageConversationTypeEnum)
                         .messageContentTypeEnum(messageContentTypeEnum)
                         .messageId(messageId)
                         .groupId(groupId)
@@ -545,7 +524,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         // 推送im消息
         rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                 DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L,
+                builderMQMessageDTO(MessageConversationTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L,
                         SelfUserInfoContext.selfUserInfo().getUserId(),
                         SelfUserInfoContext.selfUserInfo().getNickName(), privateMessage.getMessageContent(),
                         Collections.singletonList(receiverId), new ArrayList<>(), MessageStatusEnum.UNSEND,
@@ -562,7 +541,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
 
         rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                 DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(MessageMainTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L,
+                builderMQMessageDTO(MessageConversationTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L,
                         SelfUserInfoContext.selfUserInfo().getUserId(),
                         SelfUserInfoContext.selfUserInfo().getNickName(), rejectReason,
                         Collections.singletonList(receiverId), new ArrayList<>(), MessageStatusEnum.UNSEND,
@@ -585,7 +564,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                     DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
                     DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY,
                     ProcessorTypeEnum.IM,
-                    builderMQMessageDTO(MessageMainTypeEnum.PRIVATE_MESSAGE,
+                    builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE,
                             MessageContentTypeEnum.GROUP_INVITE,
                             0L,
                             0L,

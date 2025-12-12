@@ -1,7 +1,7 @@
 package com.developer.payment.dto;
 
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import lombok.Builder;
 import lombok.Data;
 
@@ -24,7 +24,7 @@ public class SendChatMessageDTO implements Serializable {
     /**
      * 消息主类型
      */
-    private MessageMainTypeEnum messageMainType;
+    private MessageConversationTypeEnum messageMainType;
 
     /**
      * 消息内容类型

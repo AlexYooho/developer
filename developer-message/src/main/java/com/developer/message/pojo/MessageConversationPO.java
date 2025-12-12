@@ -5,8 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
-import com.developer.framework.enums.message.MessageMainTypeEnum;
-import lombok.Builder;
+import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import lombok.Data;
 
 import java.util.Date;
@@ -33,7 +32,7 @@ public class MessageConversationPO {
     6:特殊会话（如语音助手）
      */
     @TableField("conv_type")
-    private MessageMainTypeEnum convType;  // 0私聊 1群聊 ...
+    private MessageConversationTypeEnum convType;  // 0私聊 1群聊 ...
 
     /*
     会话目标
