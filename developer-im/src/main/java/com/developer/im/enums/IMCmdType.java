@@ -14,7 +14,7 @@ public enum IMCmdType {
 
     PRIVATE_MESSAGE(3,"私聊消息"),
 
-    GROUP_MESSAGE(4,"群发消息"),
+    GROUP_MESSAGE(4,"群聊消息"),
 
     SYSTEM_MESSAGE(5,"系统消息"),
 

@@ -32,7 +32,7 @@ public class PrivateMessageService extends AbstractMessageTypeService {
         model.setMessageContent(dto.getMessageContent());
         model.setMessageContentType(dto.getMessageContentTypeEnum());
         model.setMessageStatus(dto.getMessageStatus());
-        model.setReceiverId(dto.getFriendUserId());
+        //model.setReceiverId(dto.getFriendUserId());
         model.setSendToSelf(true);
         model.setSender(new IMUserInfoModel(dto.getSendId(),dto.getTerminalType(),dto.getSendNickName()));
         model.setSendId(dto.getSendId());

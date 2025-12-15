@@ -20,7 +20,6 @@ import java.util.List;
 @NoArgsConstructor
 public class ChatMessageDTO implements Serializable {
 
-    // --------------------------公共参数----------------------------------
     /**
      * 操作编号
      */
@@ -82,30 +81,16 @@ public class ChatMessageDTO implements Serializable {
     private Date sendTime;
 
     /*
-    消息目标对象id
+    接收消息的目标用户id
      */
-    @JsonProperty("target_id")
-    private Long targetId;
+    @JsonProperty("target_ids")
+    private List<Long> targetIds;
 
-    // --------------------------私聊参数----------------------------------
-    /**
-     * 好友用户id
-     */
-    @JsonProperty("friend_user_id")
-    private Long friendUserId;
-
-    // --------------------------群聊参数----------------------------------
     /**
      * 群id
      */
     @JsonProperty("group_id")
     private Long groupId;
-
-    /**
-     * 接收者id集合
-     */
-    @JsonProperty("receiver_group_member_user_ids")
-    private List<Long> receiverIds;
 
     /**
      * at用户id集合

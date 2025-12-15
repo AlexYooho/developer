@@ -27,10 +27,10 @@ public class GroupMessageProcessor extends AbstractMessageProcessor<IMChatGroupM
     public DeveloperResult<Boolean> handler(IMChatGroupMessageModel messageBody) {
         IMUserInfoModel sender = messageBody.getSender();
         List<IMUserInfoModel> receivers = messageBody.getMessageReceiverList();
-        log.info("接收到群消息,发送者:{},接收用户数量:{},内容:{}",sender.getSenderId(),receivers.size(),messageBody.getData());
+        log.info("接收到群消息,发送者:{},接收用户数量:{},内容:{}",sender.getUserId(),receivers.size(),messageBody.getData());
         for (IMUserInfoModel receiver : receivers) {
             try {
-                ChannelHandlerContext channelCtx = UserChannelCtxMap.getChannelCtx(receiver.getSenderId(), receiver.getTerminal().code());
+                ChannelHandlerContext channelCtx = UserChannelCtxMap.getChannelCtx(receiver.getUserId(), receiver.getTerminal().code());
                 if (channelCtx != null) {
                     // 推送消息到用户
                     IMMessageBodyModel sendMessageInfo = new IMMessageBodyModel();
@@ -40,12 +40,12 @@ public class GroupMessageProcessor extends AbstractMessageProcessor<IMChatGroupM
                     sendResult(messageBody, receiver, SendCodeType.SUCCESS);
                 } else {
                     sendResult(messageBody, receiver, SendCodeType.NOT_FIND_CHANNEL);
-                    log.error("未找到channel,发送者:{},接收id:{},内容:{}", sender.getSenderId(), receiver.getSenderId(), messageBody.getData());
+                    log.error("未找到channel,发送者:{},接收id:{},内容:{}", sender.getUserId(), receiver.getUserId(), messageBody.getData());
                     return DeveloperResult.error(messageBody.getSerialNo(),"未找到channel");
                 }
             }catch (Exception e){
                 sendResult(messageBody, receiver, SendCodeType.UNKONW_ERROR);
-                log.error("发送群消息异常,发送者:{},接收id:{},内容:{}", sender.getSenderId(), receiver.getSenderId(), messageBody.getData());
+                log.error("发送群消息异常,发送者:{},接收id:{},内容:{}", sender.getUserId(), receiver.getUserId(), messageBody.getData());
                 return DeveloperResult.error(messageBody.getSerialNo(),"发送群消息异常");
             }
         }

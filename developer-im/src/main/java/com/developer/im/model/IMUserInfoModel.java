@@ -17,8 +17,8 @@ public class IMUserInfoModel {
     /**
      * 发送人id
      */
-    @JsonProperty("sender_id")
-    private Long senderId;
+    @JsonProperty("user_id")
+    private Long userId;
 
     /**
      * 消息终端
@@ -29,7 +29,7 @@ public class IMUserInfoModel {
     /**
      * 发送人昵称
      */
-    @JsonProperty("sender_nickname")
-    private String senderNickname;
+    @JsonProperty("user_nickname")
+    private String userNickname;
 
 }

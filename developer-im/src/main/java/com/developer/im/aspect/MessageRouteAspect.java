@@ -47,7 +47,7 @@ public class MessageRouteAspect {
 
 
         List<Integer> terminals = TerminalTypeEnum.codes();
-        List<Long> receiverIds = chatMessageDTO.getReceiverIds();
+        List<Long> receiverIds = chatMessageDTO.getTargetIds();
         for (Long receiverId : receiverIds) {
             int existTerminalCnt = 0;
             for (Integer terminal : terminals) {
@@ -85,9 +85,9 @@ public class MessageRouteAspect {
             }
         }
 
-        chatMessageDTO.getReceiverIds().removeAll(removeList);
+        chatMessageDTO.getTargetIds().removeAll(removeList);
 
-        if (CollUtil.isEmpty(chatMessageDTO.getReceiverIds())) {
+        if (CollUtil.isEmpty(chatMessageDTO.getTargetIds())) {
             return null;
         }
 
@@ -100,7 +100,7 @@ public class MessageRouteAspect {
             String targetUrl = entry.getKey();
             // 远程调用目标server,可以通过Dubbo、feign都可以
             IMRpcService instance = RpcUtil.getInstance(IMRpcService.class, targetUrl);
-            chatMessageDTO.setReceiverIds(entry.getValue());
+            chatMessageDTO.setTargetIds(entry.getValue());
             dto.setData(chatMessageDTO);
             instance.pushTargetWSNode(dto);
         }

@@ -37,7 +37,7 @@ public class GroupMessageService extends AbstractMessageTypeService {
         model.setSendResult(false);
         model.setGroupId(dto.getGroupId());
         model.setAtUserIds(dto.getAtUserIds());
-        model.setReceiverIds(dto.getReceiverIds());
+        model.setReceiverIds(dto.getTargetIds());
 
         return imClients.sendGroupMessage(model);
     }

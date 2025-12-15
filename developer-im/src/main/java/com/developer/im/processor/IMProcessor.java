@@ -5,9 +5,8 @@ import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.framework.utils.IPUtils;
 import com.developer.framework.utils.RedisUtil;
-import com.developer.im.dto.PushMessageBodyDTO;
+import com.developer.im.dto.ChatMessageBodyDTO;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,32 +31,25 @@ public class IMProcessor {
      * @return
      * @param <T>
      */
-    public <T> DeveloperResult<Boolean> pushMessage(PushMessageBodyDTO dto){
+    public <T> DeveloperResult<Boolean> sendChatMessage(ChatMessageBodyDTO dto){
         DeveloperResult<Boolean> result = null;
-        // 先看接收用户有哪些终端在线
-        for (Long receiverId : dto.getMessageReceiverIds()) {
+        // 遍历需要接收消息的用户
+        for (Long targetId : dto.getTargetIds()) {
+            // 遍历用户终端
             for (Integer terminal : TerminalTypeEnum.codes()) {
                 // 判断用户终端是否在线
-                String terminalOnlineKey = String.join(":",RedisKeyConstant.IM_USER_SERVER_ID,receiverId.toString(),terminal.toString());
+                IMUserInfoModel targetUserInfo = new IMUserInfoModel(targetId,TerminalTypeEnum.fromCode(terminal),"");
+                dto.getBodyItem().setTargetUserInfo(targetUserInfo);
+                String terminalOnlineKey = String.join(":",RedisKeyConstant.IM_USER_SERVER_ID,targetUserInfo.getUserId().toString(),targetUserInfo.getTerminal().toString());
                 Object serverId = redisUtil.get(terminalOnlineKey,Object.class);
                 if(ObjectUtil.isEmpty(serverId)){
+                    // 不在线则不需要发送
                     continue;
                 }
-
-                // 当前终端是否在此server上
-                String key = RedisKeyConstant.USER_MAP_SERVER_INFO_KEY(receiverId);
-                Object serverIP = redisUtil.hGet(key, terminal.toString());
-                String ip = Optional.ofNullable(serverIP).orElse("").toString();
-                if(!ip.equals(IPUtils.getLocalIPv4())){
-                    continue;
-                }
-
-                // 存在则继续
-                AbstractMessageProcessor processor = ProcessorFactory.getHandler(IMCmdType.CHAT_MESSAGE);
-                result = processor.handler(dto);
+                // 在线则继续
+                result = ProcessorFactory.getHandler(dto.getCmd()).handler(dto);
             }
         }
-
         return result;
     }
 
@@ -73,13 +65,10 @@ public class IMProcessor {
             // 获取对方连接的channelId
             String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, message.getReceiverId().toString(), terminal.toString());
             Integer serverId = (Integer) redisTemplate.opsForValue().get(key);
-
             if (serverId == null || serverId <= 0) {
                 continue;
             }
-
             // 如果对方在线
-            String sendKey = String.join(":", RedisKeyConstant.IM_MESSAGE_PRIVATE_QUEUE, serverId.toString());
             IMChatPrivateMessageModel messageBody = new IMChatPrivateMessageModel();
             messageBody.setSerialNo(message.getSerialNo());
             messageBody.setCmd(cmdType);
@@ -164,7 +153,7 @@ public class IMProcessor {
             // serverid有值表示用户在线
             if (serverIds.get(idx++) != null) {
                 IMUserInfoModel userInfo = entry.getValue();
-                List<TerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getSenderId(), o -> new LinkedList<>());
+                List<TerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getUserId(), o -> new LinkedList<>());
                 terminals.add(userInfo.getTerminal());
             }
         }

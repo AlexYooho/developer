@@ -467,7 +467,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                 .sendNickName(sendNickName)
                 .messageContent(messageContent)
                 .sendTime(sendTime)
-                .friendUserId(friendId)
+                .targetIds(Collections.singletonList(friendId))
                 .build();
     }
 
@@ -485,7 +485,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                         .sendId(sendId)
                         .sendNickName(sendNickName)
                         .messageContent(messageContent)
-                        .receiverIds(receiverIds)
+                        .targetIds(receiverIds)
                         .atUserIds(atUserIds)
                         .messageStatus(messageStatus)
                         .terminalType(terminalType)

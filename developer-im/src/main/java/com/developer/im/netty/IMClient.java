@@ -2,7 +2,7 @@ package com.developer.im.netty;
 
 import com.developer.framework.enums.common.TerminalTypeEnum;
 import com.developer.framework.model.DeveloperResult;
-import com.developer.im.dto.PushMessageBodyDTO;
+import com.developer.im.dto.ChatMessageBodyDTO;
 import com.developer.im.enums.IMCmdType;
 import com.developer.im.model.IMChatMessageBaseModel;
 import com.developer.im.processor.IMProcessor;
@@ -65,8 +65,8 @@ public class IMClient {
         return processors.sendGroupMessage(message);
     }
 
-    public<T> DeveloperResult<Boolean> pushMessage(PushMessageBodyDTO message){
-        return processors.pushMessage(message);
+    public<T> DeveloperResult<Boolean> sendChatMessage(ChatMessageBodyDTO message){
+        return processors.sendChatMessage(message);
     }
 }
 

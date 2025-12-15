@@ -26,7 +26,7 @@ public class ProcessorFactory {
                 handler = SpringContext.getApplicationContext().getBean(GroupMessageProcessor.class);
                 break;
             case CHAT_MESSAGE:
-                handler = SpringContext.getApplicationContext().getBean(IMChatMessageProcessor.class);
+                handler = SpringContext.getApplicationContext().getBean(ChatMessageProcessor.class);
                 break;
             default:
                 break;

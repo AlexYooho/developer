@@ -393,7 +393,7 @@ public class FriendServiceImpl implements FriendService {
                         .sendId(sendId)
                         .sendNickName(sendNickName)
                         .messageContent(messageContent)
-                        .receiverIds(receiverIds)
+                        .targetIds(receiverIds)
                         .atUserIds(atUserIds)
                         .messageStatus(messageStatus)
                         .terminalType(terminalType)

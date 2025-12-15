@@ -460,7 +460,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
                 .sendId(sendId)
                 .sendNickName(sendNickName)
                 .messageContent(messageContent)
-                .receiverIds(receiverIds)
+                .targetIds(receiverIds)
                 .atUserIds(atUserIds)
                 .messageStatus(messageStatus)
                 .terminalType(terminalType)
