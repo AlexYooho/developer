@@ -45,10 +45,12 @@ public class MessageRouteAspect {
         // 转发的节点信息 格式 Map<URL,[user1,user2,user3]>
         Map<String, List<Long>> transpondMap = new HashMap<>();
         List<Long> removeList = new ArrayList<>();
+        Set<Long> forwardSet = new HashSet<>(); // 需要转发的用户（去重）
 
         // 遍历接收消息的目标对象
         for (Long targetId : chatMessageDTO.getTargetIds()) {
             int existTerminalCnt = 0;
+            boolean needForward = false;
             String key = RedisKeyConstant.USER_MAP_SERVER_INFO_KEY(targetId);
             // 遍历当前接收对象的不同终端
             for (Integer terminal : TerminalTypeEnum.codes()) {
@@ -67,45 +69,38 @@ public class MessageRouteAspect {
                     continue;
                 }
 
-                existTerminalCnt++;
+                // 是其他节点 → 需要转发
+                needForward = true;
 
-                // 记录需要做路由转发的信息
-                if (!transpondMap.containsKey(targetUrl)) {
-                    transpondMap.put(targetUrl, Collections.singletonList(targetId));
-                    continue;
-                }
-
-                List<Long> ids = transpondMap.get(targetUrl);
-                if (ids.contains(targetId)) {
-                    continue;
-                }
-                ids.add(targetId);
+                // 记录转发目标
+                transpondMap.computeIfAbsent(targetUrl, k -> new ArrayList<>()).add(targetId);
             }
 
-            // 记录用户任何terminal都不在此server上的targetId
-            if (existTerminalCnt >= 0) {
-                removeList.add(targetId);
+            // 如果需要转发 → 从本地列表移除（由其他节点推送）
+            if (needForward) {
+                forwardSet.add(targetId);
             }
         }
 
-        chatMessageDTO.getTargetIds().removeAll(removeList);
+        // 移除需要转发的用户（本地不推）
+        chatMessageDTO.getTargetIds().removeAll(forwardSet);
 
-        if (CollUtil.isEmpty(chatMessageDTO.getTargetIds())) {
+        // 如果本地没人收 → 直接返回（避免 proceed 空推）
+        if (CollUtil.isEmpty(chatMessageDTO.getTargetIds()) && MapUtil.isEmpty(transpondMap)) {
             return null;
         }
 
-        if (MapUtil.isEmpty(transpondMap)) {
-            return joinPoint.proceed();
-        }
-
         // 调用目标服务端
-        for (Map.Entry<String, List<Long>> entry : transpondMap.entrySet()) {
-            String targetUrl = entry.getKey();
-            // 远程调用目标server,可以通过Dubbo、feign都可以
-            IMRpcService instance = RpcUtil.getInstance(IMRpcService.class, targetUrl);
-            chatMessageDTO.setTargetIds(entry.getValue());
-            dto.setData(chatMessageDTO);
-            instance.pushTargetWSNode(dto);
+        if(MapUtil.isNotEmpty(transpondMap)) {
+            for (Map.Entry<String, List<Long>> entry : transpondMap.entrySet()) {
+                String targetUrl = entry.getKey();
+                List<Long> ids = entry.getValue();
+                // 远程调用目标server,可以通过Dubbo、feign都可以
+                IMRpcService instance = RpcUtil.getInstance(IMRpcService.class, targetUrl);
+                chatMessageDTO.setTargetIds(ids);
+                dto.setData(chatMessageDTO);
+                instance.pushTargetWSNode(dto);
+            }
         }
 
         return joinPoint.proceed();
