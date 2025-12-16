@@ -5,7 +5,7 @@
     <resultMap id="BaseResultMap" type="com.developer.message.pojo.GroupMessagePO"/>
 
     <sql id="Base_Column_list">
-        id, group_id, msg_seq, sender_id, sender_nick, sender_role, `type`, content, reference_id, at_user_ids, status, deleted, like_count, read_count, send_time, create_time, update_time
+        id, group_id, msg_seq, sender_id, sender_nick, sender_role, content_type, content, reference_id, at_user_ids, status, deleted, like_count, read_count, send_time, create_time, update_time
     </sql>
 
     <select id="findMessageList" resultMap="BaseResultMap">

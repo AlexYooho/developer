@@ -134,10 +134,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         }
 
         // 好友关系校验
-        DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getTargetId());
-        if (!friend.getIsSuccessful() || !friend.getData()) {
-            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "您还不是对方的好友");
-        }
+//        DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getTargetId());
+//        if (!friend.getIsSuccessful() || !friend.getData()) {
+//            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "您还不是对方的好友");
+//        }
 
         // 发送者、接收者id
         Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());
@@ -150,7 +150,6 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessage.setSendId(userId);
         privateMessage.setReceiverId(req.getTargetId());
         privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA, uidB));
-        privateMessage.setClientMsgId(req.getClientMsgId());
         privateMessage.setMessageContent(req.getMessageContent());
         privateMessage.setMessageContentType(req.getMessageContentType());
         privateMessage.setMessageStatus(MessageStatusEnum.UNSEND);
@@ -325,7 +324,6 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessage.setSendId(dto.getSendId());
         privateMessage.setReceiverId(dto.getReceiverId());
         privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA, uidB));
-        privateMessage.setClientMsgId("");
         privateMessage.setMessageContent(dto.getMessageContent());
         privateMessage.setMessageContentType(dto.getMessageContentType());
         privateMessage.setMessageStatus(MessageStatusEnum.UNSEND);
@@ -507,7 +505,6 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessage.setSendId(SelfUserInfoContext.selfUserInfo().getUserId());
         privateMessage.setReceiverId(receiverId);
         privateMessage.setConvSeq(getCurrentConversationNextConvSeq(uidA, uidB));
-        privateMessage.setClientMsgId("");
         privateMessage.setMessageContent("我们已经是好友啦");
         privateMessage.setMessageContentType(MessageContentTypeEnum.TEXT);
         privateMessage.setMessageStatus(MessageStatusEnum.UNSEND);

@@ -5,7 +5,7 @@
     <resultMap id="BaseResultMap" type="com.developer.message.pojo.GroupMessageDeletePO"/>
 
     <sql id="Base_Column_list">
-        id, group_id, msg_seq, msg_id, user_id, delete_time
+        id, group_id, msg_id, msg_seq, user_id, delete_time, create_time, update_time
     </sql>
 
     <select id="findMessages" resultMap="BaseResultMap">

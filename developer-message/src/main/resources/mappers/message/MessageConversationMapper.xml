@@ -5,7 +5,7 @@
     <resultMap id="BaseResultMap" type="com.developer.message.pojo.MessageConversationPO"/>
 
     <sql id="Base_Column_list">
-        id, user_id, conv_type, target_id, last_msg_seq, last_msg_id, last_msg_content, last_msg_type, last_msg_time, unread_count, pinned, muted, deleted, draft, extra, create_time, updated_time
+        id, user_id, conv_type, target_id, last_msg_seq, last_msg_id, last_msg_content, last_msg_type, last_msg_time, unread_count, pinned, muted, deleted, draft, extra, create_time, update_time
     </sql>
 
     <select id="findList" resultMap="BaseResultMap">

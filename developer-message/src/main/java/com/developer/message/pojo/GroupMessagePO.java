@@ -52,7 +52,7 @@ public class GroupMessagePO {
     /**
      * 消息类型 0:文字 1:图片 2:文件
      */
-    @TableField("type")
+    @TableField("content_type")
     private Integer messageContentType;
 
     /**

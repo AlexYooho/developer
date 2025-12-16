@@ -23,23 +23,12 @@ public class MessageConversationPO {
 
     /*
     会话类型
-    0:私聊
-    1:群聊
-    2:系统通知（官方消息）
-    3:客服会话
-    4:机器人
-    5:公众号/订阅号
-    6:特殊会话（如语音助手）
      */
     @TableField("conv_type")
     private MessageConversationTypeEnum convType;  // 0私聊 1群聊 ...
 
     /*
     会话目标
-    conv_type=0（私聊） → 对方用户ID
-    conv_type=1（群聊） → 群ID
-    conv_type=2（系统通知） → 系统账号ID 或 0
-    conv_type=3（客服） → 客服会话ID 或 店铺ID
      */
     @TableField("target_id")
     private Long targetId;

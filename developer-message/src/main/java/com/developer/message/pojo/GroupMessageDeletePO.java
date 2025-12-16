@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("group_message")
+@TableName("group_message_delete")
 public class GroupMessageDeletePO {
     /*
     id

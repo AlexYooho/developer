@@ -50,12 +50,6 @@ public class PrivateMessagePO {
     @TableField("conv_seq")
     private Long convSeq;
 
-    /*
-    客户端生成的 ID，用于幂等
-     */
-    @TableField("client_msg_id")
-    private String clientMsgId;
-
     /**
      * 发送内容
      */
@@ -65,7 +59,7 @@ public class PrivateMessagePO {
     /**
      * 消息类型 0:文字 1:图片 2:文件 3:红包 4:转账
      */
-    @TableField("type")
+    @TableField("content_type")
     private MessageContentTypeEnum messageContentType;
 
     /**
