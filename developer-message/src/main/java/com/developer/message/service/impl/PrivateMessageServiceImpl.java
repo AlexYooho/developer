@@ -134,10 +134,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         }
 
         // 好友关系校验
-//        DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getTargetId());
-//        if (!friend.getIsSuccessful() || !friend.getData()) {
-//            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "您还不是对方的好友");
-//        }
+        DeveloperResult<Boolean> friend = friendService.isFriend(userId, req.getTargetId());
+        if (!friend.getIsSuccessful() || !friend.getData()) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "您还不是对方的好友");
+        }
 
         // 发送者、接收者id
         Long uidA = Math.min(SelfUserInfoContext.selfUserInfo().getUserId(), req.getTargetId());

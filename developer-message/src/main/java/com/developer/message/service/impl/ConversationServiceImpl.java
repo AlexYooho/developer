@@ -154,7 +154,7 @@ public class ConversationServiceImpl implements ConversationService {
         // 更新缓存
         String key = RedisKeyConstant.CONVERSATION_LIST_KEY(SelfUserInfoContext.selfUserInfo().getUserId());
         redisUtil.delete(key);
-        //findChatConversationList();
+        findChatConversationList();
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }

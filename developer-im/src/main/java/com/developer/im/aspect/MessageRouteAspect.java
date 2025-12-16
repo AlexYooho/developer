@@ -32,32 +32,34 @@ public class MessageRouteAspect {
 
     @Around("@annotation(com.developer.im.annotations.MessageRouterAspect)")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
-
+        // 解析参数
         Object[] args = joinPoint.getArgs();
         RabbitMQMessageBodyDTO dto = (RabbitMQMessageBodyDTO) args[0];
         ChatMessageDTO chatMessageDTO = dto.parseData(ChatMessageDTO.class);
 
+        // 获取当前服务器的地址信息
         String localIPv4 = IPUtils.getLocalIPv4();
         String localPort = Optional.ofNullable(environment.getProperty("dubbo.protocol.port")).orElse("20880");
         String localUrl = localIPv4.concat(":").concat(localPort);
 
-        /** 格式 Map<URL,[user1,user2,user3]></>*/
+        // 转发的节点信息 格式 Map<URL,[user1,user2,user3]>
         Map<String, List<Long>> transpondMap = new HashMap<>();
         List<Long> removeList = new ArrayList<>();
 
-
-        List<Integer> terminals = TerminalTypeEnum.codes();
-        List<Long> receiverIds = chatMessageDTO.getTargetIds();
-        for (Long receiverId : receiverIds) {
+        // 遍历接收消息的目标对象
+        for (Long targetId : chatMessageDTO.getTargetIds()) {
             int existTerminalCnt = 0;
-            for (Integer terminal : terminals) {
-                String key = RedisKeyConstant.USER_MAP_SERVER_INFO_KEY(receiverId);
+            String key = RedisKeyConstant.USER_MAP_SERVER_INFO_KEY(targetId);
+            // 遍历当前接收对象的不同终端
+            for (Integer terminal : TerminalTypeEnum.codes()) {
+                // 判断当前接收对象的当前终端是否在线
                 Object serverUrl = redisUtil.hGet(key, terminal.toString());
                 if (ObjectUtil.isEmpty(serverUrl)) {
+                    // 不在线则不需要处理
                     continue;
                 }
 
-                // 目标节点
+                // 在线-目标节点
                 String targetUrl = Optional.ofNullable(serverUrl).orElse("").toString();
 
                 // 当前节点不处理
@@ -67,21 +69,22 @@ public class MessageRouteAspect {
 
                 existTerminalCnt++;
 
+                // 记录需要做路由转发的信息
                 if (!transpondMap.containsKey(targetUrl)) {
-                    transpondMap.put(targetUrl, Collections.singletonList(receiverId));
+                    transpondMap.put(targetUrl, Collections.singletonList(targetId));
                     continue;
                 }
 
                 List<Long> ids = transpondMap.get(targetUrl);
-                if (ids.contains(receiverId)) {
+                if (ids.contains(targetId)) {
                     continue;
                 }
-                ids.add(receiverId);
+                ids.add(targetId);
             }
 
-            // 记录用户任何terminal都不在此server上的receiverId
+            // 记录用户任何terminal都不在此server上的targetId
             if (existTerminalCnt >= 0) {
-                removeList.add(receiverId);
+                removeList.add(targetId);
             }
         }
 

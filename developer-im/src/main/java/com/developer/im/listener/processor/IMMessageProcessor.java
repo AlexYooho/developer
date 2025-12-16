@@ -27,7 +27,7 @@ public class IMMessageProcessor implements IMessageProcessor {
     }
 
     @Override
-    //@MessageRouterAspect
+    @MessageRouterAspect
     public DeveloperResult<Boolean> processor(RabbitMQMessageBodyDTO dto) {
         // 数据转换
         ChatMessageDTO chatMessageDTO = dto.parseData(ChatMessageDTO.class);
