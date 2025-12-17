@@ -51,12 +51,9 @@ public class FriendServiceImpl implements FriendService {
         // (Step 2 covers this)
 
         // 4、若一级本地缓存和二级redis缓存都没查询到好友关系，则远程调用好友服务的rpc接口判断是否存在好友关系
-        DeveloperResult<List<FriendInfoResponseRpcDTO>> rpcResult = RpcExecutor
-                .execute(() -> rpcClient.friendRpcService.findFriends());
+        DeveloperResult<List<FriendInfoResponseRpcDTO>> rpcResult = RpcExecutor.execute(() -> rpcClient.friendRpcService.findFriends());
         if (rpcResult.getIsSuccessful() && CollUtil.isNotEmpty(rpcResult.getData())) {
-            friendIds = rpcResult.getData().stream()
-                    .map(FriendInfoResponseRpcDTO::getId)
-                    .collect(Collectors.toList());
+            friendIds = rpcResult.getData().stream().map(FriendInfoResponseRpcDTO::getId).collect(Collectors.toList());
 
             // 5、查询到好友关系后再更新一二级缓存，并返回结果
             localCache.put(userId, friendIds);
