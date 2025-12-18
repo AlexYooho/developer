@@ -1,6 +1,7 @@
 package com.developer.framework.enums.message;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -12,6 +13,7 @@ public enum MessageStatusEnum {
     READED(3,"已读");
 
     @EnumValue
+    @JsonValue
     private final Integer code;
 
     private final String desc;

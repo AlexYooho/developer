@@ -1,6 +1,7 @@
 package com.developer.framework.enums.friend;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 /**
@@ -14,6 +15,7 @@ public enum AddFriendStatusEnum {
     REJECTED(3,"已拒绝");
 
     @EnumValue
+    @JsonValue
     private final Integer code;
 
     private final String desc;

@@ -40,7 +40,7 @@ public class IMProcessor {
                 // 判断用户终端是否在线
                 IMUserInfoModel targetUserInfo = new IMUserInfoModel(targetId,TerminalTypeEnum.fromCode(terminal),"");
                 dto.getBodyItem().setTargetUserInfo(targetUserInfo);
-                String terminalOnlineKey = String.join(":",RedisKeyConstant.IM_USER_SERVER_ID,targetUserInfo.getUserId().toString(),targetUserInfo.getTerminal().toString());
+                String terminalOnlineKey = String.join(":",RedisKeyConstant.IM_USER_SERVER_ID,targetUserInfo.getUserId().toString(),targetUserInfo.getTerminal().code().toString());
                 Object serverId = redisUtil.get(terminalOnlineKey,Object.class);
                 if(ObjectUtil.isEmpty(serverId)){
                     // 不在线则不需要发送

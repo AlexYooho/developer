@@ -56,6 +56,12 @@ public class ChatMessageDTO implements Serializable {
     @JsonProperty("message_id")
     private Long messageId;
 
+    /*
+        消息seq
+         */
+    @JsonProperty("conv_seq")
+    private Long convSeq;
+
     /**
      * 发送者id
      */

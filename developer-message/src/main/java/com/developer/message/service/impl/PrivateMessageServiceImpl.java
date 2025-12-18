@@ -177,7 +177,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         // 发送消息--会话类型、消息内容类型、消息内容、目标对象、发送者信息、发送终端类型、发送时间
         ChatMessageDTO chatMessageDTO = builderMQMessageDTO(req.getMessageMainType(), req.getMessageContentType(),
                 privateMessage.getMessageStatus(), req.getTerminalType(), privateMessage.getId(), userId,nickName,
-                req.getMessageContent(), privateMessage.getSendTime(), req.getTargetId());
+                req.getMessageContent(), privateMessage.getSendTime(), req.getTargetId(),privateMessage.getConvSeq());
         rabbitMQUtil.sendChatMessage(chatMessageDTO);
 
         // 更新当前聊天会话maxSeq
@@ -232,7 +232,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         // 通知消息发送者已读
         ChatMessageDTO chatMessageDTO = builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
                 MessageStatusEnum.READED, TerminalTypeEnum.WEB, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(),
-                "", new Date(), req.getTargetId());
+                "", new Date(), req.getTargetId(),0L);
         rabbitMQUtil.sendChatMessage(chatMessageDTO);
 
         // 修改消息状态为已读状态
@@ -277,7 +277,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         // 通知撤回
         ChatMessageDTO chatMessageDTO = builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
                 MessageStatusEnum.RECALL, TerminalTypeEnum.WEB, privateMessage.getId(), SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(),
-                "对方撤回了一条消息", new Date(), req.getTargetId());
+                "对方撤回了一条消息", new Date(), req.getTargetId(),0L);
         rabbitMQUtil.sendChatMessage(chatMessageDTO);
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
@@ -466,7 +466,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         // 推送im消息
         ChatMessageDTO chatMessageDTO = builderMQMessageDTO(MessageConversationTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT,
                 MessageStatusEnum.UNSEND, TerminalTypeEnum.WEB, privateMessage.getId(), SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(),
-                privateMessage.getMessageContent(), new Date(), receiverId);
+                privateMessage.getMessageContent(), new Date(), receiverId, privateMessage.getConvSeq());
         rabbitMQUtil.sendChatMessage(chatMessageDTO);
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
@@ -479,7 +479,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     public DeveloperResult<Boolean> friendApplyRejectMessage(Long receiverId, String rejectReason) {
         ChatMessageDTO chatMessageDTO = builderMQMessageDTO(MessageConversationTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT,
                 MessageStatusEnum.UNSEND, TerminalTypeEnum.WEB, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(),
-                rejectReason, new Date(), receiverId);
+                rejectReason, new Date(), receiverId,0L);
         rabbitMQUtil.sendChatMessage(chatMessageDTO);
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
@@ -496,7 +496,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                     .concat(groupAvatar);
             ChatMessageDTO chatMessageDTO = builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.GROUP_INVITE,
                     MessageStatusEnum.UNSEND, TerminalTypeEnum.WEB, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(),
-                    content, new Date(), memberId);
+                    content, new Date(), memberId,0L);
             rabbitMQUtil.sendChatMessage(chatMessageDTO);
         }
 
@@ -524,7 +524,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     private ChatMessageDTO builderMQMessageDTO(MessageConversationTypeEnum messageConversationTypeEnum,
                                                MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
                                                TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
-                                               String messageContent, Date sendTime, Long friendId) {
+                                               String messageContent, Date sendTime, Long friendId,Long convSeq) {
         return ChatMessageDTO
                 .builder()
                 .serialNo(SerialNoHolder.getSerialNo())
@@ -533,6 +533,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
                 .messageStatus(messageStatus)
                 .terminalType(terminalType)
                 .messageId(messageId)
+                .convSeq(convSeq)
                 .sendId(sendId)
                 .sendNickName(sendNickName)
                 .messageContent(messageContent)

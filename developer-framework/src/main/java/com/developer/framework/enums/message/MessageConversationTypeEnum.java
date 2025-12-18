@@ -1,6 +1,7 @@
 package com.developer.framework.enums.message;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -17,6 +18,7 @@ public enum MessageConversationTypeEnum {
     CHAT_MESSAGE(4,"聊天消息"),;
 
     @EnumValue
+    @JsonValue
     private final Integer code;
 
     private final String desc;

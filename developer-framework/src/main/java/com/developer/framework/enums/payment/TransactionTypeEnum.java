@@ -1,6 +1,7 @@
 package com.developer.framework.enums.payment;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -15,6 +16,7 @@ public enum TransactionTypeEnum {
     RED_PACKET(3,"红包");
 
     @EnumValue
+    @JsonValue
     private final Integer code;
 
     private final String desc;

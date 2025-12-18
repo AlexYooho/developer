@@ -46,8 +46,14 @@ public class ChatMessageBodyDTO {
         @JsonProperty("sender")
         private IMUserInfoModel sender;
 
+        /*
+         * 目标用户信息
+         */
+        @JsonProperty("target_user_info")
+        private IMUserInfoModel targetUserInfo;
+
         /**
-         * 消息主类型
+         * 会话类型
          */
         @JsonProperty("message_main_type")
         private MessageConversationTypeEnum messageConversationTypeEnum;
@@ -63,6 +69,12 @@ public class ChatMessageBodyDTO {
          */
         @JsonProperty("message_id")
         private Long messageId;
+
+        /*
+        消息seq
+         */
+        @JsonProperty("conv_seq")
+        private Long convSeq;
 
         /**
          * 消息内容
@@ -88,10 +100,5 @@ public class ChatMessageBodyDTO {
         @JsonProperty("group_id")
         private Long groupId;
 
-        /*
-         * 目标用户信息
-         */
-        @JsonProperty("target_user_info")
-        private IMUserInfoModel targetUserInfo;
     }
 }

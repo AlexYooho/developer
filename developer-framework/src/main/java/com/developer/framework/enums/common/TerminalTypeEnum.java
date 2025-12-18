@@ -1,6 +1,7 @@
 package com.developer.framework.enums.common;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 import java.util.Arrays;
@@ -15,6 +16,7 @@ public enum TerminalTypeEnum {
     IOS(2,"ios");
 
     @EnumValue
+    @JsonValue
     private Integer code;
 
     private String desc;

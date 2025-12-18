@@ -40,7 +40,7 @@ public class ChatMessageService extends AbstractMessageTypeService {
         ChatMessageBodyDTO message = new ChatMessageBodyDTO();
         message.setTargetIds(chatMessageDTO.getTargetIds());
         // 私聊还是群聊,根据会话类型来判断
-        message.setCmd(chatMessageDTO.getMessageConversationTypeEnum().equals(MessageConversationTypeEnum.PRIVATE_MESSAGE) ? IMCmdType.PRIVATE_MESSAGE : IMCmdType.GROUP_MESSAGE);
+        message.setCmd(IMCmdType.CHAT_MESSAGE);
 
         ChatMessageBodyDTO.ChatMessageBodyItemDTO itemDTO = new ChatMessageBodyDTO.ChatMessageBodyItemDTO();
         itemDTO.setSerialNo(chatMessageDTO.getSerialNo());
@@ -52,6 +52,7 @@ public class ChatMessageService extends AbstractMessageTypeService {
         itemDTO.setSendTime(chatMessageDTO.getSendTime());
         itemDTO.setAtUserIds(chatMessageDTO.getAtUserIds());
         itemDTO.setGroupId(chatMessageDTO.getGroupId());
+        itemDTO.setConvSeq(chatMessageDTO.getConvSeq());
 
         message.setBodyItem(itemDTO);
 

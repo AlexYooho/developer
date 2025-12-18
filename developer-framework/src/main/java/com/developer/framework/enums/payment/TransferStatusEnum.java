@@ -1,6 +1,7 @@
 package com.developer.framework.enums.payment;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -14,6 +15,7 @@ public enum TransferStatusEnum {
     REFUND(3,"退回");
 
     @EnumValue
+    @JsonValue
     private final Integer code;
 
     private final String desc;

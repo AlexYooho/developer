@@ -1,6 +1,7 @@
 package com.developer.framework.enums.common;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -19,6 +20,7 @@ public enum ProcessorTypeEnum {
     TRANSACTION_MESSAGE_SEND_CHECK(5,"交易消息发送检测");
 
     @EnumValue
+    @JsonValue
     private final Integer code;
 
     private final String desc;

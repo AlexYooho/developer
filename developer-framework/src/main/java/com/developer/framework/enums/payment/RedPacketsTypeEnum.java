@@ -1,6 +1,7 @@
 package com.developer.framework.enums.payment;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -11,6 +12,7 @@ public enum RedPacketsTypeEnum {
     LUCKY(1,"拼手气红包");
 
     @EnumValue
+    @JsonValue
     private final Integer code;
 
     private final String desc;

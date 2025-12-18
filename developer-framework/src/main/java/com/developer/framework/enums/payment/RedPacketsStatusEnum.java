@@ -1,6 +1,7 @@
 package com.developer.framework.enums.payment;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -17,6 +18,7 @@ public enum RedPacketsStatusEnum {
     SEND_FAILURE(4,"发送失败");
 
     @EnumValue
+    @JsonValue
     private final Integer code;
 
     private final String desc;
