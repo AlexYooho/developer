@@ -197,6 +197,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      */
     private static UpsertConversationRequestDTO buildUpsertConversationRequestDTO(SendMessageRequestDTO req, PrivateMessagePO privateMessage) {
         UpsertConversationRequestDTO conversationRequestDTO = new UpsertConversationRequestDTO();
+        conversationRequestDTO.setConvType(MessageConversationTypeEnum.PRIVATE_MESSAGE);
         conversationRequestDTO.setTargetId(req.getTargetId());
         conversationRequestDTO.setLastMsgSeq(privateMessage.getConvSeq());
         conversationRequestDTO.setLastMsgId(privateMessage.getId());

@@ -94,6 +94,10 @@ public class RedisKeyConstant {
         return "developer:friend:list:user:".concat(userId.toString());
     }
 
+    public static String FRIENDS_KEY(Long userId,String module){
+        return "developer:module:".concat(module).concat("friend:list:user:").concat(userId.toString());
+    }
+
     // 会话列表key
     public static String CONVERSATION_LIST_KEY(Long userId) {
         return "developer:message:conversation:list:user:".concat(userId.toString());

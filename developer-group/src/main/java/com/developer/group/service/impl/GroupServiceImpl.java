@@ -1,5 +1,6 @@
 package com.developer.group.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.context.SelfUserInfoContext;
@@ -28,6 +29,7 @@ import com.developer.rpc.dto.user.response.UserInfoResponseRpcDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -394,7 +396,7 @@ public class GroupServiceImpl implements GroupService {
         List<Long> groupIds = joinGroupList.getData().stream().map(GroupMemberPO::getGroupId).collect(Collectors.toList());
 
         // 查询群信息
-        List<GroupInfoPO> groupInfoList = groupInfoRepository.findByGroupInfo(groupIds);
+        List<GroupInfoPO> groupInfoList = CollUtil.isNotEmpty(groupIds) ? groupInfoRepository.findByGroupInfo(groupIds) : new ArrayList<>();
 
         // 群信息聚合
         List<SelfJoinGroupInfoDTO> aggregatorData = joinGroupList.getData().stream().map(x -> {

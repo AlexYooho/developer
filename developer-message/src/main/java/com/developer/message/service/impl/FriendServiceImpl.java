@@ -38,7 +38,7 @@ public class FriendServiceImpl implements FriendService {
         }
 
         // 2、一级本地缓存没查询到则查询二级redis缓存，判断是否存在好友关系
-        String redisKey = RedisKeyConstant.FRIENDS_KEY(userId);
+        String redisKey = RedisKeyConstant.FRIENDS_KEY(userId,"message");
         friendIds = redisUtil.get(redisKey, new TypeReference<List<Long>>() {
         });
         if (CollUtil.isNotEmpty(friendIds)) {
@@ -57,7 +57,7 @@ public class FriendServiceImpl implements FriendService {
 
             // 5、查询到好友关系后再更新一二级缓存，并返回结果
             localCache.put(userId, friendIds);
-            redisUtil.set(redisKey, friendIds, 10, TimeUnit.MINUTES); // Redis缓存10分钟
+            redisUtil.set(redisKey, friendIds, 10, TimeUnit.SECONDS); // Redis缓存10分钟
 
             return DeveloperResult.success(SerialNoHolder.getSerialNo(), friendIds.contains(friendId));
         }
