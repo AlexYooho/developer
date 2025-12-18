@@ -31,7 +31,6 @@ public class IMMessageProcessor implements IMessageProcessor {
     public DeveloperResult<Boolean> processor(RabbitMQMessageBodyDTO dto) {
         // 数据转换
         ChatMessageDTO chatMessageDTO = dto.parseData(ChatMessageDTO.class);
-        chatMessageDTO.setSerialNo(dto.getSerialNo());
 
         // 会话类型
         MessageConversationTypeEnum messageConversationTypeEnum = getMessageConversationType(chatMessageDTO.getMessageConversationTypeEnum());

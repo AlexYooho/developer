@@ -78,9 +78,6 @@ create table private_message
     KEY `idx_send` (`send_id`,`send_time` DESC)
 ) comment '私聊消息';
 
-create index idx_send_recv_id
-    on private_message (send_id, recv_id);
-
 create table message_conversation
 (
     `id`                bigint          not null AUTO_INCREMENT comment '会话全局ID（可选，方便前端引用）',

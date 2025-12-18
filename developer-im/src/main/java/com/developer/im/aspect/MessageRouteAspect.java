@@ -44,7 +44,6 @@ public class MessageRouteAspect {
 
         // 转发的节点信息 格式 Map<URL,[user1,user2,user3]>
         Map<String, List<Long>> transpondMap = new HashMap<>();
-        List<Long> removeList = new ArrayList<>();
         Set<Long> forwardSet = new HashSet<>(); // 需要转发的用户（去重）
 
         // 遍历接收消息的目标对象

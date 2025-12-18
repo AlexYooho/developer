@@ -13,7 +13,6 @@ import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.message.MessageStatusEnum;
 import com.developer.framework.enums.common.TerminalTypeEnum;
-import com.developer.framework.enums.payment.PaymentChannelEnum;
 import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.utils.BeanUtils;
 import com.developer.framework.utils.RedisUtil;
@@ -27,7 +26,6 @@ import com.developer.message.service.FriendService;
 import com.developer.message.service.MessageLikeService;
 import com.developer.message.util.RabbitMQUtil;
 import com.developer.rpc.client.RpcClient;
-import com.developer.rpc.dto.payment.request.InvokeRedPacketsTransferRequestRpcDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -188,23 +186,15 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
+        dto.setSendId(SelfUserInfoContext.selfUserInfo().getUserId());
+        dto.setMessageContent(req.getMessageContent());
+        dto.setMessageContentType(req.getMessageContentType());
+        dto.setMessageStatus(privateMessage.getMessageStatus());
+        dto.setSendNickName(SelfUserInfoContext.selfUserInfo().getNickName());
+        dto.setSendTime(privateMessage.getSendTime());
+        dto.setReceiverId(req.getTargetId());
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo(), dto);
-    }
-
-    /*
-    新增修改会话参数DTO
-     */
-    private static UpsertConversationRequestDTO buildUpsertConversationRequestDTO(SendMessageRequestDTO req, PrivateMessagePO privateMessage) {
-        UpsertConversationRequestDTO conversationRequestDTO = new UpsertConversationRequestDTO();
-        conversationRequestDTO.setConvType(MessageConversationTypeEnum.PRIVATE_MESSAGE);
-        conversationRequestDTO.setTargetId(req.getTargetId());
-        conversationRequestDTO.setLastMsgSeq(privateMessage.getConvSeq());
-        conversationRequestDTO.setLastMsgId(privateMessage.getId());
-        conversationRequestDTO.setLastMsgContent(req.getMessageContent());
-        conversationRequestDTO.setLastMsgType(req.getMessageContentType());
-        conversationRequestDTO.setLastMsgTime(new Date());
-        return conversationRequestDTO;
     }
 
     /*
@@ -240,11 +230,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         }
 
         // 通知消息发送者已读
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
-                DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
-                        MessageStatusEnum.READED, TerminalTypeEnum.WEB, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(), "", new Date(),
-                        req.getTargetId()));
+        ChatMessageDTO chatMessageDTO = builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
+                MessageStatusEnum.READED, TerminalTypeEnum.WEB, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(),
+                "", new Date(), req.getTargetId());
+        rabbitMQUtil.sendChatMessage(chatMessageDTO);
 
         // 修改消息状态为已读状态
         privateMessageRepository.updateMessageStatus(messageList.stream().map(PrivateMessagePO::getId).collect(Collectors.toList()), MessageStatusEnum.READED);
@@ -286,11 +275,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessageRepository.updateMessageStatus(Collections.singletonList(privateMessage.getId()), MessageStatusEnum.RECALL);
 
         // 通知撤回
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
-                DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
-                        MessageStatusEnum.RECALL, TerminalTypeEnum.WEB, privateMessage.getId(), SelfUserInfoContext.selfUserInfo().getUserId(),
-                        SelfUserInfoContext.selfUserInfo().getNickName(), "对方撤回了一条消息", new Date(), privateMessage.getReceiverId()));
+        ChatMessageDTO chatMessageDTO = builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.TEXT,
+                MessageStatusEnum.RECALL, TerminalTypeEnum.WEB, privateMessage.getId(), SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(),
+                "对方撤回了一条消息", new Date(), req.getTargetId());
+        rabbitMQUtil.sendChatMessage(chatMessageDTO);
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
@@ -449,50 +437,6 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     }
 
     /*
-     * 构建mq消息dto
-     */
-    private ChatMessageDTO builderMQMessageDTO(MessageConversationTypeEnum messageConversationTypeEnum,
-                                               MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
-                                               TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
-                                               String messageContent, Date sendTime, Long friendId) {
-        return ChatMessageDTO
-                .builder()
-                .messageConversationTypeEnum(messageConversationTypeEnum)
-                .messageContentTypeEnum(messageContentTypeEnum)
-                .messageStatus(messageStatus)
-                .terminalType(terminalType)
-                .messageId(messageId)
-                .sendId(sendId)
-                .sendNickName(sendNickName)
-                .messageContent(messageContent)
-                .sendTime(sendTime)
-                .targetIds(Collections.singletonList(friendId))
-                .build();
-    }
-
-    private RabbitMQMessageBodyDTO builderMQMessageDTO(MessageConversationTypeEnum messageConversationTypeEnum,
-                                                       MessageContentTypeEnum messageContentTypeEnum, Long messageId, Long groupId, Long sendId,
-                                                       String sendNickName, String messageContent, List<Long> receiverIds, List<Long> atUserIds,
-                                                       MessageStatusEnum messageStatus, TerminalTypeEnum terminalType, Date sendTime) {
-        return RabbitMQMessageBodyDTO.builder()
-                .serialNo(UUID.randomUUID().toString())
-                .type(MQMessageTypeConstant.SENDMESSAGE)
-                .data(ChatMessageDTO.builder().messageConversationTypeEnum(messageConversationTypeEnum)
-                        .messageContentTypeEnum(messageContentTypeEnum)
-                        .messageId(messageId)
-                        .groupId(groupId)
-                        .sendId(sendId)
-                        .sendNickName(sendNickName)
-                        .messageContent(messageContent)
-                        .targetIds(receiverIds)
-                        .atUserIds(atUserIds)
-                        .messageStatus(messageStatus)
-                        .terminalType(terminalType)
-                        .sendTime(sendTime).build())
-                .build();
-    }
-
-    /*
      * 好友申请接受消息
      */
     @Override
@@ -520,13 +464,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         privateMessageRepository.save(privateMessage);
 
         // 推送im消息
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
-                DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(MessageConversationTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L,
-                        SelfUserInfoContext.selfUserInfo().getUserId(),
-                        SelfUserInfoContext.selfUserInfo().getNickName(), privateMessage.getMessageContent(),
-                        Collections.singletonList(receiverId), new ArrayList<>(), MessageStatusEnum.UNSEND,
-                        TerminalTypeEnum.WEB, new Date()));
+        ChatMessageDTO chatMessageDTO = builderMQMessageDTO(MessageConversationTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT,
+                MessageStatusEnum.UNSEND, TerminalTypeEnum.WEB, privateMessage.getId(), SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(),
+                privateMessage.getMessageContent(), new Date(), receiverId);
+        rabbitMQUtil.sendChatMessage(chatMessageDTO);
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
@@ -536,15 +477,10 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
      */
     @Override
     public DeveloperResult<Boolean> friendApplyRejectMessage(Long receiverId, String rejectReason) {
-
-        rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(), DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
-                DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY, ProcessorTypeEnum.IM,
-                builderMQMessageDTO(MessageConversationTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT, 0L, 0L,
-                        SelfUserInfoContext.selfUserInfo().getUserId(),
-                        SelfUserInfoContext.selfUserInfo().getNickName(), rejectReason,
-                        Collections.singletonList(receiverId), new ArrayList<>(), MessageStatusEnum.UNSEND,
-                        TerminalTypeEnum.WEB, new Date()));
-
+        ChatMessageDTO chatMessageDTO = builderMQMessageDTO(MessageConversationTypeEnum.SYSTEM_MESSAGE, MessageContentTypeEnum.TEXT,
+                MessageStatusEnum.UNSEND, TerminalTypeEnum.WEB, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(),
+                rejectReason, new Date(), receiverId);
+        rabbitMQUtil.sendChatMessage(chatMessageDTO);
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
 
@@ -558,25 +494,51 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         for (Long memberId : memberIds) {
             String content = "邀请你加入群聊,".concat(inviterName).concat("邀请你加入群聊").concat(groupName).concat("进入可查看详情")
                     .concat(groupAvatar);
-            rabbitMQUtil.sendMessage(SerialNoHolder.getSerialNo(),
-                    DeveloperMQConstant.MESSAGE_IM_EXCHANGE,
-                    DeveloperMQConstant.MESSAGE_IM_ROUTING_KEY,
-                    ProcessorTypeEnum.IM,
-                    builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE,
-                            MessageContentTypeEnum.GROUP_INVITE,
-                            0L,
-                            0L,
-                            SelfUserInfoContext.selfUserInfo().getUserId(),
-                            SelfUserInfoContext.selfUserInfo().getNickName(),
-                            content,
-                            Collections.singletonList(memberId),
-                            new ArrayList<>(),
-                            MessageStatusEnum.UNSEND,
-                            TerminalTypeEnum.WEB,
-                            new Date()));
+            ChatMessageDTO chatMessageDTO = builderMQMessageDTO(MessageConversationTypeEnum.PRIVATE_MESSAGE, MessageContentTypeEnum.GROUP_INVITE,
+                    MessageStatusEnum.UNSEND, TerminalTypeEnum.WEB, 0L, SelfUserInfoContext.selfUserInfo().getUserId(), SelfUserInfoContext.selfUserInfo().getNickName(),
+                    content, new Date(), memberId);
+            rabbitMQUtil.sendChatMessage(chatMessageDTO);
         }
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
+    }
+
+    /*
+    新增修改会话参数DTO
+     */
+    private static UpsertConversationRequestDTO buildUpsertConversationRequestDTO(SendMessageRequestDTO req, PrivateMessagePO privateMessage) {
+        UpsertConversationRequestDTO conversationRequestDTO = new UpsertConversationRequestDTO();
+        conversationRequestDTO.setConvType(MessageConversationTypeEnum.PRIVATE_MESSAGE);
+        conversationRequestDTO.setTargetId(req.getTargetId());
+        conversationRequestDTO.setLastMsgSeq(privateMessage.getConvSeq());
+        conversationRequestDTO.setLastMsgId(privateMessage.getId());
+        conversationRequestDTO.setLastMsgContent(req.getMessageContent());
+        conversationRequestDTO.setLastMsgType(req.getMessageContentType());
+        conversationRequestDTO.setLastMsgTime(new Date());
+        return conversationRequestDTO;
+    }
+
+    /*
+     * 构建mq消息dto
+     */
+    private ChatMessageDTO builderMQMessageDTO(MessageConversationTypeEnum messageConversationTypeEnum,
+                                               MessageContentTypeEnum messageContentTypeEnum, MessageStatusEnum messageStatus,
+                                               TerminalTypeEnum terminalType, Long messageId, Long sendId, String sendNickName,
+                                               String messageContent, Date sendTime, Long friendId) {
+        return ChatMessageDTO
+                .builder()
+                .serialNo(SerialNoHolder.getSerialNo())
+                .messageConversationTypeEnum(messageConversationTypeEnum)
+                .messageContentTypeEnum(messageContentTypeEnum)
+                .messageStatus(messageStatus)
+                .terminalType(terminalType)
+                .messageId(messageId)
+                .sendId(sendId)
+                .sendNickName(sendNickName)
+                .messageContent(messageContent)
+                .sendTime(sendTime)
+                .targetIds(Collections.singletonList(friendId))
+                .build();
     }
 
     private long getCurrentConversationNextConvSeq(Long uidA, Long uidB) {
