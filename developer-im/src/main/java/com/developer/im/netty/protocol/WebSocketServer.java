@@ -49,49 +49,49 @@ public class WebSocketServer implements IMServer {
         boosGroup = new NioEventLoopGroup();
         workGroup = new NioEventLoopGroup();
 
-        bootstrap.group(boosGroup,workGroup)
+        bootstrap.group(boosGroup, workGroup)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel channel) throws Exception {
                         ChannelPipeline pipeline = channel.pipeline();
-                        pipeline.addLast(new IdleStateHandler(300,0,0, TimeUnit.SECONDS));
+                        pipeline.addLast(new IdleStateHandler(300, 0, 0, TimeUnit.SECONDS));
                         pipeline.addLast("http-codec", new HttpServerCodec());
                         pipeline.addLast("aggregator", new HttpObjectAggregator(65535));
                         pipeline.addLast("http-chunked", new ChunkedWriteHandler());
                         pipeline.addLast(new WebSocketServerProtocolHandler("/im"));
-                        pipeline.addLast("encode",new WSEncoder());
-                        pipeline.addLast("decode",new WSDecoder());
+                        pipeline.addLast("encode", new WSEncoder());
+                        pipeline.addLast("decode", new WSDecoder());
                         pipeline.addLast("handler", new IMChannelHandler());
                     }
                 })
-                .option(ChannelOption.SO_BACKLOG,5)
-                .childOption(ChannelOption.SO_KEEPALIVE,true);
+                .option(ChannelOption.SO_BACKLOG, 5)
+                .childOption(ChannelOption.SO_KEEPALIVE, true);
 
         try {
             // 绑定端口，启动select线程，轮询监听channel事件，监听到事件之后就会交给从线程池处理
             Channel channel = bootstrap.bind(port).sync().channel();
             // 就绪标志
             this.ready = true;
-            log.info("websocket server 初始化完成,端口：{}",port);
+            log.info("websocket server 初始化完成,端口：{}", port);
             // 等待服务端口关闭
-            channel.closeFuture().sync();
+            // channel.closeFuture().sync();
         } catch (InterruptedException e) {
-            log.info("websocket server 初始化异常",e);
+            log.info("websocket server 初始化异常", e);
         }
     }
 
     @Override
     public void stop() {
-        if(boosGroup!=null && !boosGroup.isShuttingDown() && !boosGroup.isShutdown()){
+        if (boosGroup != null && !boosGroup.isShuttingDown() && !boosGroup.isShutdown()) {
             boosGroup.shutdownGracefully();
         }
 
-        if(workGroup!=null && !workGroup.isShuttingDown() && !workGroup.isShutdown()){
+        if (workGroup != null && !workGroup.isShuttingDown() && !workGroup.isShutdown()) {
             workGroup.shutdownGracefully();
         }
 
-        this.ready=false;
+        this.ready = false;
         log.info("websocket 服务停止");
     }
 }

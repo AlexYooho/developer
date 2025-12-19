@@ -17,10 +17,10 @@ public class IMStartServer implements CommandLineRunner {
     /**
      * 服务id
      */
-    public static volatile long serverId=0;
+    public static volatile long serverId = 0;
 
     @Autowired
-    RedisTemplate<String,Object> redisTemplate;
+    RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     private List<IMServer> imServers;
@@ -29,17 +29,17 @@ public class IMStartServer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // 初始化SERVER_ID
         String key = RedisKeyConstant.IM_MAX_SERVER_ID;
-        serverId =  redisTemplate.opsForValue().increment(key,1);
+        serverId = redisTemplate.opsForValue().increment(key, 1);
         // 启动服务
-        for(IMServer imServer:imServers){
+        for (IMServer imServer : imServers) {
             imServer.start();
         }
     }
 
     @PreDestroy
-    public void destory(){
+    public void destroy() {
         // 停止服务
-        for(IMServer imServer:imServers){
+        for (IMServer imServer : imServers) {
             imServer.stop();
         }
     }

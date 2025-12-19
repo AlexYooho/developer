@@ -28,21 +28,23 @@ public class IMProcessor {
      * 发送聊天消息
      * 当前需要推送的客户端肯定是和当前server建立连接的
      * 其他的都在切面处理了
+     * 
      * @return
      * @param <T>
      */
-    public <T> DeveloperResult<Boolean> sendChatMessage(ChatMessageBodyDTO dto){
+    public <T> DeveloperResult<Boolean> sendChatMessage(ChatMessageBodyDTO dto) {
         DeveloperResult<Boolean> result = null;
         // 遍历需要接收消息的用户
         for (Long targetId : dto.getTargetIds()) {
             // 遍历用户终端
             for (Integer terminal : TerminalTypeEnum.codes()) {
                 // 判断用户终端是否在线
-                IMUserInfoModel targetUserInfo = new IMUserInfoModel(targetId,TerminalTypeEnum.fromCode(terminal),"");
+                IMUserInfoModel targetUserInfo = new IMUserInfoModel(targetId, TerminalTypeEnum.fromCode(terminal), "");
                 dto.getBodyItem().setTargetUserInfo(targetUserInfo);
-                String terminalOnlineKey = String.join(":",RedisKeyConstant.IM_USER_SERVER_ID,targetUserInfo.getUserId().toString(),targetUserInfo.getTerminal().code().toString());
-                Object serverId = redisUtil.get(terminalOnlineKey,Object.class);
-                if(ObjectUtil.isEmpty(serverId)){
+                String terminalOnlineKey = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID,
+                        targetUserInfo.getUserId().toString(), targetUserInfo.getTerminal().code().toString());
+                Object serverId = redisUtil.get(terminalOnlineKey, Object.class);
+                if (ObjectUtil.isEmpty(serverId)) {
                     // 不在线则不需要发送
                     continue;
                 }
@@ -63,7 +65,8 @@ public class IMProcessor {
         DeveloperResult<Boolean> result = null;
         for (Integer terminal : message.getReceiveTerminals()) {
             // 获取对方连接的channelId
-            String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, message.getReceiverId().toString(), terminal.toString());
+            String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, message.getReceiverId().toString(),
+                    terminal.toString());
             Integer serverId = (Integer) redisTemplate.opsForValue().get(key);
             if (serverId == null || serverId <= 0) {
                 continue;
@@ -74,7 +77,8 @@ public class IMProcessor {
             messageBody.setCmd(cmdType);
             messageBody.setSender(message.getSender());
             messageBody.setSendResult(message.getSendResult());
-            messageBody.setMessageReceiver(new IMUserInfoModel(message.getReceiverId(), TerminalTypeEnum.fromCode(terminal),""));
+            messageBody.setMessageReceiver(
+                    new IMUserInfoModel(message.getReceiverId(), TerminalTypeEnum.fromCode(terminal), ""));
             messageBody.setData(message);
             AbstractMessageProcessor processor = ProcessorFactory.getHandler(cmdType);
             result = processor.handler(messageBody);
@@ -95,21 +99,22 @@ public class IMProcessor {
         for (Integer terminal : message.getReceiveTerminals()) {
             message.getReceiverIds().forEach(id -> {
                 String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, id.toString(), terminal.toString());
-                sendMap.put(key, new IMUserInfoModel(id, TerminalTypeEnum.fromCode(terminal),""));
+                sendMap.put(key, new IMUserInfoModel(id, TerminalTypeEnum.fromCode(terminal), ""));
             });
         }
 
         // 批量拉取
-        List<Object> serverIds = redisTemplate.opsForValue().multiGet(sendMap.keySet());
+        List<String> keys = new ArrayList<>(sendMap.keySet());
+        List<Object> serverIds = redisTemplate.opsForValue().multiGet(keys);
         // 格式:map<服务器id,list<接收方>>
         Map<Integer, List<IMUserInfoModel>> serverMap = new HashMap<>();
         int idx = 0;
-        for (Map.Entry<String, IMUserInfoModel> entry : sendMap.entrySet()) {
+        for (String key : keys) {
             assert serverIds != null;
             Integer serverId = (Integer) serverIds.get(idx++);
             if (serverId != null) {
                 List<IMUserInfoModel> list = serverMap.computeIfAbsent(serverId, o -> new LinkedList<>());
-                list.add(entry.getValue());
+                list.add(sendMap.get(key));
             }
         }
         // 逐个server发送
@@ -142,18 +147,20 @@ public class IMProcessor {
         for (Long id : userIds) {
             for (Integer terminal : TerminalTypeEnum.codes()) {
                 String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, id.toString(), terminal.toString());
-                userMap.put(key, new IMUserInfoModel(id, TerminalTypeEnum.fromCode(terminal),""));
+                userMap.put(key, new IMUserInfoModel(id, TerminalTypeEnum.fromCode(terminal), ""));
             }
         }
         // 批量拉取
-        List<Object> serverIds = redisTemplate.opsForValue().multiGet(userMap.keySet());
+        List<String> keys = new ArrayList<>(userMap.keySet());
+        List<Object> serverIds = redisTemplate.opsForValue().multiGet(keys);
         int idx = 0;
         Map<Long, List<TerminalTypeEnum>> onlineMap = new HashMap<>();
-        for (Map.Entry<String, IMUserInfoModel> entry : userMap.entrySet()) {
+        for (String key : keys) {
             // serverid有值表示用户在线
             if (serverIds.get(idx++) != null) {
-                IMUserInfoModel userInfo = entry.getValue();
-                List<TerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getUserId(), o -> new LinkedList<>());
+                IMUserInfoModel userInfo = userMap.get(key);
+                List<TerminalTypeEnum> terminals = onlineMap.computeIfAbsent(userInfo.getUserId(),
+                        o -> new LinkedList<>());
                 terminals.add(userInfo.getTerminal());
             }
         }
@@ -168,8 +175,13 @@ public class IMProcessor {
      * @return
      */
     public Boolean isOnline(Long userId) {
-        String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, userId.toString(), "*");
-        return !redisTemplate.keys(key).isEmpty();
+        for (Integer terminal : TerminalTypeEnum.codes()) {
+            String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
+            if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
