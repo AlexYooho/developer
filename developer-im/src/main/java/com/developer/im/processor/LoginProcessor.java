@@ -7,7 +7,7 @@ import com.developer.framework.model.DeveloperResult;
 import com.developer.framework.model.SelfUserInfoModel;
 import com.developer.framework.utils.IPUtils;
 import com.developer.framework.utils.RedisUtil;
-import com.developer.im.config.ResourceServerConfiger;
+
 import com.developer.im.constant.ChannelAttrKey;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -28,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
-public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
+public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel> {
 
     @Autowired
     private RedisUtil redisUtil;
@@ -36,25 +37,28 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
     @Autowired
     private Environment environment;
 
+    @Autowired
+    private TokenStore tokenStore;
+
     @Override
     public void handler(ChannelHandlerContext ctx, IMLoginInfoModel loginInfo) {
         OAuth2AccessToken oAuth2AccessToken = null;
         IMMessageBodyModel sendMessageInfo = new IMMessageBodyModel();
         sendMessageInfo.setCmd(IMCmdType.FORCE_LOGOUT);
         try {
-            oAuth2AccessToken = ResourceServerConfiger.resourceServerSecurityConfigurer.getTokenStore().readAccessToken(loginInfo.getAccessToken());
-            if(oAuth2AccessToken.getExpiration().compareTo(new Date())<0){
+            oAuth2AccessToken = tokenStore.readAccessToken(loginInfo.getAccessToken());
+            if (oAuth2AccessToken.getExpiration().compareTo(new Date()) < 0) {
                 sendMessageInfo.setData("用户token已过期,强制下线重新登录");
                 ctx.channel().writeAndFlush(sendMessageInfo);
                 ctx.channel().close();
-                log.warn("用户token检验失败,强制下线,token:{}",loginInfo.getAccessToken());
+                log.warn("用户token检验失败,强制下线,token:{}", loginInfo.getAccessToken());
                 return;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             sendMessageInfo.setData("用户token检验失败,强制下线");
             ctx.channel().writeAndFlush(sendMessageInfo);
             ctx.channel().close();
-            log.warn("用户token检验失败,强制下线,token:{}",loginInfo.getAccessToken());
+            log.warn("用户token检验失败,强制下线,token:{}", loginInfo.getAccessToken());
             return;
         }
 
@@ -63,15 +67,15 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
         SelfUserInfoModel selfUserInfoModel = JSON.parseObject(selfUserInfoContext, SelfUserInfoModel.class);
         Long userId = selfUserInfoModel.getUserId();
         Integer terminal = selfUserInfoModel.getTerminal();
-        log.info("用户登录,userId:{}",userId);
+        log.info("用户登录,userId:{}", userId);
 
         ChannelHandlerContext context = UserChannelCtxMap.getChannelCtx(userId, terminal);
-        if(context!=null && !ctx.channel().id().equals(context.channel().id())){
+        if (context != null && !ctx.channel().id().equals(context.channel().id())) {
             // 不允许多地登录,强制下线
             sendMessageInfo.setData("你在其他地方登录,将被强制下线");
             context.channel().writeAndFlush(sendMessageInfo);
-            log.info("异地登录，强制下线,userId:{}",userId);
-            return;
+            log.info("异地登录，强制下线,userId:{}", userId);
+            context.close();
         }
 
         // 设置用户id属性
@@ -85,7 +89,7 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
         ctx.channel().attr(heartbeatAttr).set(0L);
 
         // 绑定用户和channel
-        UserChannelCtxMap.addChannelCtx(userId,terminal,ctx);
+        UserChannelCtxMap.addChannelCtx(userId, terminal, ctx);
 
         // 在redis上记录每个user的channelId，15秒没有心跳，则自动过期
         String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
@@ -95,7 +99,7 @@ public class LoginProcessor extends AbstractMessageProcessor<IMLoginInfoModel>{
         String keys = RedisKeyConstant.USER_MAP_SERVER_INFO_KEY(userId);
         String port = Optional.ofNullable(environment.getProperty("dubbo.protocol.port")).orElse("20880");
         String url = IPUtils.getLocalIPv4().concat(":").concat(port);
-        redisUtil.hSet(keys,terminal.toString(), url);
+        redisUtil.hSet(keys, terminal.toString(), url);
 
         // 响应ws
         IMMessageBodyModel sendInfo = new IMMessageBodyModel();

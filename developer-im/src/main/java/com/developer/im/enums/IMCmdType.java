@@ -1,6 +1,7 @@
 package com.developer.im.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -25,6 +26,7 @@ public enum IMCmdType {
     CHAT_MESSAGE(8,"聊天消息");
 
     @EnumValue
+    @JsonValue
     private Integer code;
 
     private String desc;

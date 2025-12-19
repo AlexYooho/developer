@@ -3,6 +3,7 @@ package com.developer.im.processor;
 import cn.hutool.core.bean.BeanUtil;
 import com.developer.framework.constant.DeveloperConstant;
 import com.developer.framework.model.DeveloperResult;
+import com.developer.framework.utils.RedisUtil;
 import com.developer.im.constant.ChannelAttrKey;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.im.enums.IMCmdType;
@@ -12,7 +13,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -22,9 +22,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class HeartbeatProcessor extends AbstractMessageProcessor<IMHeartbeatInfoModel> {
 
-
     @Autowired
-    private RedisTemplate<String,Object> redisTemplate;
+    private RedisUtil redisUtil;
 
     @Override
     public void handler(ChannelHandlerContext ctx, IMHeartbeatInfoModel data) {
@@ -37,14 +36,15 @@ public class HeartbeatProcessor extends AbstractMessageProcessor<IMHeartbeatInfo
         AttributeKey<Long> heartBeatAttr = AttributeKey.valueOf(ChannelAttrKey.HEARTBEAT_TIMES);
         Long heartbeatTimes = ctx.channel().attr(heartBeatAttr).get();
         ctx.channel().attr(heartBeatAttr).set(++heartbeatTimes);
-        if (heartbeatTimes % 10 == 0) {
-            // 心跳10次
-            AttributeKey<Long> userIdAttr = AttributeKey.valueOf(ChannelAttrKey.USER_ID);
-            Long userId = ctx.channel().attr(userIdAttr).get();
-            AttributeKey<Integer> terminalAttr = AttributeKey.valueOf(ChannelAttrKey.TERMINAL_TYPE);
-            Integer terminal = ctx.channel().attr(terminalAttr).get();
-            String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID,userId.toString(),terminal.toString());
-            redisTemplate.expire(key, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
+
+        AttributeKey<Long> userIdAttr = AttributeKey.valueOf(ChannelAttrKey.USER_ID);
+        Long userId = ctx.channel().attr(userIdAttr).get();
+        AttributeKey<Integer> terminalAttr = AttributeKey.valueOf(ChannelAttrKey.TERMINAL_TYPE);
+        Integer terminal = ctx.channel().attr(terminalAttr).get();
+
+        if (userId != null && terminal != null) {
+            String key = String.join(":", RedisKeyConstant.IM_USER_SERVER_ID, userId.toString(), terminal.toString());
+            redisUtil.setExpire(key, DeveloperConstant.ONLINE_TIMEOUT_SECOND, TimeUnit.SECONDS);
         }
     }
 

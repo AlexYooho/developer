@@ -11,58 +11,79 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
+import java.io.IOException;
 
 @Slf4j
 public class IMChannelHandler extends SimpleChannelInboundHandler<IMMessageBodyModel> {
 
     /**
      * 接收消息
+     * 
      * @param channelHandlerContext
      * @param imMessageBodyModel
      * @throws Exception
      */
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, IMMessageBodyModel imMessageBodyModel) throws Exception {
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, IMMessageBodyModel imMessageBodyModel)
+            throws Exception {
         AbstractMessageProcessor processor = ProcessorFactory.getHandler(imMessageBodyModel.getCmd());
-        processor.handler(channelHandlerContext,processor.trans(imMessageBodyModel.getData()));
+        if (processor == null) {
+            log.warn("未找到对应的处理器, cmd: {}", imMessageBodyModel.getCmd());
+            return;
+        }
+        processor.handler(channelHandlerContext, processor.trans(imMessageBodyModel.getData()));
     }
 
     /**
      * 异常事件处理
+     * 
      * @param ctx
      * @param cause
      * @throws Exception
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error(cause.getMessage());
+        AttributeKey<Long> attr = AttributeKey.valueOf(ChannelAttrKey.USER_ID);
+        Long userId = ctx.channel().attr(attr).get();
+        AttributeKey<Integer> terminalAttr = AttributeKey.valueOf(ChannelAttrKey.TERMINAL_TYPE);
+        Integer terminal = ctx.channel().attr(terminalAttr).get();
+
+        if (cause instanceof IOException) {
+            log.warn("连接异常断开, 用户id:{}, 终端类型:{}, 异常信息:{}", userId != null ? userId : "Anonymous",
+                    terminal != null ? terminal : "Unknown", cause.getMessage());
+        } else {
+            log.error("IMChannelHandler异常, 用户id:{}, 终端类型:{}", userId != null ? userId : "Anonymous",
+                    terminal != null ? terminal : "Unknown", cause);
+        }
+        ctx.close();
     }
 
     /**
      * 用户上线事件
+     * 
      * @param ctx
      * @throws Exception
      */
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        log.info(ctx.channel().id().asLongText()+"上线");
+        log.info(ctx.channel().id().asLongText() + "上线");
     }
 
     /**
      * 用户下线事件
+     * 
      * @param ctx
      * @throws Exception
      */
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         AbstractMessageProcessor processor = ProcessorFactory.getHandler(IMCmdType.LOGOUT);
-        processor.handler(ctx, Optional.ofNullable(null));
+        processor.handler(ctx, null);
     }
 
     /**
      * 事件监听器
+     * 
      * @param ctx
      * @param evt
      * @throws Exception
@@ -77,7 +98,8 @@ public class IMChannelHandler extends SimpleChannelInboundHandler<IMMessageBodyM
                 Long userId = ctx.channel().attr(attr).get();
                 AttributeKey<Integer> terminalAttr = AttributeKey.valueOf(ChannelAttrKey.TERMINAL_TYPE);
                 Integer terminal = ctx.channel().attr(terminalAttr).get();
-                log.info("心跳超时，即将断开连接,用户id:{},终端类型:{} ",userId,terminal);
+                log.info("心跳超时，即将断开连接,用户id:{},终端类型:{} ", userId != null ? userId : "Anonymous",
+                        terminal != null ? terminal : "Unknown");
                 ctx.channel().close();
             }
         } else {
