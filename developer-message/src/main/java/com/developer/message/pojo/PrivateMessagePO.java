@@ -53,19 +53,19 @@ public class PrivateMessagePO {
     /**
      * 发送内容
      */
-    @TableField("content")
+    @TableField("message_content")
     private String messageContent;
 
     /**
      * 消息类型 0:文字 1:图片 2:文件 3:红包 4:转账
      */
-    @TableField("content_type")
+    @TableField("message_content_type")
     private MessageContentTypeEnum messageContentType;
 
     /**
      * 状态
      */
-    @TableField("status")
+    @TableField("message_status")
     private MessageStatusEnum messageStatus;
 
     /*

@@ -81,4 +81,9 @@ public interface GroupService {
      */
     DeveloperResult<Boolean> verifyChatroomOwnerInfo(Long groupId,Long userId);
 
+    /*
+    获取目标用户相同群信息集合
+     */
+    DeveloperResult<List<SameGroupInfoResponseDTO>> getSameGroupInfoList(Long targetId);
+
 }

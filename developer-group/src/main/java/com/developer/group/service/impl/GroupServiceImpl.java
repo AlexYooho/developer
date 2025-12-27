@@ -413,6 +413,7 @@ public class GroupServiceImpl implements GroupService {
             dto.setGroupName(groupInfo.getGroupName());
             dto.setGroupAvatar(groupInfo.getGroupAvatar());
             dto.setCreateTime(groupInfo.getCreateTime());
+            dto.setGroupMemberCount(groupInfo.getMemberCount());
 
             return dto;
         }).collect(Collectors.toList());
@@ -435,5 +436,45 @@ public class GroupServiceImpl implements GroupService {
         }
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
+    }
+
+    /*
+    获取当前用户和目标用户共同群信息
+     */
+    @Override
+    public DeveloperResult<List<SameGroupInfoResponseDTO>> getSameGroupInfoList(Long targetId) {
+
+        // 获取当前登录用户所有的群信息
+        DeveloperResult<List<SelfJoinGroupInfoDTO>> selfJoinAllGroupInfoResult = findSelfJoinAllGroupInfo();
+        if(!selfJoinAllGroupInfoResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), selfJoinAllGroupInfoResult.getMsg());
+        }
+
+        // 群id集合
+        List<Long> groupIdList = selfJoinAllGroupInfoResult.getData().stream().map(SelfJoinGroupInfoDTO::getGroupId).collect(Collectors.toList());
+        if(CollUtil.isEmpty(groupIdList)){
+            return DeveloperResult.success(SerialNoHolder.getSerialNo(),new ArrayList<>());
+        }
+
+        // 获取目标用户和当前登录用户的群信息的交集
+        DeveloperResult<List<GroupMemberPO>> targetUserGroupResult = groupMemberService.findGroupByMember(groupIdList, targetId);
+        if(!targetUserGroupResult.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), targetUserGroupResult.getMsg());
+        }
+
+        List<Long> targetUserJoinGroupIds = targetUserGroupResult.getData().stream().map(GroupMemberPO::getGroupId).collect(Collectors.toList());
+
+        // 获取群信息
+        List<SelfJoinGroupInfoDTO> groupInfos = selfJoinAllGroupInfoResult.getData().stream().filter(x -> targetUserJoinGroupIds.contains(x.getGroupId())).collect(Collectors.toList());
+
+        List<SameGroupInfoResponseDTO> list = groupInfos.stream().map(x -> {
+            SameGroupInfoResponseDTO dto = new SameGroupInfoResponseDTO();
+            dto.setGroupName(x.getGroupName());
+            dto.setGroupAvatar(x.getGroupAvatar());
+            dto.setGroupMemberCount(x.getGroupMemberCount());
+            return dto;
+        }).collect(Collectors.toList());
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(),list);
     }
 }

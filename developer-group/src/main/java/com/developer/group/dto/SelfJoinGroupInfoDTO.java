@@ -57,4 +57,10 @@ public class SelfJoinGroupInfoDTO {
     @JsonProperty("group_role")
     private GroupMemberRoleEnum groupRole;
 
+    /*
+    群成员数量
+     */
+    @JsonProperty("group_member_count")
+    private Integer groupMemberCount;
+
 }

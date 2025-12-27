@@ -46,4 +46,5 @@ public interface GroupMemberService {
      */
     DeveloperResult<Boolean> modifyGroupMemberInfo(ModifyGroupMemberInfoDTO dto);
 
+    DeveloperResult<List<GroupMemberPO>> findGroupByMember(List<Long> groupIds, Long memberUserId);
 }

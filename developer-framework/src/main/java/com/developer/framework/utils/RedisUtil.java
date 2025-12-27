@@ -73,7 +73,13 @@ public class RedisUtil {
      * @param value 要存储的值
      */
     public void set(String key, Object value,long timeOut, TimeUnit timeUnit) {
-        redisTemplate.opsForValue().set(key, value,timeOut,timeUnit);
+        try {
+            // 手动转成 JSON 字符串，保证 @JsonProperty 生效
+            String jsonValue = objectMapper.writeValueAsString(value);
+            redisTemplate.opsForValue().set(key, jsonValue, timeOut, timeUnit);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Redis 序列化失败", e);
+        }
     }
 
     public void set(String key, Object value) {

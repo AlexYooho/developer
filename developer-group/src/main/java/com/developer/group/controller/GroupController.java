@@ -116,4 +116,12 @@ public class GroupController {
     public DeveloperResult<List<SelfJoinGroupInfoDTO>> getSelfJoinAllGroupInfo(){
         return groupService.findSelfJoinAllGroupInfo();
     }
+
+    /*
+    获取和目标用户相同群信息
+     */
+    @GetMapping("same-group/target/{target_id}")
+    public DeveloperResult<List<SameGroupInfoResponseDTO>> getSameGroupInfoList(@PathVariable("target_id") Long targetId){
+        return groupService.getSameGroupInfoList(targetId);
+    }
 }

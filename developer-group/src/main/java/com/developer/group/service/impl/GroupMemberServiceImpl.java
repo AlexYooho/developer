@@ -1,5 +1,6 @@
 package com.developer.group.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.developer.framework.enums.group.GroupMemberJoinTypeEnum;
 import com.developer.framework.enums.group.GroupMemberRoleEnum;
@@ -59,6 +60,16 @@ public class GroupMemberServiceImpl implements GroupMemberService {
         GroupMemberPO memberInfo = groupMemberRepository.findByGroupIdAndUserId(groupId, memberUserId);
         if(ObjectUtil.isEmpty(memberInfo)){
             return DeveloperResult.error(SerialNoHolder.getSerialNo(),"群成员不存在");
+        }
+
+        return DeveloperResult.success(SerialNoHolder.getSerialNo(),memberInfo);
+    }
+
+    @Override
+    public DeveloperResult<List<GroupMemberPO>> findGroupByMember(List<Long> groupIds, Long memberUserId) {
+        List<GroupMemberPO> memberInfo = groupMemberRepository.findGroupByMember(groupIds, memberUserId);
+        if(CollUtil.isEmpty(memberInfo)){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),"未查询到用户的群信息");
         }
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo(),memberInfo);

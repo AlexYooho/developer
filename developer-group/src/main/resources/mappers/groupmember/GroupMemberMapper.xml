@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.developer.group.mappers.GroupMemberMapper">
+
+    <resultMap id="BaseResultMap" type="com.developer.group.pojo.GroupMemberPO"/>
+
+    <sql id="Base_Column_list">
+        id, group_id, user_id, alias, member_role, join_time, join_type, is_muted, mute_end_time, last_read_msg_id, mute_notify, remark, quit, create_time, update_time
+    </sql>
+
+    <select id="findGroupByMember" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+            FROM group_member
+        WHERE user_id = #{user_id}
+        AND quit = 0
+        AND group_id IN
+        <foreach collection="group_ids" item="group_id" open="(" separator="," close=")">
+            #{group_id}
+        </foreach>
+    </select>
+
+</mapper>

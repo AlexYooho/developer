@@ -14,6 +14,10 @@ public class GroupMemberRepository extends ServiceImpl<GroupMemberMapper, GroupM
         return this.lambdaQuery().eq(GroupMemberPO::getGroupId,groupId).eq(GroupMemberPO::getUserId,userId).one();
     }
 
+    public List<GroupMemberPO> findGroupByMember(List<Long> groupIds,Long userId){
+        return baseMapper.findGroupByMember(groupIds,userId);
+    }
+
     public void removeByGroupId(Long groupId){
         this.lambdaUpdate().eq(GroupMemberPO::getGroupId,groupId)
                 .set(GroupMemberPO::getQuit,true).update();
