@@ -5,6 +5,8 @@ import com.developer.framework.enums.friend.FriendStatusEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class FriendInfoDTO {
 
@@ -43,4 +45,20 @@ public class FriendInfoDTO {
 
     @JsonProperty("sex")
     private Integer sex;
+
+    @JsonProperty("same_group_info")
+    private List<SameGroupInfo> sameGroupInfoList;
+
+
+    @Data
+    public static class SameGroupInfo{
+        @JsonProperty("group_name")
+        private String groupName;
+
+        @JsonProperty("group_avatar")
+        private String groupAvatar;
+
+        @JsonProperty("group_member_count")
+        private Integer groupMemberCount;
+    }
 }

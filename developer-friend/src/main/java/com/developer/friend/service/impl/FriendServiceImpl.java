@@ -29,6 +29,7 @@ import com.developer.friend.service.FriendService;
 import com.developer.friend.util.RabbitMQUtil;
 import com.developer.rpc.client.RpcClient;
 import com.developer.rpc.client.RpcExecutor;
+import com.developer.rpc.dto.group.response.SameGroupInfoResponseRpcDTO;
 import com.developer.rpc.dto.user.request.UserInfoRequestRpcDTO;
 import com.developer.rpc.dto.user.response.UserInfoResponseRpcDTO;
 import lombok.RequiredArgsConstructor;
@@ -177,6 +178,22 @@ public class FriendServiceImpl implements FriendService {
         if (!friendInfo.getIsSuccessful()) {
             return DeveloperResult.error(serialNo, friendInfo.getMsg());
         }
+
+        DeveloperResult<List<SameGroupInfoResponseRpcDTO>> execute = RpcExecutor.execute(() -> rpcClient.groupRpcService.findSameGroupInfoList(friendId));
+        if(!execute.getIsSuccessful()){
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(),execute.getMsg());
+        }
+
+        // 相同群信息
+        List<FriendInfoDTO.SameGroupInfo> sameGroupInfoList = execute.getData().stream().map(x -> {
+            FriendInfoDTO.SameGroupInfo sameGroupInfo = new FriendInfoDTO.SameGroupInfo();
+            sameGroupInfo.setGroupAvatar(x.getGroupAvatar());
+            sameGroupInfo.setGroupName(x.getGroupName());
+            sameGroupInfo.setGroupMemberCount(x.getGroupMemberCount());
+            return sameGroupInfo;
+        }).collect(Collectors.toList());
+
+        friendInfo.getData().setSameGroupInfoList(sameGroupInfoList);
 
         return friendInfo;
     }
