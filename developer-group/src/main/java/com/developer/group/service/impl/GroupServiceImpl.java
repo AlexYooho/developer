@@ -469,6 +469,7 @@ public class GroupServiceImpl implements GroupService {
 
         List<SameGroupInfoResponseDTO> list = groupInfos.stream().map(x -> {
             SameGroupInfoResponseDTO dto = new SameGroupInfoResponseDTO();
+            dto.setGroupId(x.getGroupId());
             dto.setGroupName(x.getGroupName());
             dto.setGroupAvatar(x.getGroupAvatar());
             dto.setGroupMemberCount(x.getGroupMemberCount());

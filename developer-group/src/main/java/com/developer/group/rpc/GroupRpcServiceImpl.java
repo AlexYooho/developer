@@ -62,6 +62,7 @@ public class GroupRpcServiceImpl implements GroupRpcService {
 
         List<SameGroupInfoResponseRpcDTO> list = sameGroupInfoListResult.getData().stream().map(x -> {
             SameGroupInfoResponseRpcDTO dto = new SameGroupInfoResponseRpcDTO();
+            dto.setGroupId(x.getGroupId());
             dto.setGroupName(x.getGroupName());
             dto.setGroupAvatar(x.getGroupAvatar());
             dto.setGroupMemberCount(x.getGroupMemberCount());

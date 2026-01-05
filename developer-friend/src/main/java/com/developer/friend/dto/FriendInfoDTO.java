@@ -52,6 +52,10 @@ public class FriendInfoDTO {
 
     @Data
     public static class SameGroupInfo{
+
+        @JsonProperty("group_id")
+        private Long groupId;
+
         @JsonProperty("group_name")
         private String groupName;
 

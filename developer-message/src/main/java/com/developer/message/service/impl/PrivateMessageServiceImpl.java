@@ -94,13 +94,14 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
             privateMessageRepository.updateMessageStatus(ids, MessageStatusEnum.READED);
 
             // 修改当前终端的lastSeq
-            redisUtil.set(lastSeqKey, Collections.max(ids));
+            redisUtil.set(lastSeqKey, Collections.max(messages.stream().map(PrivateMessagePO::getConvSeq).collect(Collectors.toList())));
         }
 
         // 聚合返回数据
         list = messages.stream().map(x -> {
             LoadMessageListResponseDTO dto = new LoadMessageListResponseDTO();
             dto.setId(x.getId());
+            dto.setIsSent(x.getSendId().equals(SelfUserInfoContext.selfUserInfo().getUserId()));
             dto.setSendId(x.getSendId());
             dto.setReceiverId(x.getReceiverId());
             dto.setConvSeq(x.getConvSeq());
@@ -186,13 +187,18 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());
+        dto.setIsSent(true);
         dto.setSendId(SelfUserInfoContext.selfUserInfo().getUserId());
+        dto.setReceiverId(req.getTargetId());
+        dto.setConvSeq(privateMessage.getConvSeq());
         dto.setMessageContent(req.getMessageContent());
         dto.setMessageContentType(req.getMessageContentType());
         dto.setMessageStatus(privateMessage.getMessageStatus());
+        dto.setReadStatus(0);
         dto.setSendNickName(SelfUserInfoContext.selfUserInfo().getNickName());
         dto.setSendTime(privateMessage.getSendTime());
-        dto.setReceiverId(req.getTargetId());
+        dto.setReferenceId(req.getReferenceId());
+        dto.setLikeCount(0);
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo(), dto);
     }

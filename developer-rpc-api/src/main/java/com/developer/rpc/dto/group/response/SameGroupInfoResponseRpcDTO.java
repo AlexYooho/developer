@@ -3,8 +3,13 @@ package com.developer.rpc.dto.group.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class SameGroupInfoResponseRpcDTO {
+public class SameGroupInfoResponseRpcDTO implements Serializable {
+
+    @JsonProperty("group_id")
+    private Long groupId;
 
     @JsonProperty("group_name")
     private String groupName;

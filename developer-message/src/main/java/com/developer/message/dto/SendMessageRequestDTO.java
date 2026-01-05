@@ -63,12 +63,6 @@ public class SendMessageRequestDTO {
     private Long referenceId;
 
     /*
-    客户端消息id
-     */
-    @JsonProperty("client_msg_id")
-    private String clientMsgId;
-
-    /*
     支付信息
      */
     @JsonProperty("payment_info")

@@ -6,6 +6,9 @@ import lombok.Data;
 @Data
 public class SameGroupInfoResponseDTO {
 
+    @JsonProperty("group_id")
+    private Long groupId;
+
     @JsonProperty("group_avatar")
     private String groupAvatar;
 

@@ -187,6 +187,7 @@ public class FriendServiceImpl implements FriendService {
         // 相同群信息
         List<FriendInfoDTO.SameGroupInfo> sameGroupInfoList = execute.getData().stream().map(x -> {
             FriendInfoDTO.SameGroupInfo sameGroupInfo = new FriendInfoDTO.SameGroupInfo();
+            sameGroupInfo.setGroupId(x.getGroupId());
             sameGroupInfo.setGroupAvatar(x.getGroupAvatar());
             sameGroupInfo.setGroupName(x.getGroupName());
             sameGroupInfo.setGroupMemberCount(x.getGroupMemberCount());

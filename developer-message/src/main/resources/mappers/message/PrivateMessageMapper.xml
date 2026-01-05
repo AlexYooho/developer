@@ -20,7 +20,7 @@
 
     <update id="modifyMessageStatus">
         UPDATE private_message
-        SET status = #{status},
+        SET message_status = #{status},
             read_status = 1,
             update_time = now()
         WHERE id IN
@@ -35,7 +35,7 @@
         WHERE visible_to_oneself = true
         AND uid_a = #{uid_a}
         AND uid_b = #{uid_b}
-        AND status = #{message_status}
+        AND message_status = #{message_status}
     </select>
 
     <select id="findMessageByMessageId" resultMap="BaseResultMap">

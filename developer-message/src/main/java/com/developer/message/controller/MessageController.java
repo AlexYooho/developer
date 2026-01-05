@@ -22,8 +22,8 @@ public class MessageController {
     发送消息
      */
     @PostMapping("/{type}/send")
-    public DeveloperResult<SendMessageResultDTO> sendMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody SendMessageRequestDTO req) {
-        return messageTypeProcessorDispatchFactory.getInstance(type).sendMessage(req);
+    public DeveloperResult<SendMessageResultDTO> sendMessage(@PathVariable("type") Integer type, @RequestBody SendMessageRequestDTO req) {
+        return messageTypeProcessorDispatchFactory.getInstance(MessageConversationTypeEnum.fromCode(type)).sendMessage(req);
     }
 
     /*
@@ -38,11 +38,11 @@ public class MessageController {
     拉取消息
      */
     @GetMapping("/{type}/loadMessage/{terminal_type}/{target_id}")
-    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(@PathVariable("type") MessageConversationTypeEnum type, @PathVariable("terminal_type") TerminalTypeEnum terminalType, @PathVariable("target_id") Long targetId) {
+    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(@PathVariable("type") Integer type, @PathVariable("terminal_type") TerminalTypeEnum terminalType, @PathVariable("target_id") Long targetId) {
         LoadMessageRequestDTO dto = new LoadMessageRequestDTO();
         dto.setTargetId(targetId);
         dto.setTerminalType(terminalType);
-        return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(dto);
+        return messageTypeProcessorDispatchFactory.getInstance(MessageConversationTypeEnum.fromCode(type)).loadMessage(dto);
     }
 
     /*

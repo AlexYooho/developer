@@ -18,6 +18,12 @@ public class LoadMessageListResponseDTO {
     private Long id;
 
     /*
+    是否自己发的
+     */
+    @JsonProperty("is_sent")
+    private Boolean isSent;
+
+    /*
     发送者id
      */
     @JsonProperty("send_id")
