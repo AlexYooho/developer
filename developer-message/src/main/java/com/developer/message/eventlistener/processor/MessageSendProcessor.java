@@ -34,7 +34,7 @@ public class MessageSendProcessor implements IMessageProcessor {
             return DeveloperResult.error("消息体为空");
         }
 
-        messageTypeProcessorDispatchFactory.getInstance(messageContent.getMessageMainType()).sendMessage(messageContent);
+        messageTypeProcessorDispatchFactory.getInstance(messageContent.getMessageMainType().code()).sendMessage(messageContent);
 
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }

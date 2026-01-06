@@ -130,7 +130,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         // 聚合参数返回
         list = messageList.stream().map(x -> {
             LoadMessageListResponseDTO dto = new LoadMessageListResponseDTO();
-            dto.setId(x.getId());
+            dto.setId(x.getId().toString());
             dto.setSendId(x.getSendId());
             dto.setMessageContent(x.getMessageContent());
             dto.setMessageContentType(MessageContentTypeEnum.fromCode(x.getMessageContentType()));

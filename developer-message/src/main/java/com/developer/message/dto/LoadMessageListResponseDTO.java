@@ -15,7 +15,7 @@ public class LoadMessageListResponseDTO {
     消息id
      */
     @JsonProperty("id")
-    private Long id;
+    private String id;
 
     /*
     是否自己发的

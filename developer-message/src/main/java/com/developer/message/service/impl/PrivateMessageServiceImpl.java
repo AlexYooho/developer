@@ -100,7 +100,7 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         // 聚合返回数据
         list = messages.stream().map(x -> {
             LoadMessageListResponseDTO dto = new LoadMessageListResponseDTO();
-            dto.setId(x.getId());
+            dto.setId(x.getId().toString());
             dto.setIsSent(x.getSendId().equals(SelfUserInfoContext.selfUserInfo().getUserId()));
             dto.setSendId(x.getSendId());
             dto.setReceiverId(x.getReceiverId());
@@ -273,9 +273,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         }
 
         // 校验撤回时间限制
-        if (System.currentTimeMillis() - privateMessage.getSendTime().getTime() > DeveloperConstant.ALLOW_RECALL_SECOND * 1000) {
-            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "消息发送已超过一定时间,无法撤回");
-        }
+//        if (System.currentTimeMillis() - privateMessage.getSendTime().getTime() > DeveloperConstant.ALLOW_RECALL_SECOND * 1000) {
+//            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "消息发送已超过一定时间,无法撤回");
+//        }
 
         // 修改消息状态
         privateMessageRepository.updateMessageStatus(Collections.singletonList(privateMessage.getId()), MessageStatusEnum.RECALL);

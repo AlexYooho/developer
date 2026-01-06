@@ -15,11 +15,11 @@ public class MessageTypeProcessorDispatchFactory {
     private ApplicationContext context;
 
 
-    public MessageService getInstance(MessageConversationTypeEnum messageConversationTypeEnum) {
+    public MessageService getInstance(Integer conversationType) {
         Map<String, MessageService> beansMap = context.getBeansOfType(MessageService.class);
         MessageService instance = null;
         for (MessageService item : beansMap.values()) {
-            if (item.messageMainType() != messageConversationTypeEnum) {
+            if (item.messageMainType() != MessageConversationTypeEnum.fromCode(conversationType)) {
                 continue;
             }
 

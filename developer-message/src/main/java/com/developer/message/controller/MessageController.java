@@ -23,14 +23,14 @@ public class MessageController {
      */
     @PostMapping("/{type}/send")
     public DeveloperResult<SendMessageResultDTO> sendMessage(@PathVariable("type") Integer type, @RequestBody SendMessageRequestDTO req) {
-        return messageTypeProcessorDispatchFactory.getInstance(MessageConversationTypeEnum.fromCode(type)).sendMessage(req);
+        return messageTypeProcessorDispatchFactory.getInstance(type).sendMessage(req);
     }
 
     /*
     撤回消息
      */
     @PostMapping("/{type}/withdraw")
-    public DeveloperResult<Boolean> withdrawMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody WithdrawMessageRequestDTO req) {
+    public DeveloperResult<Boolean> withdrawMessage(@PathVariable("type") Integer type, @RequestBody WithdrawMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).withdrawMessage(req);
     }
 
@@ -42,14 +42,14 @@ public class MessageController {
         LoadMessageRequestDTO dto = new LoadMessageRequestDTO();
         dto.setTargetId(targetId);
         dto.setTerminalType(terminalType);
-        return messageTypeProcessorDispatchFactory.getInstance(MessageConversationTypeEnum.fromCode(type)).loadMessage(dto);
+        return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(dto);
     }
 
     /*
     消息已读
      */
     @PostMapping("/{type}/read")
-    public DeveloperResult<Boolean> readMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody ReadMessageRequestDTO req) {
+    public DeveloperResult<Boolean> readMessage(@PathVariable("type") Integer type, @RequestBody ReadMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).readMessage(req);
     }
 
@@ -57,7 +57,7 @@ public class MessageController {
     查询聊天记录
      */
     @PostMapping("/{type}/history")
-    public DeveloperResult<List<QueryHistoryMessageResponseDTO>> recallMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody QueryHistoryMessageRequestDTO req) {
+    public DeveloperResult<List<QueryHistoryMessageResponseDTO>> recallMessage(@PathVariable("type") Integer type, @RequestBody QueryHistoryMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).findHistoryMessage(req);
     }
 
@@ -65,7 +65,7 @@ public class MessageController {
     新增消息
      */
     @PostMapping("{type}/add")
-    public DeveloperResult<Boolean> insertMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody MessageInsertDTO dto) {
+    public DeveloperResult<Boolean> insertMessage(@PathVariable("type") Integer type, @RequestBody MessageInsertDTO dto) {
         return messageTypeProcessorDispatchFactory.getInstance(type).insertMessage(dto);
     }
 
@@ -73,7 +73,7 @@ public class MessageController {
     删除消息
      */
     @DeleteMapping("{type}/remove")
-    public DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody RemoveMessageRequestDTO req) {
+    public DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") Integer type, @RequestBody RemoveMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).deleteMessage(req);
     }
 
@@ -81,7 +81,7 @@ public class MessageController {
     回复消息
      */
     @PostMapping("{type}/reply/{messageId}")
-    public DeveloperResult<Boolean> replyMessage(@PathVariable("type") MessageConversationTypeEnum type, @PathVariable("messageId") Long messageId, @RequestBody ReplyMessageRequestDTO dto) {
+    public DeveloperResult<Boolean> replyMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId, @RequestBody ReplyMessageRequestDTO dto) {
         return messageTypeProcessorDispatchFactory.getInstance(type).replyMessage(messageId, dto);
     }
 
@@ -89,7 +89,7 @@ public class MessageController {
     收藏消息
      */
     @PostMapping("{type}/collection/{messageId}")
-    public DeveloperResult<Boolean> collectionMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody CollectionMessageRequestDTO req) {
+    public DeveloperResult<Boolean> collectionMessage(@PathVariable("type") Integer type, @RequestBody CollectionMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).collectionMessage(req);
     }
 
@@ -97,7 +97,7 @@ public class MessageController {
     转发消息
      */
     @PostMapping("{type}/forward")
-    public DeveloperResult<Boolean> forwardMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody ForwardMessageRequestDTO req) {
+    public DeveloperResult<Boolean> forwardMessage(@PathVariable("type") Integer type, @RequestBody ForwardMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).forwardMessage(req);
     }
 
@@ -105,7 +105,7 @@ public class MessageController {
     消息点赞
      */
     @PostMapping("{type}/like")
-    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody MessageLikeRequestDTO req) {
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(@PathVariable("type") Integer type, @RequestBody MessageLikeRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).likeMessage(req);
     }
 
@@ -113,7 +113,7 @@ public class MessageController {
     消息取消点赞
      */
     @PostMapping("{type}/unlike")
-    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(@PathVariable("type") MessageConversationTypeEnum type, @RequestBody MessageLikeRequestDTO req) {
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(@PathVariable("type") Integer type, @RequestBody MessageLikeRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).unLikeMessage(req);
     }
 
