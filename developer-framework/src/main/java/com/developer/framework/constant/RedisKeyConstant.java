@@ -105,11 +105,11 @@ public class RedisKeyConstant {
 
     // 当前会话maxSeq
     public static String CURRENT_CONVERSATION_MAX_SEQ_KEY(String uidA,String uidB){
-        return "developer:message:max:seq:".concat(uidA).concat(":").concat(uidB);
+        return "developer:message:max:seq:conversation:".concat(uidA).concat(":").concat(uidB);
     }
 
-    public static String CURRENT_TERMINAL_LAST_SEQ_KEY(String uidA,String uidB,Integer terminal){
-        return "developer:message:last:seq:".concat(uidA).concat(":").concat(uidB).concat(":").concat(terminal.toString());
+    public static String CURRENT_TERMINAL_MAX_SEQ_KEY(String uidA, String uidB, Integer terminal){
+        return "developer:message:max:seq:terminal:".concat(uidA).concat(":").concat(uidB).concat(":").concat(terminal.toString());
     }
 
     public static String CURRENT_CONVERSATION_NEXT_CONV_SEQ_KEY(String uidA,String uidB){

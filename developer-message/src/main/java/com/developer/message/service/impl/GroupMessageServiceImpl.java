@@ -82,7 +82,7 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
         String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(SelfUserInfoContext.selfUserInfo().getUserId().toString(), req.getTargetId().toString());
         Long maxSeq = Optional.ofNullable(redisUtil.get(maxSeqKey, Long.class)).orElse(0L);
         // 当前设备终端最大的convSeq
-        String lastSeqKey = RedisKeyConstant.CURRENT_TERMINAL_LAST_SEQ_KEY(SelfUserInfoContext.selfUserInfo().getUserId().toString(), req.getTargetId().toString(), req.getTerminalType().code());
+        String lastSeqKey = RedisKeyConstant.CURRENT_TERMINAL_MAX_SEQ_KEY(SelfUserInfoContext.selfUserInfo().getUserId().toString(), req.getTargetId().toString(), req.getTerminalType().code());
         Long lastSeq = Optional.ofNullable(redisUtil.get(lastSeqKey, Long.class)).orElse(0L);
         if (maxSeq > 0 && lastSeq > 0) {
             if (maxSeq.equals(lastSeq)) {

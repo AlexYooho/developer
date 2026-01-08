@@ -11,7 +11,7 @@ public class LoadMessageRequestDTO {
     消息最小id
      */
     @JsonProperty("last_seq")
-    private Long lastSeq;
+    private Long lastSeq = 0L;
 
     /*
     目标用户
@@ -24,4 +24,10 @@ public class LoadMessageRequestDTO {
      */
     @JsonProperty("terminal_type")
     private TerminalTypeEnum terminalType;
+
+    /*
+    分页大小
+     */
+    @JsonProperty("page_size")
+    private Integer pageSize = 15;
 }

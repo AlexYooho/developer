@@ -37,11 +37,12 @@ public class MessageController {
     /*
     拉取消息
      */
-    @GetMapping("/{type}/loadMessage/{terminal_type}/{target_id}")
-    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(@PathVariable("type") Integer type, @PathVariable("terminal_type") TerminalTypeEnum terminalType, @PathVariable("target_id") Long targetId) {
+    @GetMapping("/{type}/loadMessage/{terminal_type}/{target_id}/{conv_seq}")
+    public DeveloperResult<List<LoadMessageListResponseDTO>> loadMessage(@PathVariable("type") Integer type, @PathVariable("terminal_type") Integer terminalType, @PathVariable("target_id") Long targetId,@PathVariable("conv_seq")Long convSeq) {
         LoadMessageRequestDTO dto = new LoadMessageRequestDTO();
         dto.setTargetId(targetId);
-        dto.setTerminalType(terminalType);
+        dto.setTerminalType(TerminalTypeEnum.fromCode(terminalType));
+        dto.setLastSeq(convSeq);
         return messageTypeProcessorDispatchFactory.getInstance(type).loadMessage(dto);
     }
 

@@ -2,13 +2,9 @@ package com.developer.message.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.developer.framework.constant.DeveloperConstant;
-import com.developer.framework.constant.DeveloperMQConstant;
-import com.developer.framework.constant.MQMessageTypeConstant;
 import com.developer.framework.constant.RedisKeyConstant;
 import com.developer.framework.context.SelfUserInfoContext;
 import com.developer.framework.dto.*;
-import com.developer.framework.enums.common.ProcessorTypeEnum;
 import com.developer.framework.enums.message.MessageContentTypeEnum;
 import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.message.MessageStatusEnum;
@@ -71,19 +67,19 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
 
         // 判断当前聊天会话是否有新的消息
         // 和当前对象会话的maxSeq
-        String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA.toString(), uidB.toString());
-        Long maxSeq = Optional.ofNullable(redisUtil.get(maxSeqKey, Long.class)).orElse(0L);
+        String currentConversationMaxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA.toString(), uidB.toString());
+        Long currentConversationMaxSeq = Optional.ofNullable(redisUtil.get(currentConversationMaxSeqKey, Long.class)).orElse(0L);
         // 当前设备终端最大的convSeq
-        String lastSeqKey = RedisKeyConstant.CURRENT_TERMINAL_LAST_SEQ_KEY(uidA.toString(), uidB.toString(), req.getTerminalType().code());
-        Long lastSeq = Optional.ofNullable(redisUtil.get(lastSeqKey, Long.class)).orElse(0L);
-        if (maxSeq > 0 && lastSeq > 0) {
-            if (maxSeq.equals(lastSeq)) {
-                return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
-            }
+        String currentTerminalMaxSeqKey = RedisKeyConstant.CURRENT_TERMINAL_MAX_SEQ_KEY(uidA.toString(), uidB.toString(), req.getTerminalType().code());
+        Long currentTerminalMaxSeq = Optional.ofNullable(redisUtil.get(currentTerminalMaxSeqKey, Long.class)).orElse(0L);
+        if (currentConversationMaxSeq > 0 && currentTerminalMaxSeq > 0 && currentConversationMaxSeq.equals(currentTerminalMaxSeq)) {
+            //return DeveloperResult.success(SerialNoHolder.getSerialNo(), list);
         }
 
+        currentTerminalMaxSeq = req.getLastSeq()==0 ? currentTerminalMaxSeq : req.getLastSeq();
+
         // 获取当前用户的最新聊天消息
-        List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(lastSeq, uidA, uidB);
+        List<PrivateMessagePO> messages = privateMessageRepository.getMessageListByUserId(currentTerminalMaxSeq, uidA, uidB,req.getPageSize());
 
         // 将所有消息改为已读状态
         List<Long> ids = messages.stream()
@@ -94,11 +90,16 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
             privateMessageRepository.updateMessageStatus(ids, MessageStatusEnum.READED);
 
             // 修改当前终端的lastSeq
-            redisUtil.set(lastSeqKey, Collections.max(messages.stream().map(PrivateMessagePO::getConvSeq).collect(Collectors.toList())));
+            Long messageMaxSeq = Collections.max(messages.stream().map(PrivateMessagePO::getConvSeq).collect(Collectors.toList()));
+            if(messageMaxSeq > currentTerminalMaxSeq) {
+                redisUtil.set(currentTerminalMaxSeqKey, messageMaxSeq);
+            }
         }
 
         // 聚合返回数据
-        list = messages.stream().map(x -> {
+        list = messages.stream()
+                .sorted(Comparator.comparing(PrivateMessagePO::getConvSeq))
+                .map(x -> {
             LoadMessageListResponseDTO dto = new LoadMessageListResponseDTO();
             dto.setId(x.getId().toString());
             dto.setIsSent(x.getSendId().equals(SelfUserInfoContext.selfUserInfo().getUserId()));
@@ -184,6 +185,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         // 更新当前聊天会话maxSeq
         String maxSeqKey = RedisKeyConstant.CURRENT_CONVERSATION_MAX_SEQ_KEY(uidA.toString(), uidB.toString());
         redisUtil.set(maxSeqKey, privateMessage.getConvSeq());
+        String lastSeqKey = RedisKeyConstant.CURRENT_TERMINAL_MAX_SEQ_KEY(uidA.toString(), uidB.toString(), req.getTerminalType().code());
+        redisUtil.set(lastSeqKey,privateMessage.getConvSeq());
 
         PrivateMessageDTO dto = new PrivateMessageDTO();
         dto.setId(privateMessage.getId());

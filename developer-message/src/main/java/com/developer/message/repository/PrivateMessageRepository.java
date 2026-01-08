@@ -11,8 +11,8 @@ import java.util.List;
 @Repository
 public class PrivateMessageRepository extends ServiceImpl<PrivateMessageMapper, PrivateMessagePO> {
 
-    public List<PrivateMessagePO> getMessageListByUserId(Long lastSeq, Long uidA, Long uidB){
-        return baseMapper.findMessageList(lastSeq,uidA,uidB);
+    public List<PrivateMessagePO> getMessageListByUserId(Long lastSeq, Long uidA, Long uidB,Integer pageSize){
+        return baseMapper.findMessageList(lastSeq,uidA,uidB,pageSize);
     }
 
     public void updateMessageStatus(Long friendId, Long userId, Integer messageStatus){
