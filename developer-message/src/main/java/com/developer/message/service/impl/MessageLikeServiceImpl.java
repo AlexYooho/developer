@@ -43,15 +43,15 @@ public class MessageLikeServiceImpl implements MessageLikeService {
     private RabbitMQUtil rabbitMQUtil;
 
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> like(MessageLikeRequestDTO req, MessageConversationTypeEnum messageConversationTypeEnum) {
+    public CompletableFuture<DeveloperResult<Boolean>> like(Long messageId, MessageConversationTypeEnum messageConversationTypeEnum) {
         Long userId = SelfUserInfoContext.selfUserInfo().getUserId();
         String serialNo = SerialNoHolder.getSerialNo();
-        String lockKey = RedisKeyConstant.MESSAGE_LIKE_KEY(messageConversationTypeEnum, req.getMessageId(), userId);
-        String messageLikeStatusKey = RedisKeyConstant.MESSAGE_LIKE_USER_KEY(messageConversationTypeEnum, req.getMessageId(), userId);
-        String messageLikeCountKey = RedisKeyConstant.MESSAGE_LIKE_MESSAGE_KEY(messageConversationTypeEnum,req.getMessageId());
+        String lockKey = RedisKeyConstant.MESSAGE_LIKE_KEY(messageConversationTypeEnum, messageId, userId);
+        String messageLikeStatusKey = RedisKeyConstant.MESSAGE_LIKE_USER_KEY(messageConversationTypeEnum, messageId, userId);
+        String messageLikeCountKey = RedisKeyConstant.MESSAGE_LIKE_MESSAGE_KEY(messageConversationTypeEnum,messageId);
         if(!redisUtil.hasKey(messageLikeCountKey)){
             // 做缓存预热
-            Long likeCount = getMessageLikeCount(req.getMessageId(), messageConversationTypeEnum);
+            Long likeCount = getMessageLikeCount(messageId, messageConversationTypeEnum);
             if(likeCount>0){
                 redisUtil.set(messageLikeCountKey,likeCount,1, TimeUnit.HOURS);
             }
@@ -72,7 +72,7 @@ public class MessageLikeServiceImpl implements MessageLikeService {
                 redisUtil.setExpire(messageLikeCountKey,1,TimeUnit.HOURS);
 
                 // 推送mq事件，更新数据库
-                rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(req.getMessageId()).userId(userId).messageConversationTypeEnum(messageConversationTypeEnum).build());
+                rabbitMQUtil.sendMessage(serialNo,DeveloperMQConstant.MESSAGE_CHAT_EXCHANGE,DeveloperMQConstant.MESSAGE_CHAT_ROUTING_KEY, ProcessorTypeEnum.MESSAGE_LIKE, MessageLikeEventDTO.builder().messageId(messageId).userId(userId).messageConversationTypeEnum(messageConversationTypeEnum).build());
 
                 return CompletableFuture.completedFuture(DeveloperResult.success(serialNo,true));
             }else{
@@ -90,7 +90,7 @@ public class MessageLikeServiceImpl implements MessageLikeService {
     }
 
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> unLike(MessageLikeRequestDTO req, MessageConversationTypeEnum messageConversationTypeEnum) {
+    public CompletableFuture<DeveloperResult<Boolean>> unLike(Long messageId, MessageConversationTypeEnum messageConversationTypeEnum) {
         return null;
     }
 

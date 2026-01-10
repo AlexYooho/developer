@@ -86,12 +86,12 @@ public abstract class AbstractMessageAdapterService implements MessageService{
     }
 
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(MessageLikeRequestDTO req) {
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId) {
         return null;
     }
 
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(MessageLikeRequestDTO req) {
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId) {
         return null;
     }
 

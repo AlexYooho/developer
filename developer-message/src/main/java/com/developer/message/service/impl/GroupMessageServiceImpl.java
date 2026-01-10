@@ -373,24 +373,24 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
      */
     @Override
     public DeveloperResult<Boolean> replyMessage(Long id, ReplyMessageRequestDTO req) {
+        // 2、消息校验
+        GroupMessagePO groupMessage = groupMessageRepository.findMessageById(id);
+        if (groupMessage == null) {
+            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "消息不存在");
+        }
+
         // 1、校验是否在此群中
         DeveloperResult<List<GroupInfoResponseRpcDTO>> groupInfoResult = RpcExecutor.execute(() -> rpcClient.groupRpcService.getSelfJoinAllGroupInfo());
         if (!groupInfoResult.getIsSuccessful()) {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), groupInfoResult.getMsg());
         }
-        GroupInfoResponseRpcDTO groupInfo = groupInfoResult.getData().stream().filter(x -> x.getGroupId().equals(req.getGroupId())).findFirst().orElse(null);
+        GroupInfoResponseRpcDTO groupInfo = groupInfoResult.getData().stream().filter(x -> x.getGroupId().equals(groupMessage.getGroupId())).findFirst().orElse(null);
         if (ObjectUtil.isEmpty(groupInfo)) {
             return DeveloperResult.error(SerialNoHolder.getSerialNo(), "你不在此群中,操作失败");
         }
 
-        // 2、消息校验
-        GroupMessagePO groupMessage = groupMessageRepository.findMessageById(req.getGroupId(), id);
-        if (groupMessage == null) {
-            return DeveloperResult.error(SerialNoHolder.getSerialNo(), "消息不存在");
-        }
-
-        sendMessage(SendMessageRequestDTO.builder().targetId(req.getReceiverId()).messageContent(req.getMessageContent())
-                .messageMainType(req.getMessageMainType()).messageContentType(req.getMessageContentType()).atUserIds(req.getAtUserIds())
+        sendMessage(SendMessageRequestDTO.builder().targetId(groupMessage.getSendId()).messageContent(req.getMessageContent())
+                .messageMainType(MessageConversationTypeEnum.GROUP_MESSAGE).messageContentType(req.getMessageContentType()).atUserIds(req.getAtUserIds())
                 .referenceId(id).build());
         return DeveloperResult.success(SerialNoHolder.getSerialNo());
     }
@@ -431,8 +431,8 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
     @Async
     @Transactional
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(MessageLikeRequestDTO req) {
-        return messageLikeService.like(req, MessageConversationTypeEnum.GROUP_MESSAGE);
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId) {
+        return messageLikeService.like(messageId, MessageConversationTypeEnum.GROUP_MESSAGE);
     }
 
     /*
@@ -441,8 +441,8 @@ public class GroupMessageServiceImpl extends AbstractMessageAdapterService {
     @Async
     @Transactional
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(MessageLikeRequestDTO req) {
-        return messageLikeService.unLike(req, MessageConversationTypeEnum.GROUP_MESSAGE);
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId) {
+        return messageLikeService.unLike(messageId, MessageConversationTypeEnum.GROUP_MESSAGE);
     }
 
     private long getCurrentConversationNextConvSeq(Long groupId) {

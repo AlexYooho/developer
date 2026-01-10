@@ -49,6 +49,10 @@ public class GroupMessageRepository extends ServiceImpl<GroupMessageMapper, Grou
     }
 
     public GroupMessagePO findMessageById(Long groupId,Long messageId){
-        return baseMapper.findMessageById(groupId,messageId);
+        return baseMapper.findMessageByGroupId(groupId,messageId);
+    }
+
+    public GroupMessagePO findMessageById(Long messageId){
+        return baseMapper.findMessageById(messageId);
     }
 }

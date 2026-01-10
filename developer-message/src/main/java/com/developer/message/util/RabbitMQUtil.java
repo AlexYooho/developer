@@ -22,13 +22,20 @@ public class RabbitMQUtil {
     发送消息
      */
     public void sendMessage(String serialNo, String exchange, String routingKey, ProcessorTypeEnum messageType, Object content) {
-        RabbitMQMessageBodyDTO dto = RabbitMQMessageBodyDTO.builder()
-                .serialNo(serialNo)
-                .type(MQMessageTypeConstant.SENDMESSAGE)
-                .token(TokenUtil.getToken())
-                .data(JSON.toJSON(content))
-                .processorType(messageType)
-                .build();
+//        RabbitMQMessageBodyDTO dto = RabbitMQMessageBodyDTO.builder()
+//                .serialNo(serialNo)
+//                .type(MQMessageTypeConstant.SENDMESSAGE)
+//                .token(TokenUtil.getToken())
+//                .data(JSON.toJSON(content))
+//                .processorType(messageType)
+//                .build();
+
+        RabbitMQMessageBodyDTO dto = new RabbitMQMessageBodyDTO();
+        dto.setSerialNo(SerialNoHolder.getSerialNo());
+        dto.setType(MQMessageTypeConstant.SENDMESSAGE);
+        dto.setProcessorType(messageType);
+        dto.setToken(TokenUtil.getToken());
+        dto.setData(JSON.toJSON(content));
         rabbitTemplate.convertAndSend(exchange, routingKey, dto);
     }
 

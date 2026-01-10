@@ -73,7 +73,7 @@ public class MessageController {
     /*
     删除消息
      */
-    @DeleteMapping("{type}/remove")
+    @PostMapping("{type}/remove")
     public DeveloperResult<Boolean> removeFriendChatMessage(@PathVariable("type") Integer type, @RequestBody RemoveMessageRequestDTO req) {
         return messageTypeProcessorDispatchFactory.getInstance(type).deleteMessage(req);
     }
@@ -81,8 +81,8 @@ public class MessageController {
     /*
     回复消息
      */
-    @PostMapping("{type}/reply/{messageId}")
-    public DeveloperResult<Boolean> replyMessage(@PathVariable("type") Integer type, @PathVariable("messageId") Long messageId, @RequestBody ReplyMessageRequestDTO dto) {
+    @PostMapping("{type}/reply/{message_id}")
+    public DeveloperResult<Boolean> replyMessage(@PathVariable("type") Integer type, @PathVariable("message_id") Long messageId, @RequestBody ReplyMessageRequestDTO dto) {
         return messageTypeProcessorDispatchFactory.getInstance(type).replyMessage(messageId, dto);
     }
 
@@ -105,17 +105,17 @@ public class MessageController {
     /*
     消息点赞
      */
-    @PostMapping("{type}/like")
-    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(@PathVariable("type") Integer type, @RequestBody MessageLikeRequestDTO req) {
-        return messageTypeProcessorDispatchFactory.getInstance(type).likeMessage(req);
+    @PostMapping("{type}/like/{message_id}")
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(@PathVariable("type") Integer type, @PathVariable("message_id") Long messageId) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).likeMessage(messageId);
     }
 
     /*
     消息取消点赞
      */
-    @PostMapping("{type}/unlike")
-    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(@PathVariable("type") Integer type, @RequestBody MessageLikeRequestDTO req) {
-        return messageTypeProcessorDispatchFactory.getInstance(type).unLikeMessage(req);
+    @PostMapping("{type}/unlike/{message_id}")
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(@PathVariable("type") Integer type, @PathVariable("message_id") Long messageId) {
+        return messageTypeProcessorDispatchFactory.getInstance(type).unLikeMessage(messageId);
     }
 
 }

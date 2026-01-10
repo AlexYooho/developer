@@ -11,16 +11,16 @@ public interface MessageLikeService {
     /**
      * 消息点赞
      *
-     * @param req
+     * @param
      * @return
      */
-    CompletableFuture<DeveloperResult<Boolean>> like(MessageLikeRequestDTO req, MessageConversationTypeEnum messageConversationTypeEnum);
+    CompletableFuture<DeveloperResult<Boolean>> like(Long messageId, MessageConversationTypeEnum messageConversationTypeEnum);
 
     /**
      * 取消点赞
-     * @param req
+     * @param
      * @return
      */
-    CompletableFuture<DeveloperResult<Boolean>> unLike(MessageLikeRequestDTO req, MessageConversationTypeEnum messageConversationTypeEnum);
+    CompletableFuture<DeveloperResult<Boolean>> unLike(Long messageId, MessageConversationTypeEnum messageConversationTypeEnum);
 
 }

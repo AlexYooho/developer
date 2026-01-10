@@ -52,6 +52,7 @@ public class RabbitMQEventListener {
                 log.error("【message服务】系统异常:{}", e.getMessage());
                 channel.basicNack(tag, false, true);
             }
+            //channel.basicAck(tag,false);
         }
     }
 

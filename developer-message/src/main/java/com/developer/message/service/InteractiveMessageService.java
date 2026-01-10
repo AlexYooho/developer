@@ -35,14 +35,14 @@ public interface InteractiveMessageService {
      * @param req
      * @return
      */
-    CompletableFuture<DeveloperResult<Boolean>> likeMessage(MessageLikeRequestDTO req);
+    CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId);
 
     /**
      * 取消点赞
      * @param req
      * @return
      */
-    CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(MessageLikeRequestDTO req);
+    CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId);
 
     /*
     好友申请接受消息

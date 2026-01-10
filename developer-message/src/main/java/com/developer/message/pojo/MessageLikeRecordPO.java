@@ -3,6 +3,7 @@ package com.developer.message.pojo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.developer.framework.enums.message.MessageConversationTypeEnum;
 import com.developer.framework.enums.message.MessageLikeEnum;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import java.util.Date;
 
 @Data
 @Builder
+@TableName("message_like_record")
 public class MessageLikeRecordPO {
 
     /**

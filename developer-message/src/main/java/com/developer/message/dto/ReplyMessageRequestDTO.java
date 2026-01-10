@@ -11,22 +11,10 @@ import java.util.List;
 public class ReplyMessageRequestDTO {
 
     /**
-     * 接收人
-     */
-    @JsonProperty("receiver_id")
-    private Long receiverId;
-
-    /**
      * 消息内容
      */
     @JsonProperty("message_content")
     private String messageContent;
-
-    /**
-     * 消息主类型
-     */
-    @JsonProperty("message_main_type")
-    private MessageConversationTypeEnum messageMainType;
 
     /**
      * 消息内容类型
@@ -35,20 +23,10 @@ public class ReplyMessageRequestDTO {
     private MessageContentTypeEnum messageContentType;
 
     /**
-     * 群id
-     */
-    @JsonProperty("group_id")
-    private Long groupId;
-
-    /**
      * @ 用户id
      */
     @JsonProperty("at_user_ids")
     private List<Long> atUserIds;
 
-    /**
-     * 引用消息id
-     */
-    @JsonProperty("reference_id")
-    private Long referenceId;
+
 }

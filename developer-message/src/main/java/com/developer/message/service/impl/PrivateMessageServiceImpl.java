@@ -381,9 +381,9 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
         }
 
         SendMessageRequestDTO dto = SendMessageRequestDTO.builder()
-                .targetId(req.getReceiverId())
+                .targetId(messagePO.getSendId())
                 .messageContent(req.getMessageContent())
-                .messageMainType(req.getMessageMainType())
+                .messageMainType(MessageConversationTypeEnum.PRIVATE_MESSAGE)
                 .messageContentType(req.getMessageContentType())
                 .atUserIds(req.getAtUserIds())
                 .referenceId(id)
@@ -431,8 +431,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     @Async
     @Transactional
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(MessageLikeRequestDTO req) {
-        return messageLikeService.like(req, MessageConversationTypeEnum.PRIVATE_MESSAGE);
+    public CompletableFuture<DeveloperResult<Boolean>> likeMessage(Long messageId) {
+        return messageLikeService.like(messageId, MessageConversationTypeEnum.PRIVATE_MESSAGE);
     }
 
     /*
@@ -441,8 +441,8 @@ public class PrivateMessageServiceImpl extends AbstractMessageAdapterService {
     @Async
     @Transactional
     @Override
-    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(MessageLikeRequestDTO req) {
-        return messageLikeService.unLike(req, MessageConversationTypeEnum.PRIVATE_MESSAGE);
+    public CompletableFuture<DeveloperResult<Boolean>> unLikeMessage(Long messageId) {
+        return messageLikeService.unLike(messageId, MessageConversationTypeEnum.PRIVATE_MESSAGE);
     }
 
     /*

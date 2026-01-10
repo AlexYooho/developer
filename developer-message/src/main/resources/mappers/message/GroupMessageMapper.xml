@@ -38,11 +38,18 @@
         </foreach>
     </select>
 
-    <select id="findMessageById" resultMap="BaseResultMap">
+    <select id="findMessageByGroupId" resultMap="BaseResultMap">
         SELECT <include refid="Base_Column_list"/>
             FROM group_message
         FROM group_id = #{group_id}
         AND id = #{id}
+        LIMIT 1;
+    </select>
+
+    <select id="findMessageById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_list"/>
+        FROM group_message
+        FROM id = #{id}
         LIMIT 1;
     </select>
 

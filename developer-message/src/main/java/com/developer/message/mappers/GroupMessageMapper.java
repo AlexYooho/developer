@@ -16,6 +16,8 @@ public interface GroupMessageMapper extends BaseMapper<GroupMessagePO> {
 
     List<GroupMessagePO> findUnreadMessageList(@Param("group_id")Long groupId,@Param("read_message_ids")List<Long> readMessageIds);
 
-    GroupMessagePO findMessageById(@Param("group_id")Long groupId,@Param("id")Long messageId);
+    GroupMessagePO findMessageByGroupId(@Param("group_id")Long groupId,@Param("id")Long messageId);
+
+    GroupMessagePO findMessageById(@Param("id")Long messageId);
 
 }
